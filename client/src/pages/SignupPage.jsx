@@ -33,7 +33,7 @@ export default function SignupPage() {
   }
 
   async function handleRegister() {
-    if (!name || !userid || !password) return alert('모든 정보를 입력해주세요.');
+    if (!name || !userid || !password || !email) return alert('모든 정보를 입력해주세요.');
     if (!idChecked) return alert('아이디 중복 확인을 해주세요.');
     try {
       const res = await fetch('/register', {
@@ -43,7 +43,7 @@ export default function SignupPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        alert(email.trim() ? '회원가입이 완료되었습니다. 선생님 편지도 이메일로 보내드릴게요.' : '회원가입이 완료되었습니다.');
+        alert('회원가입이 완료되었습니다.');
         navigate('/login');
       } else {
         alert(data.message || '회원가입에 실패했습니다.');
@@ -129,9 +129,10 @@ export default function SignupPage() {
           variants={item}
           className="input-field"
           type="email"
-          placeholder="이메일 (개봉일에 편지 발송용)"
+          placeholder="이메일"
           value={email}
           onChange={e => setEmail(e.target.value)}
+          required
         />
 
         <motion.button variants={item} className="submit-btn" type="submit">

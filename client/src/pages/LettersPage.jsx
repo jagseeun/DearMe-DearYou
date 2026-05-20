@@ -198,7 +198,7 @@ export default function LettersPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        onClick={() => navigate('/')}
+        onClick={() => navigate('/hello')}
         whileHover={{ translateY: -1, boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
       >
         ← 돌아가기

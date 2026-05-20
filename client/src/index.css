@@ -76,6 +76,47 @@ textarea {
 
 button {
   -webkit-tap-highlight-color: transparent;
+  white-space: normal;
+  line-height: 1.25;
+}
+
+button,
+input,
+textarea,
+select,
+a,
+p,
+span,
+strong,
+div,
+h1,
+h2,
+h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.glass-btn,
+.submit-btn,
+.primary-cta,
+.soft-button,
+.nav-pill,
+.back-link,
+.letter-back-floating,
+.letter-open-arrow,
+.letter-delete-button,
+.letter-lock-pill {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.letter-card-inner,
+.letter-card-title-line,
+.letter-card-info-line,
+.letter-card-actions,
+.hello-nav,
+.modal-actions {
+  min-width: 0;
 }
 
 #root {
@@ -3469,6 +3510,7 @@ canvas {
   }
 
   [style*="grid-template-columns: minmax(0, 1fr) auto"],
+  [style*="grid-template-columns: minmax(0, 1fr) minmax(210px, 260px) auto auto"],
   [style*="grid-template-columns: minmax(0, 1fr) minmax(220px, 280px) auto"] {
     grid-template-columns: 1fr !important;
   }

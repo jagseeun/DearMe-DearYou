@@ -68,6 +68,7 @@ export default function AdminPage() {
   const [letters, setLetters] = useState([]);
   const [form, setForm] = useState({ teacherName: '', title: '', content: '' });
   const [dateDrafts, setDateDrafts] = useState({});
+  const [passwordDrafts, setPasswordDrafts] = useState({});
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
@@ -198,6 +199,35 @@ export default function AdminPage() {
       await loadAll();
     } catch (err) {
       setMessage(err.message || '사용자 삭제 실패');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function updateUserPassword(user) {
+    const nextPassword = passwordDrafts[user.id] || '';
+    if (!nextPassword) {
+      setMessage('새 비밀번호를 입력해주세요.');
+      return;
+    }
+    if (nextPassword.length < 6) {
+      setMessage('비밀번호는 6자 이상으로 입력해주세요.');
+      return;
+    }
+    if (!window.confirm(`${user.name}(${user.userid}) 계정의 비밀번호를 변경할까요?`)) return;
+
+    setBusyId(`password-${user.id}`);
+    setMessage('');
+    try {
+      const data = await fetchJson(`/admin/users/${user.id}/password`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nextPassword }),
+      });
+      setPasswordDrafts(prev => ({ ...prev, [user.id]: '' }));
+      setMessage(data.message || '비밀번호를 변경했습니다.');
+    } catch (err) {
+      setMessage(err.message || '비밀번호 변경 실패');
     } finally {
       setBusyId(null);
     }
@@ -338,11 +368,11 @@ export default function AdminPage() {
 
         <section style={{ ...panelStyle, overflow: 'hidden' }}>
           <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-            <span>사용자 계정 삭제</span>
+            <span>사용자 계정 관리</span>
             <span style={{ color: 'rgba(255,252,223,0.48)' }}>{users.length}명</span>
           </div>
           {users.map(user => (
-            <div key={user.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 14, alignItems: 'center' }}>
+            <div key={user.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(210px, 260px) auto auto', gap: 12, alignItems: 'center' }}>
               <div style={{ minWidth: 0 }}>
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
                   <strong style={{ fontWeight: 500 }}>{user.name}</strong>
@@ -353,6 +383,21 @@ export default function AdminPage() {
                   {user.email || '이메일 없음'} · 편지 {user._count?.letters || 0} · 선생님 편지 작성 {user._count?.teacherLetters || 0} · 마지막 로그인 {formatDate(user.lastLoginAt)}
                 </div>
               </div>
+              <input
+                style={inputStyle}
+                type="password"
+                placeholder="새 비밀번호"
+                maxLength={20}
+                value={passwordDrafts[user.id] || ''}
+                onChange={e => setPasswordDrafts(prev => ({ ...prev, [user.id]: e.target.value }))}
+              />
+              <button
+                style={buttonStyle}
+                disabled={busyId === `password-${user.id}`}
+                onClick={() => updateUserPassword(user)}
+              >
+                {busyId === `password-${user.id}` ? '변경 중...' : '비번 변경'}
+              </button>
               <button
                 style={dangerButtonStyle}
                 disabled={user.isCurrentUser || busyId === `user-${user.id}`}

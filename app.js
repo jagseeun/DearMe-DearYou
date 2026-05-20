@@ -414,10 +414,14 @@ app.use(express.static(path.resolve("client/dist"), {
 }));
 
 app.use(session({
-  secret: "my-secret-key-1234",
+  secret: process.env.SESSION_SECRET || "my-secret-key-1234",
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60, secure: false }
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+    secure: false,
+    sameSite: "lax",
+  }
 }));
 
 const adminUserids = new Set(
@@ -461,20 +465,19 @@ app.post("/check-username", async (req, res) => {
 app.post("/register", async (req, res) => {
   const { name, userid, password } = req.body;
   const email = String(req.body.email || "").trim().toLowerCase();
-  if (!name || !userid || !password) return res.status(400).json({ message: "모든 값을 입력해주세요." });
+  if (!name || !userid || !password || !email) return res.status(400).json({ message: "모든 값을 입력해주세요." });
   if (name.length > 10) return res.status(400).json({ message: "이름은 10자를 넘을 수 없습니다." });
   if (userid.length > 20) return res.status(400).json({ message: "아이디는 20자를 넘을 수 없습니다." });
   if (password.length > 20) return res.status(400).json({ message: "비밀번호는 20자를 넘을 수 없습니다." });
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   try {
-    if (email) {
-      const existingEmail = await prisma.member.findUnique({ where: { email } });
-      if (existingEmail) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
-    }
+    const existingEmail = await prisma.member.findUnique({ where: { email } });
+    if (existingEmail) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
     const hashedPassword = await bcrypt.hash(password, 10);
-    const member = await prisma.member.create({ data: { name, userid, password: hashedPassword, email: email || null } });
-    if (email) {
-      assignRandomTeacherLetterToMember(member.id).catch(err => console.error("signup teacher letter send error:", err));
+    const member = await prisma.member.create({ data: { name, userid, password: hashedPassword, email } });
+    const teacherLetterResult = await assignRandomTeacherLetterToMember(member.id);
+    if (!teacherLetterResult.sent) {
+      console.warn("signup teacher letter not sent:", { memberId: member.id, reason: teacherLetterResult.reason });
     }
     res.status(201).json({ message: "회원가입 성공!" });
   } catch (err) {
@@ -815,6 +818,27 @@ app.delete("/admin/users/:id", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("admin user delete error:", err);
     res.status(500).json({ message: "사용자 삭제에 실패했습니다." });
+  }
+});
+
+app.patch("/admin/users/:id/password", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  const nextPassword = String(req.body.nextPassword || "");
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 사용자입니다." });
+  if (!nextPassword) return res.status(400).json({ message: "새 비밀번호를 입력해주세요." });
+  if (nextPassword.length < 6) return res.status(400).json({ message: "비밀번호는 6자 이상으로 입력해주세요." });
+  if (nextPassword.length > 20) return res.status(400).json({ message: "비밀번호는 20자를 넘을 수 없습니다." });
+
+  try {
+    const user = await prisma.member.findUnique({ where: { id }, select: { id: true } });
+    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+
+    const hashedPassword = await bcrypt.hash(nextPassword, 10);
+    await prisma.member.update({ where: { id }, data: { password: hashedPassword } });
+    res.json({ message: "사용자 비밀번호를 변경했습니다." });
+  } catch (err) {
+    console.error("admin password update error:", err);
+    res.status(500).json({ message: "비밀번호 변경에 실패했습니다." });
   }
 });
 
