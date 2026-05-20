@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "main": "app.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "postinstall": "prisma generate",
     "start": "node app.js",
     "dev": "concurrently \"cd client && npm run dev\" \"node app.js\"",
     "build": "cd client && npm run build"
