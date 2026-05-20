@@ -3515,3 +3515,167 @@ canvas {
     grid-template-columns: 1fr !important;
   }
 }
+
+@media (max-width: 640px) {
+  .top-title {
+    top: 18px;
+    padding: 0 16px;
+    font-size: 19px;
+  }
+
+  .hello-shell {
+    padding: 78px 18px 34px;
+  }
+
+  .hello-nav {
+    position: static;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 6px 0 18px;
+  }
+
+  .hello-nav button {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+
+  .hello-content {
+    width: 100%;
+    margin: 0;
+    gap: 24px;
+  }
+
+  .hello-greeting {
+    font-size: 31px;
+  }
+
+  .hello-question-wrap {
+    min-height: 132px;
+  }
+
+  .hello-question {
+    font-size: 27px;
+    line-height: 1.38;
+  }
+
+  .primary-cta {
+    width: 100%;
+    min-height: 56px;
+  }
+
+  .modal-panel {
+    width: calc(100vw - 32px);
+    padding: 26px 20px;
+  }
+
+  .modal-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions button {
+    width: 100% !important;
+  }
+
+  .letter-list-shell {
+    padding: 84px 16px 28px;
+  }
+
+  .letter-list-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .letter-list-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .letter-card-inner {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .letter-card-actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .letter-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .letter-card-title,
+  .letter-date-line,
+  .letter-recipient {
+    white-space: normal;
+  }
+
+  .letter-back-floating {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: auto;
+  }
+
+  .write-shell {
+    padding: 80px 16px 84px;
+  }
+
+  .write-layout {
+    margin-top: 22px;
+  }
+
+  .write-header {
+    align-items: flex-start;
+  }
+
+  .mode-tabs {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .mode-tabs button {
+    flex: 1 1 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-title {
+    font-size: 40px;
+  }
+
+  .top-title .semicolon,
+  .main-title .semicolon {
+    margin-left: 7px;
+    margin-right: 7px;
+  }
+
+  .input-group .input-field {
+    padding-right: 104px;
+  }
+
+  .check-btn {
+    width: 92px;
+    font-size: 12px;
+  }
+
+  .letter-list-title {
+    font-size: 29px;
+  }
+
+  .letter-badge,
+  .letter-lock-pill,
+  .letter-recipient {
+    max-width: 100%;
+  }
+}
