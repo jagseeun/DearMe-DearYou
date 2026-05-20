@@ -3912,9 +3912,9 @@ canvas {
 /* Clean drawing board override */
 .draw-editor.draw-editor-clean {
   display: grid !important;
-  grid-template-columns: 1fr !important;
-  grid-template-rows: auto auto !important;
-  gap: 14px !important;
+  grid-template-columns: minmax(0, 1fr) 176px !important;
+  grid-template-rows: auto !important;
+  gap: 16px !important;
   width: 100% !important;
   max-width: 980px !important;
   margin: 0 auto !important;
@@ -3944,13 +3944,13 @@ canvas {
 }
 
 .draw-editor.draw-editor-clean .draw-toolbar {
-  grid-column: 1 !important;
-  grid-row: 2 !important;
+  grid-column: 2 !important;
+  grid-row: 1 !important;
   width: 100% !important;
-  height: auto !important;
-  display: grid !important;
-  grid-template-columns: minmax(0, 1fr) auto auto auto !important;
-  align-items: center !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
   gap: 10px !important;
   padding: 12px !important;
   border-radius: 16px !important;
@@ -3970,9 +3970,9 @@ canvas {
 .draw-editor.draw-editor-clean .draw-palette {
   width: 100% !important;
   display: grid !important;
-  grid-template-columns: repeat(8, 26px) !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   align-items: center !important;
-  justify-content: start !important;
+  justify-content: center !important;
   gap: 8px !important;
   padding: 8px !important;
   border-radius: 12px !important;
@@ -3992,7 +3992,7 @@ canvas {
 
 .draw-editor.draw-editor-clean .draw-size-group {
   display: grid !important;
-  grid-template-columns: repeat(3, 38px) !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   gap: 6px !important;
   padding: 6px !important;
   margin: 0 !important;
@@ -4008,7 +4008,8 @@ canvas {
 }
 
 .draw-editor.draw-editor-clean .draw-tool-button {
-  min-width: 76px !important;
+  width: 100% !important;
+  min-width: 0 !important;
   height: 42px !important;
   min-height: 42px !important;
   padding: 0 12px !important;
@@ -4018,6 +4019,8 @@ canvas {
 
 @media (max-width: 640px) {
   .draw-editor.draw-editor-clean {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto !important;
     gap: 10px !important;
   }
 
@@ -4026,6 +4029,8 @@ canvas {
   }
 
   .draw-editor.draw-editor-clean .draw-toolbar {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
     grid-template-columns: minmax(0, 1fr) !important;
     gap: 8px !important;
     padding: 10px !important;
