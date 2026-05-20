@@ -781,7 +781,7 @@ export default function WritePage() {
           </div>
         </div>
       )}
-      <div style={{
+      <div className="write-video-frame" style={{
         width: '100%', height: mode === 'call' ? 'min(56vh, 580px)' : 'min(64vh, 640px)', minHeight: mode === 'call' ? 'min(340px, 44vh)' : 'min(380px, 52vh)', background: mode === 'call' ? '#0a1a0a' : '#0a0a0a',
         borderRadius: 28, overflow: 'hidden', position: 'relative',
         border: mode === 'call' ? '1px solid rgba(0,220,100,0.15)' : 'none',
