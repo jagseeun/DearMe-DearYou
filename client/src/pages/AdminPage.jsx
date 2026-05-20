@@ -6,7 +6,6 @@ const ease = [0.22, 1, 0.36, 1];
 
 const panelStyle = {
   width: '100%',
-  maxWidth: 960,
   background: 'rgba(18,18,22,0.58)',
   border: '1px solid rgba(244,220,184,0.16)',
   borderRadius: 8,
@@ -27,8 +26,8 @@ const inputStyle = {
 };
 
 const buttonStyle = {
-  height: 42,
-  padding: '0 22px',
+  minHeight: 42,
+  padding: '0 18px',
   borderRadius: 8,
   border: '1px solid rgba(232,194,138,0.38)',
   background: 'linear-gradient(135deg, rgba(232,194,138,0.22), rgba(255,255,255,0.08))',
@@ -39,17 +38,41 @@ const buttonStyle = {
   transition: 'all 0.2s ease',
 };
 
+const dangerButtonStyle = {
+  ...buttonStyle,
+  borderColor: 'rgba(255,120,120,0.36)',
+  background: 'rgba(120,40,40,0.28)',
+  color: '#ffd0d0',
+};
+
+function formatDate(value) {
+  if (!value) return '-';
+  return new Date(value).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' });
+}
+
+function toDateInputValue(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
 export default function AdminPage() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
   const [authorized, setAuthorized] = useState(false);
+  const [teacherLetters, setTeacherLetters] = useState([]);
+  const [users, setUsers] = useState([]);
   const [letters, setLetters] = useState([]);
   const [form, setForm] = useState({ teacherName: '', title: '', content: '' });
+  const [dateDrafts, setDateDrafts] = useState({});
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [resending, setResending] = useState(false);
+  const [busyId, setBusyId] = useState(null);
   const [sendResult, setSendResult] = useState(null);
 
   useEffect(() => {
@@ -68,7 +91,7 @@ export default function AdminPage() {
           return;
         }
         setAuthorized(true);
-        await loadLetters();
+        await loadAll();
       } catch {
         setMessage('서버 연결을 확인해주세요.');
       } finally {
@@ -78,14 +101,29 @@ export default function AdminPage() {
     checkAdmin();
   }, []);
 
-  async function loadLetters() {
-    const res = await fetch('/teacher-letters');
-    if (res.status === 403) {
-      setAuthorized(false);
-      return;
-    }
-    if (!res.ok) throw new Error('list failed');
-    setLetters(await res.json());
+  async function fetchJson(url, options) {
+    const res = await fetch(url, options);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || '요청에 실패했습니다.');
+    return data;
+  }
+
+  async function loadAll() {
+    await Promise.all([loadTeacherLetters(), loadUsers(), loadAdminLetters()]);
+  }
+
+  async function loadTeacherLetters() {
+    setTeacherLetters(await fetchJson('/teacher-letters'));
+  }
+
+  async function loadUsers() {
+    setUsers(await fetchJson('/admin/users'));
+  }
+
+  async function loadAdminLetters() {
+    const nextLetters = await fetchJson('/admin/letters');
+    setLetters(nextLetters);
+    setDateDrafts(Object.fromEntries(nextLetters.map(letter => [letter.id, toDateInputValue(letter.openDate)])));
   }
 
   async function createLetter(e) {
@@ -98,16 +136,14 @@ export default function AdminPage() {
     setSaving(true);
     setMessage('');
     try {
-      const res = await fetch('/teacher-letters', {
+      await fetchJson('/teacher-letters', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || '저장 실패');
       setForm({ teacherName: '', title: '', content: '' });
       setMessage('선생님 편지를 저장했습니다.');
-      await loadLetters();
+      await loadTeacherLetters();
     } catch (err) {
       setMessage(err.message || '저장 실패');
     } finally {
@@ -122,12 +158,10 @@ export default function AdminPage() {
     setMessage('');
     setSendResult(null);
     try {
-      const res = await fetch('/teacher-letters/random-send', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || '발송 실패');
+      const data = await fetchJson('/teacher-letters/random-send', { method: 'POST' });
       setSendResult(data);
       setMessage('랜덤 발송을 실행했습니다.');
-      await loadLetters();
+      await loadTeacherLetters();
     } catch (err) {
       setMessage(err.message || '발송 실패');
     } finally {
@@ -142,16 +176,54 @@ export default function AdminPage() {
     setMessage('');
     setSendResult(null);
     try {
-      const res = await fetch('/teacher-letters/resend-all', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || '재발송 실패');
+      const data = await fetchJson('/teacher-letters/resend-all', { method: 'POST' });
       setSendResult(data);
       setMessage('기존 대상에게 선생님 편지를 다시 보냈습니다.');
-      await loadLetters();
+      await loadTeacherLetters();
     } catch (err) {
       setMessage(err.message || '재발송 실패');
     } finally {
       setResending(false);
+    }
+  }
+
+  async function deleteUser(user) {
+    if (!window.confirm(`${user.name}(${user.userid}) 계정과 이 계정의 편지를 삭제할까요?`)) return;
+
+    setBusyId(`user-${user.id}`);
+    setMessage('');
+    try {
+      const data = await fetchJson(`/admin/users/${user.id}`, { method: 'DELETE' });
+      setMessage(data.message || '사용자를 삭제했습니다.');
+      await loadAll();
+    } catch (err) {
+      setMessage(err.message || '사용자 삭제 실패');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function updateLetterDate(letter) {
+    const draft = dateDrafts[letter.id];
+    if (!draft) {
+      setMessage('수정할 날짜를 입력해주세요.');
+      return;
+    }
+
+    setBusyId(`letter-${letter.id}`);
+    setMessage('');
+    try {
+      const data = await fetchJson(`/admin/letters/${letter.id}/open-date`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ openDate: new Date(draft).toISOString() }),
+      });
+      setMessage(data.message || '편지 날짜를 수정했습니다.');
+      await loadAdminLetters();
+    } catch (err) {
+      setMessage(err.message || '편지 날짜 수정 실패');
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -178,58 +250,57 @@ export default function AdminPage() {
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5, ease }}
     >
-      <div style={{ maxWidth: 960, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <div>
             <div style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12, letterSpacing: 4, marginBottom: 8 }}>ADMIN</div>
-            <h1 style={{ margin: 0, fontSize: 34, fontWeight: 300 }}>선생님 편지 관리</h1>
+            <h1 style={{ margin: 0, fontSize: 34, fontWeight: 300 }}>관리자 콘솔</h1>
           </div>
           <button style={{ ...buttonStyle, background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.18)' }} onClick={() => navigate('/')}>나가기</button>
         </div>
 
-        <form onSubmit={createLetter} style={{ ...panelStyle, padding: 24, display: 'grid', gap: 12 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-            <input
-              style={inputStyle}
-              value={form.teacherName}
-              onChange={e => setForm(prev => ({ ...prev, teacherName: e.target.value }))}
-              placeholder="선생님 이름"
-            />
-            <input
-              style={inputStyle}
-              value={form.title}
-              onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="제목"
-            />
-          </div>
-          <textarea
-            style={{ ...inputStyle, minHeight: 180, resize: 'vertical', lineHeight: 1.7 }}
-            value={form.content}
-            onChange={e => setForm(prev => ({ ...prev, content: e.target.value }))}
-            placeholder="선생님 편지 내용"
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-            <span style={{ color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>{message}</span>
-            <button style={buttonStyle} disabled={saving}>{saving ? '저장 중...' : '편지 저장'}</button>
-          </div>
-        </form>
+        {message && (
+          <div style={{ ...panelStyle, padding: 14, color: 'rgba(255,252,223,0.82)' }}>{message}</div>
+        )}
 
-        <div style={{ ...panelStyle, padding: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 18 }}>
+        <section style={{ ...panelStyle, padding: 24, display: 'grid', gap: 14 }}>
           <div>
-            <div style={{ fontSize: 18, marginBottom: 6 }}>랜덤 발송</div>
-            <div style={{ color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>
-              아직 받지 않은 로그인 사용자에게만 1개씩 배정됩니다.
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 300 }}>선생님 편지 작성</h2>
+            <p style={{ margin: '8px 0 0', color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>작성 후 랜덤 발송 또는 기존 대상 재발송을 실행할 수 있습니다.</p>
+          </div>
+
+          <form onSubmit={createLetter} style={{ display: 'grid', gap: 12 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+              <input
+                style={inputStyle}
+                value={form.teacherName}
+                onChange={e => setForm(prev => ({ ...prev, teacherName: e.target.value }))}
+                placeholder="선생님 이름"
+              />
+              <input
+                style={inputStyle}
+                value={form.title}
+                onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="제목"
+              />
             </div>
-          </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            <button style={buttonStyle} onClick={resendAll} disabled={resending || sending}>
-              {resending ? '재발송 중...' : '기존 대상 재발송'}
-            </button>
-            <button style={buttonStyle} onClick={sendRandom} disabled={sending || resending || letters.length === 0}>
-              {sending ? '발송 중...' : '랜덤 발송 실행'}
-            </button>
-          </div>
-        </div>
+            <textarea
+              style={{ ...inputStyle, minHeight: 170, resize: 'vertical', lineHeight: 1.7 }}
+              value={form.content}
+              onChange={e => setForm(prev => ({ ...prev, content: e.target.value }))}
+              placeholder="선생님 편지 내용"
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
+              <button style={buttonStyle} disabled={saving}>{saving ? '저장 중...' : '편지 저장'}</button>
+              <button type="button" style={buttonStyle} onClick={resendAll} disabled={resending || sending}>
+                {resending ? '재발송 중...' : '기존 대상 재발송'}
+              </button>
+              <button type="button" style={buttonStyle} onClick={sendRandom} disabled={sending || resending || teacherLetters.length === 0}>
+                {sending ? '발송 중...' : '랜덤 발송 실행'}
+              </button>
+            </div>
+          </form>
+        </section>
 
         {sendResult && (
           <div style={{ ...panelStyle, padding: 18, display: 'flex', gap: 18, flexWrap: 'wrap', color: 'rgba(255,252,223,0.82)' }}>
@@ -242,16 +313,16 @@ export default function AdminPage() {
           </div>
         )}
 
-        <div style={{ ...panelStyle, overflow: 'hidden' }}>
-          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between' }}>
+        <section style={{ ...panelStyle, overflow: 'hidden' }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
             <span>등록된 선생님 편지</span>
-            <span style={{ color: 'rgba(255,252,223,0.48)' }}>{letters.length}개</span>
+            <span style={{ color: 'rgba(255,252,223,0.48)' }}>{teacherLetters.length}개</span>
           </div>
-          {letters.length === 0 ? (
+          {teacherLetters.length === 0 ? (
             <div style={{ padding: 28, color: 'rgba(255,252,223,0.45)' }}>아직 등록된 편지가 없습니다.</div>
           ) : (
             <div style={{ display: 'grid' }}>
-              {letters.map(letter => (
+              {teacherLetters.map(letter => (
                 <div key={letter.id} style={{ padding: 22, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
                     <strong style={{ fontWeight: 500 }}>{letter.title || '제목 없음'}</strong>
@@ -263,7 +334,73 @@ export default function AdminPage() {
               ))}
             </div>
           )}
-        </div>
+        </section>
+
+        <section style={{ ...panelStyle, overflow: 'hidden' }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            <span>사용자 계정 삭제</span>
+            <span style={{ color: 'rgba(255,252,223,0.48)' }}>{users.length}명</span>
+          </div>
+          {users.map(user => (
+            <div key={user.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 14, alignItems: 'center' }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                  <strong style={{ fontWeight: 500 }}>{user.name}</strong>
+                  <span style={{ color: 'rgba(255,252,223,0.56)' }}>@{user.userid}</span>
+                  {user.isCurrentUser && <span style={{ color: '#ffe8c4', fontSize: 12 }}>현재 계정</span>}
+                </div>
+                <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>
+                  {user.email || '이메일 없음'} · 편지 {user._count?.letters || 0} · 선생님 편지 작성 {user._count?.teacherLetters || 0} · 마지막 로그인 {formatDate(user.lastLoginAt)}
+                </div>
+              </div>
+              <button
+                style={dangerButtonStyle}
+                disabled={user.isCurrentUser || busyId === `user-${user.id}`}
+                onClick={() => deleteUser(user)}
+              >
+                {busyId === `user-${user.id}` ? '삭제 중...' : '계정 삭제'}
+              </button>
+            </div>
+          ))}
+        </section>
+
+        <section style={{ ...panelStyle, overflow: 'hidden' }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+            <span>편지 날짜 수정</span>
+            <span style={{ color: 'rgba(255,252,223,0.48)' }}>{letters.length}개</span>
+          </div>
+          {letters.length === 0 ? (
+            <div style={{ padding: 28, color: 'rgba(255,252,223,0.45)' }}>작성된 편지가 없습니다.</div>
+          ) : (
+            letters.map(letter => (
+              <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(220px, 280px) auto', gap: 12, alignItems: 'center' }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                    <strong style={{ fontWeight: 500 }}>{letter.author?.name || '알 수 없음'}</strong>
+                    <span style={{ color: 'rgba(255,252,223,0.56)' }}>@{letter.author?.userid}</span>
+                    <span style={{ color: '#ffe8c4', fontSize: 12 }}>{letter.type}</span>
+                  </div>
+                  <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>
+                    받는 사람 {letter.recipientName || '미지정'} · 현재 개봉일 {formatDate(letter.openDate)} · 발송 {letter.sentAt ? formatDate(letter.sentAt) : '대기'}
+                  </div>
+                </div>
+                <input
+                  style={inputStyle}
+                  type="datetime-local"
+                  value={dateDrafts[letter.id] || ''}
+                  onChange={e => setDateDrafts(prev => ({ ...prev, [letter.id]: e.target.value }))}
+                />
+                <button
+                  style={buttonStyle}
+                  disabled={busyId === `letter-${letter.id}`}
+                  onClick={() => updateLetterDate(letter)}
+                >
+                  {busyId === `letter-${letter.id}` ? '수정 중...' : '날짜 저장'}
+                </button>
+              </div>
+            ))
+          )}
+        </section>
       </div>
     </motion.div>
   );

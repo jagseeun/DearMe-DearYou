@@ -663,6 +663,118 @@ app.get("/teacher-letters", requireAdmin, async (req, res) => {
   }
 });
 
+app.get("/admin/users", requireAdmin, async (req, res) => {
+  try {
+    const users = await prisma.member.findMany({
+      orderBy: { id: "desc" },
+      select: {
+        id: true,
+        userid: true,
+        name: true,
+        email: true,
+        lastLoginAt: true,
+        _count: {
+          select: {
+            letters: true,
+            teacherLetters: true,
+            teacherLetterDeliveries: true,
+          },
+        },
+      },
+    });
+    res.json(users.map(user => ({ ...user, isCurrentUser: user.id === req.session.user.id })));
+  } catch (err) {
+    console.error("admin user list error:", err);
+    res.status(500).json({ message: "사용자 목록을 불러오지 못했습니다." });
+  }
+});
+
+app.delete("/admin/users/:id", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 사용자입니다." });
+  if (id === req.session.user.id) return res.status(400).json({ message: "현재 로그인한 관리자 계정은 삭제할 수 없습니다." });
+
+  try {
+    const user = await prisma.member.findUnique({ where: { id }, select: { id: true, userid: true } });
+    if (!user) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+
+    await prisma.$transaction(async tx => {
+      const authoredTeacherLetters = await tx.teacherLetter.findMany({
+        where: { authorId: id },
+        select: { id: true },
+      });
+      const authoredTeacherLetterIds = authoredTeacherLetters.map(letter => letter.id);
+
+      if (authoredTeacherLetterIds.length > 0) {
+        await tx.teacherLetterDelivery.deleteMany({
+          where: { teacherLetterId: { in: authoredTeacherLetterIds } },
+        });
+        await tx.teacherLetter.deleteMany({ where: { id: { in: authoredTeacherLetterIds } } });
+      }
+
+      await tx.teacherLetterDelivery.deleteMany({ where: { memberId: id } });
+      await tx.letter.deleteMany({ where: { authorId: id } });
+      await tx.member.delete({ where: { id } });
+    });
+
+    res.json({ message: "사용자 계정을 삭제했습니다." });
+  } catch (err) {
+    console.error("admin user delete error:", err);
+    res.status(500).json({ message: "사용자 삭제에 실패했습니다." });
+  }
+});
+
+app.get("/admin/letters", requireAdmin, async (req, res) => {
+  try {
+    const letters = await prisma.letter.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        type: true,
+        recipientName: true,
+        recipientEmail: true,
+        openDate: true,
+        createdAt: true,
+        sentAt: true,
+        author: { select: { id: true, userid: true, name: true, email: true } },
+      },
+    });
+    res.json(letters);
+  } catch (err) {
+    console.error("admin letter list error:", err);
+    res.status(500).json({ message: "편지 목록을 불러오지 못했습니다." });
+  }
+});
+
+app.patch("/admin/letters/:id/open-date", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  const { openDate } = req.body;
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 편지입니다." });
+  if (!openDate) return res.status(400).json({ message: "날짜를 입력해주세요." });
+
+  const nextDate = new Date(openDate);
+  if (Number.isNaN(nextDate.getTime())) return res.status(400).json({ message: "날짜 형식이 올바르지 않습니다." });
+
+  try {
+    const letter = await prisma.letter.update({
+      where: { id },
+      data: {
+        openDate: nextDate,
+        sentAt: null,
+      },
+      select: {
+        id: true,
+        openDate: true,
+        sentAt: true,
+      },
+    });
+    res.json({ message: "편지 날짜를 수정했습니다.", letter });
+  } catch (err) {
+    console.error("admin letter date update error:", err);
+    res.status(500).json({ message: "편지 날짜 수정에 실패했습니다." });
+  }
+});
+
 app.post("/teacher-letters/random-send", requireAdmin, async (req, res) => {
 
   try {
