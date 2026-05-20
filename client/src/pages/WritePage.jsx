@@ -282,9 +282,12 @@ const sigBtnStyle = {
 
 // ── 그림 편지 캔버스 컴포넌트 ──
 const PALETTE = [
-  '#2a1a0a','#5a3a1a','#8b5e3c','#cd9a63','#e8c99a',
-  '#fffcdf','#ffffff','#c0392b','#e67e22','#27ae60',
-  '#2980b9','#8e44ad','#f39c12','#1a1a2e','#000000',
+  '#000000', '#2a1a0a', '#5a3a1a', '#8b5e3c',
+  '#cd9a63', '#e8c99a', '#fffcdf', '#ffffff',
+  '#c0392b', '#e74c3c', '#e67e22', '#f39c12',
+  '#f1c40f', '#27ae60', '#2ecc71', '#16a085',
+  '#2980b9', '#3498db', '#1a1a2e', '#34495e',
+  '#8e44ad', '#9b59b6', '#d87093', '#ff9fb2',
 ];
 
 function DrawCanvas({ onHasDrawn, onCanvasReady }) {
