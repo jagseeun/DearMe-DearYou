@@ -11,22 +11,6 @@ export default function LoginPage() {
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
 
-  async function handleFindId() {
-    const email = window.prompt('가입할 때 입력한 이메일을 입력해주세요.');
-    if (!email) return;
-    try {
-      const res = await fetch('/find-id', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json().catch(() => ({}));
-      alert(data.message || (res.ok ? '이메일을 확인해주세요.' : '아이디 찾기에 실패했습니다.'));
-    } catch {
-      alert('서버 연결에 실패했습니다.');
-    }
-  }
-
   async function handleLogin() {
     if (!userid || !password) return alert('아이디와 비밀번호를 입력해주세요.');
     try {
@@ -84,9 +68,6 @@ export default function LoginPage() {
         />
         <motion.button variants={item} className="submit-btn" type="submit">
           로그인
-        </motion.button>
-        <motion.button variants={item} className="glass-btn" type="button" onClick={handleFindId}>
-          아이디 찾기
         </motion.button>
       </motion.form>
 

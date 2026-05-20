@@ -45,6 +45,8 @@ npm install
 
 ```env
 DATABASE_URL=postgresql://...
+NODE_ENV=production
+SESSION_SECRET=긴_랜덤_문자열
 GMAIL_USER=your_email@gmail.com
 GMAIL_APP_PASSWORD=your_app_password
 EMAIL_FROM=your_email@gmail.com

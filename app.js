@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import session from "express-session";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import prisma from "./prisma/client.js";
 import path from "path";
 import bcrypt from "bcrypt";
@@ -397,6 +399,30 @@ sendDueLetters();
 // ─────────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 4000;
+const isProduction = process.env.NODE_ENV === "production";
+
+app.set("trust proxy", 1);
+
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+}));
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+});
+
+const adminLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "관리자 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+});
 
 app.use(express.json({ limit: "10mb" }));
 app.use((req, res, next) => {
@@ -417,9 +443,11 @@ app.use(session({
   secret: process.env.SESSION_SECRET || "my-secret-key-1234",
   resave: false,
   saveUninitialized: false,
+  name: "dearme.sid",
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7,
-    secure: false,
+    httpOnly: true,
+    secure: isProduction,
     sameSite: "lax",
   }
 }));
@@ -448,7 +476,7 @@ app.get("/db-test", async (req, res) => {
 });
 
 // 1. 아이디 중복 확인
-app.post("/check-username", async (req, res) => {
+app.post("/check-username", authLimiter, async (req, res) => {
   const { userid } = req.body;
   const engNumRegex = /^[a-zA-Z0-9]+$/;
   if (!userid) return res.status(400).json({ available: false, message: "아이디를 입력해주세요." });
@@ -462,7 +490,7 @@ app.post("/check-username", async (req, res) => {
 });
 
 // 2. 회원가입
-app.post("/register", async (req, res) => {
+app.post("/register", authLimiter, async (req, res) => {
   const { name, userid, password } = req.body;
   const email = String(req.body.email || "").trim().toLowerCase();
   if (!name || !userid || !password || !email) return res.status(400).json({ message: "모든 값을 입력해주세요." });
@@ -487,33 +515,8 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.post("/find-id", async (req, res) => {
-  const email = String(req.body.email || "").trim().toLowerCase();
-  if (!email) return res.status(400).json({ message: "이메일을 입력해주세요." });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
-
-  try {
-    const member = await prisma.member.findUnique({ where: { email } });
-    if (!member) return res.status(404).json({ message: "해당 이메일로 가입된 아이디가 없습니다." });
-
-    await mailer.sendMail({
-      from: emailFromHeader,
-      replyTo: emailReplyTo,
-      to: email,
-      subject: "Dear Me; Dear You 아이디 안내",
-      text: `${member.name}님의 아이디는 ${member.userid} 입니다.`,
-      html: `<div style="font-family:sans-serif;line-height:1.7"><h2>Dear Me; Dear You</h2><p>${escapeHtml(member.name)}님의 아이디는 <strong>${escapeHtml(member.userid)}</strong> 입니다.</p></div>`,
-    });
-
-    res.json({ message: "가입된 이메일로 아이디를 보냈습니다." });
-  } catch (err) {
-    console.error("find id error:", err);
-    res.status(500).json({ message: "아이디 찾기 메일 발송에 실패했습니다." });
-  }
-});
-
 // 3. 로그인
-app.post("/login", async (req, res) => {
+app.post("/login", authLimiter, async (req, res) => {
   const { userid, password } = req.body;
   if (!userid || !password) return res.status(400).json({ message: "아이디와 비밀번호를 입력해주세요." });
   try {
@@ -591,7 +594,7 @@ app.put("/update-profile", async (req, res) => {
   }
 });
 
-app.put("/change-password", async (req, res) => {
+app.put("/change-password", authLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
   const currentPassword = String(req.body.currentPassword || "");
   const nextPassword = String(req.body.nextPassword || "");
@@ -770,13 +773,7 @@ app.get("/admin/users", requireAdmin, async (req, res) => {
         name: true,
         email: true,
         lastLoginAt: true,
-        _count: {
-          select: {
-            letters: true,
-            teacherLetters: true,
-            teacherLetterDeliveries: true,
-          },
-        },
+        _count: { select: { letters: true, teacherLetters: true } },
       },
     });
     res.json(users.map(user => ({ ...user, isCurrentUser: user.id === req.session.user.id })));
@@ -786,7 +783,7 @@ app.get("/admin/users", requireAdmin, async (req, res) => {
   }
 });
 
-app.delete("/admin/users/:id", requireAdmin, async (req, res) => {
+app.delete("/admin/users/:id", adminLimiter, requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 사용자입니다." });
   if (id === req.session.user.id) return res.status(400).json({ message: "현재 로그인한 관리자 계정은 삭제할 수 없습니다." });
@@ -821,10 +818,11 @@ app.delete("/admin/users/:id", requireAdmin, async (req, res) => {
   }
 });
 
-app.patch("/admin/users/:id/password", requireAdmin, async (req, res) => {
+app.patch("/admin/users/:id/password", adminLimiter, requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   const nextPassword = String(req.body.nextPassword || "");
   if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 사용자입니다." });
+  if (id === req.session.user.id) return res.status(400).json({ message: "현재 로그인한 관리자 비밀번호는 여기서 변경할 수 없습니다." });
   if (!nextPassword) return res.status(400).json({ message: "새 비밀번호를 입력해주세요." });
   if (nextPassword.length < 6) return res.status(400).json({ message: "비밀번호는 6자 이상으로 입력해주세요." });
   if (nextPassword.length > 20) return res.status(400).json({ message: "비밀번호는 20자를 넘을 수 없습니다." });

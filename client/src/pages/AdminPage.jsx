@@ -110,7 +110,11 @@ export default function AdminPage() {
   }
 
   async function loadAll() {
-    await Promise.all([loadTeacherLetters(), loadUsers(), loadAdminLetters()]);
+    const results = await Promise.allSettled([loadTeacherLetters(), loadUsers(), loadAdminLetters()]);
+    const failed = results.find(result => result.status === 'rejected');
+    if (failed) {
+      setMessage(failed.reason?.message || '일부 관리자 데이터를 불러오지 못했습니다.');
+    }
   }
 
   async function loadTeacherLetters() {
