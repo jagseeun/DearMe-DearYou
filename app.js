@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import pg from "pg";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import prisma from "./prisma/client.js";
@@ -400,6 +402,11 @@ sendDueLetters();
 const app = express();
 const PORT = process.env.PORT || 4000;
 const isProduction = process.env.NODE_ENV === "production";
+const PgSession = connectPgSimple(session);
+const sessionPool = new pg.Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+});
 
 app.set("trust proxy", 1);
 
@@ -440,6 +447,11 @@ app.use(express.static(path.resolve("client/dist"), {
 }));
 
 app.use(session({
+  store: new PgSession({
+    pool: sessionPool,
+    tableName: "user_sessions",
+    createTableIfMissing: true,
+  }),
   secret: process.env.SESSION_SECRET || "my-secret-key-1234",
   resave: false,
   saveUninitialized: false,
