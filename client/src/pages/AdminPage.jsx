@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { fetchJson } from '../utils/api.js';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -101,13 +102,6 @@ export default function AdminPage() {
     }
     checkAdmin();
   }, []);
-
-  async function fetchJson(url, options) {
-    const res = await fetch(url, options);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.message || '요청에 실패했습니다.');
-    return data;
-  }
 
   async function loadAll() {
     const results = await Promise.allSettled([loadTeacherLetters(), loadUsers(), loadAdminLetters()]);

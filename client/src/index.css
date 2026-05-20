@@ -4462,6 +4462,12 @@ canvas {
 }
 
 /* Final drawing size controls: no button box, no layout jump. */
+.draw-editor.draw-editor-clean .draw-swatch {
+  appearance: none !important;
+  padding: 0 !important;
+  cursor: pointer !important;
+}
+
 .draw-editor.draw-editor-clean .draw-size-group {
   background: transparent !important;
   border: 0 !important;
@@ -4481,6 +4487,11 @@ canvas {
   background: transparent !important;
   box-shadow: none !important;
   outline: 0 !important;
+  appearance: none !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
   transform: none !important;
   color: inherit !important;
 }
