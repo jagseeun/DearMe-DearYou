@@ -3679,3 +3679,44 @@ canvas {
     max-width: 100%;
   }
 }
+
+/* Stable drawing surface: the saved image is 1000x480, so the on-screen
+   canvas must keep the same aspect ratio on every viewport. */
+.draw-canvas-wrap {
+  aspect-ratio: 1000 / 480 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  align-self: start !important;
+}
+
+.draw-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1000 / 480 !important;
+}
+
+@media (max-width: 768px) {
+  .draw-editor {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto auto !important;
+  }
+
+  .draw-canvas-wrap {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+  }
+
+  .draw-toolbar {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    height: auto !important;
+  }
+
+  .draw-palette,
+  .draw-size-group {
+    grid-column: 1 / -1 !important;
+  }
+}

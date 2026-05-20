@@ -1149,7 +1149,7 @@ export default function WritePage() {
               {/* 버튼 */}
               <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
                 <motion.button whileHover={{ background: 'rgba(255,255,255,0.14)' }}
-                  onClick={() => { setShowModal(false); navigate(-1); }}
+                  onClick={() => setShowModal(false)}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', backdropFilter: 'blur(6px)', transition: 'all 0.3s' }}>
                   아니요
                 </motion.button>
