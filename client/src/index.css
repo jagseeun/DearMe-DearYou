@@ -4520,62 +4520,6 @@ canvas {
 }
 
 /* Atmospheric motion details */
-.route-light-sweep {
-  position: fixed;
-  top: -12vh;
-  bottom: -12vh;
-  width: 34vw;
-  z-index: 4;
-  pointer-events: none;
-  transform: skewX(-16deg);
-  mix-blend-mode: screen;
-  background: linear-gradient(
-    100deg,
-    transparent 0%,
-    rgba(255, 246, 224, 0.04) 35%,
-    rgba(232, 194, 138, 0.22) 50%,
-    rgba(168, 200, 181, 0.12) 58%,
-    transparent 100%
-  );
-  filter: blur(1px);
-}
-
-.ambient-detail-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.ambient-thread {
-  position: absolute;
-  display: block;
-  width: min(520px, 48vw);
-  height: 1px;
-  opacity: 0;
-  background: linear-gradient(90deg, transparent, rgba(255, 238, 208, 0.32), transparent);
-  transform-origin: center;
-  filter: blur(0.2px);
-  animation: ambientThread 14s ease-in-out infinite;
-}
-
-.thread-a {
-  top: 23%;
-  left: -18vw;
-  --thread-rotate: -10deg;
-  transform: rotate(-10deg);
-}
-
-.thread-b {
-  right: -16vw;
-  bottom: 22%;
-  width: min(460px, 44vw);
-  --thread-rotate: 8deg;
-  animation-delay: 6s;
-  transform: rotate(8deg);
-}
-
 .top-title,
 .main-title {
   animation: titleBreath 8s ease-in-out infinite;
@@ -4597,10 +4541,13 @@ canvas {
 .submit-btn,
 .soft-button,
 .write-submit,
-.letter-open-arrow,
+.letter-open-arrow {
+  position: relative;
+  overflow: hidden;
+}
+
 .letter-back-floating,
 .back-link {
-  position: relative;
   overflow: hidden;
 }
 
@@ -4630,24 +4577,6 @@ canvas {
   animation: buttonGleam 1.25s ease-out;
 }
 
-.write-paper,
-.draw-canvas-wrap,
-.letter-card,
-.modal-panel,
-.admin-action-panel {
-  animation: quietSurface 10s ease-in-out infinite;
-}
-
-.letter-card:nth-child(2n),
-.draw-canvas-wrap {
-  animation-delay: 1.6s;
-}
-
-.letter-card:nth-child(3n),
-.write-paper {
-  animation-delay: 3.1s;
-}
-
 .input-field:focus,
 .write-textarea:focus,
 .modal-panel input:focus,
@@ -4658,20 +4587,6 @@ canvas {
 .draw-swatch.is-active,
 .draw-size.is-active span {
   animation: selectedPulse 2.8s ease-in-out infinite;
-}
-
-@keyframes ambientThread {
-  0%, 18% {
-    opacity: 0;
-    transform: translate3d(0, 16px, 0) rotate(var(--thread-rotate, -10deg));
-  }
-  38%, 56% {
-    opacity: 0.42;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(64vw, -26px, 0) rotate(var(--thread-rotate, -10deg));
-  }
 }
 
 @keyframes titleBreath {
@@ -4717,15 +4632,6 @@ canvas {
   }
 }
 
-@keyframes quietSurface {
-  0%, 100% {
-    filter: brightness(1);
-  }
-  50% {
-    filter: brightness(1.035);
-  }
-}
-
 @keyframes inputFocusGlow {
   0% {
     box-shadow: 0 0 0 rgba(232, 194, 138, 0);
@@ -4748,8 +4654,6 @@ canvas {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .route-light-sweep,
-  .ambient-thread,
   .top-title,
   .main-title,
   .main-title .semicolon,
@@ -4757,11 +4661,6 @@ canvas {
   .home-subtitle,
   .letter-list-kicker,
   .write-heading,
-  .write-paper,
-  .draw-canvas-wrap,
-  .letter-card,
-  .modal-panel,
-  .admin-action-panel,
   .draw-swatch.is-active,
   .draw-size.is-active span {
     animation: none !important;
