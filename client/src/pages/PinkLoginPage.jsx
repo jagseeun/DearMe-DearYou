@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import PasswordField from '../components/PasswordField.jsx';
 import PinkStars from '../components/PinkStars.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
@@ -70,15 +71,16 @@ export default function PinkLoginPage() {
             onChange={e => setUserid(e.target.value)}
             style={inputStyle}
           />
-          <motion.input
+          <PasswordField
             variants={item}
-            type="password"
+            wrapperClassName="password-field password-field-pink"
+            className="pink-password-input"
             placeholder="비밀번호를 입력하세요"
             maxLength={20}
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            style={inputStyle}
+            inputStyle={{ ...inputStyle, paddingRight: 58 }}
           />
           <motion.button variants={item} type="submit" style={btnStyle}>
             편지 읽기

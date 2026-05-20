@@ -35,6 +35,31 @@ const emailFromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER;
 const emailReplyTo = process.env.EMAIL_REPLY_TO || emailFromAddress;
 const emailFromHeader = `"Dear Me; Dear You" <${emailFromAddress}>`;
 
+function serializeMailError(err) {
+  return {
+    code: err?.code,
+    responseCode: err?.responseCode,
+    command: err?.command,
+    message: err?.message || "unknown mail error",
+  };
+}
+
+async function verifyMailerConfig() {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.warn("mail config missing: GMAIL_USER and GMAIL_APP_PASSWORD are required");
+    return;
+  }
+
+  try {
+    await mailer.verify();
+    console.log("mail transporter ready");
+  } catch (err) {
+    console.error("mail transporter verify failed:", serializeMailError(err));
+  }
+}
+
+verifyMailerConfig();
+
 // 개봉일이 된 편지 이메일 발송
 async function sendDueLetters() {
   const now = new Date();
@@ -258,6 +283,11 @@ async function sendTeacherDelivery(delivery) {
     });
     return { sent: true };
   } catch (err) {
+    console.error("teacher letter email failed:", {
+      deliveryId: delivery.id,
+      memberId: member.id,
+      ...serializeMailError(err),
+    });
     await prisma.teacherLetterDelivery.update({
       where: { id: delivery.id },
       data: { lastError: err.message || "send failed" },

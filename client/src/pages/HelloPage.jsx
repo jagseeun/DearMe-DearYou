@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import PasswordField from '../components/PasswordField.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const container = {
@@ -299,23 +300,25 @@ export default function HelloPage() {
               <div style={{ color: 'rgba(255,252,223,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 1.7 }}>
                 현재 비밀번호를 확인한 뒤<br />새 비밀번호로 바꿉니다.
               </div>
-              <input
-                type="password"
+              <PasswordField
+                wrapperClassName="password-field password-field-modal"
+                className="modal-password-input"
                 placeholder="현재 비밀번호"
                 value={currentPassword}
                 maxLength={20}
                 onChange={e => { setCurrentPassword(e.target.value); setPasswordMsg(''); }}
                 autoFocus
-                style={modalInputStyle}
+                inputStyle={{ ...modalInputStyle, paddingRight: 52 }}
               />
-              <input
-                type="password"
+              <PasswordField
+                wrapperClassName="password-field password-field-modal"
+                className="modal-password-input"
                 placeholder="새 비밀번호 (6~20자)"
                 value={nextPassword}
                 maxLength={20}
                 onChange={e => { setNextPassword(e.target.value); setPasswordMsg(''); }}
                 onKeyDown={e => { if (e.key === 'Enter') handlePasswordSave(); }}
-                style={modalInputStyle}
+                inputStyle={{ ...modalInputStyle, paddingRight: 52 }}
               />
               {passwordMsg && (
                 <div style={{ fontSize: 13, color: passwordMsg === '비밀번호가 변경되었습니다.' ? '#81c784' : 'rgba(255,130,130,0.85)', marginTop: -8 }}>

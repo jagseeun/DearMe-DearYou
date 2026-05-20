@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import PasswordField from '../components/PasswordField.jsx';
 import { fetchJson } from '../utils/api.js';
 
 const ease = [0.22, 1, 0.36, 1];
@@ -381,9 +382,10 @@ export default function AdminPage() {
                   {user.email || '이메일 없음'} · 편지 {user._count?.letters || 0} · 선생님 편지 작성 {user._count?.teacherLetters || 0} · 마지막 로그인 {formatDate(user.lastLoginAt)}
                 </div>
               </div>
-              <input
-                style={inputStyle}
-                type="password"
+              <PasswordField
+                wrapperClassName="password-field password-field-admin"
+                className="admin-password-input"
+                inputStyle={{ ...inputStyle, paddingRight: 52 }}
                 placeholder="새 비밀번호"
                 maxLength={20}
                 value={passwordDrafts[user.id] || ''}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import PasswordField from '../components/PasswordField.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.16 } } };
@@ -57,10 +58,8 @@ export default function LoginPage() {
           value={userid}
           onChange={e => setUserid(e.target.value)}
         />
-        <motion.input
+        <PasswordField
           variants={item}
-          className="input-field"
-          type="password"
           placeholder="비밀번호를 입력하세요"
           maxLength={20}
           value={password}
