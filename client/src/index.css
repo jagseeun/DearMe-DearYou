@@ -3385,3 +3385,80 @@ canvas {
     height: 17px !important;
   }
 }
+
+@media (max-width: 640px) {
+  .page-center {
+    justify-content: flex-start;
+    gap: 20px;
+    padding: 92px 20px 96px;
+  }
+
+  .main-title {
+    font-size: clamp(38px, 14vw, 58px);
+    line-height: 1.08;
+  }
+
+  .home-subtitle {
+    width: 100%;
+    margin-top: -8px;
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .form-container {
+    max-width: none;
+    gap: 12px;
+  }
+
+  .input-field {
+    min-height: 54px;
+    padding: 15px 16px;
+    font-size: 16px;
+  }
+
+  .submit-btn {
+    min-height: 54px;
+    padding: 0 18px;
+    font-size: 17px;
+  }
+
+  .back-link {
+    left: 20px;
+    right: 20px;
+    bottom: 18px;
+    display: flex;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .pink-login-page form {
+    max-width: none !important;
+  }
+
+  .pink-login-page input {
+    min-height: 54px !important;
+    padding: 15px 16px !important;
+    font-size: 16px !important;
+  }
+
+  .pink-login-page form button {
+    min-height: 54px !important;
+    padding: 0 18px !important;
+    font-size: 17px !important;
+  }
+
+  .pink-login-page > div {
+    justify-content: flex-start !important;
+    gap: 22px !important;
+    padding: 88px 20px 96px !important;
+  }
+
+  .pink-login-page > div > button {
+    left: 20px !important;
+    right: 20px !important;
+    bottom: 18px !important;
+    width: auto !important;
+    padding: 12px 16px !important;
+  }
+}

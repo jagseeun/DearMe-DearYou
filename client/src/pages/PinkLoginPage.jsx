@@ -20,11 +20,11 @@ export default function PinkLoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userid, password }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (res.ok) navigate('/pink-letters');
       else alert(data.message || '로그인에 실패했습니다.');
     } catch {
-      alert('서버 오류가 발생했습니다.');
+      alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
     }
   }
 

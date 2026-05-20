@@ -462,7 +462,10 @@ app.post("/login", async (req, res) => {
     req.session.save(() => {
       res.status(200).json({ message: "로그인 성공", name: member.name });
     });
-  } catch { res.status(500).json({ message: "에러 발생" }); }
+  } catch (err) {
+    console.error("login error:", err);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
 });
 
 // 4. 유저 정보 (이름 + 이메일)
