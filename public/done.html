@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>To.Me ; From.Me</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Pretendard', sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(to bottom, #0b1c3a, #d8b88a);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    /* ⭐ 별 배경 */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(white 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.4;
+      animation: moveStars 60s linear infinite;
+    }
+
+    @keyframes moveStars {
+      from { transform: translateY(0); }
+      to { transform: translateY(-500px); }
+    }
+
+    .container {
+      text-align: center;
+      z-index: 1;
+    }
+
+    .title {
+      font-size: 24px;
+      margin-bottom: 30px;
+      color: #f5d7a1;
+      letter-spacing: 2px;
+    }
+
+    .card {
+      width: 320px;
+      padding: 40px 20px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.1);
+      margin-bottom: 30px;
+    }
+
+    /* 🟡 원형 */
+    .circle {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      position: relative;
+      border: 4px solid #f5d7a1;
+      box-shadow: 0 0 15px #f5d7a1;
+    }
+
+    .circle::before {
+      content: "";
+      position: absolute;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 2px dashed #f5d7a1;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .inner-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .date {
+      font-size: 18px;
+      font-weight: bold;
+      color: #f5d7a1;
+    }
+
+    .sub {
+      font-size: 14px;
+      margin-top: 4px;
+      color: #f5d7a1;
+    }
+
+    .message {
+      font-size: 14px;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    .confirm-btn {
+      padding: 12px 40px;
+      border-radius: 30px;
+      border: none;
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: 0.3s;
+    }
+
+    .confirm-btn:hover {
+      background: rgba(255,255,255,0.35);
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1 class="title">To.Me ; From.Me</h1>
+
+    <div class="card">
+      <div class="circle">
+        <div class="inner-text">
+          <p class="date">2027.01.01</p>
+          <p class="sub">도착 예정</p>
+        </div>
+      </div>
+
+      <p class="message">
+        이 별은 긴 여행을 마치고 약속한 날<br>
+        다시 떠오를 거예요.
+      </p>
+    </div>
+
+    <button class="confirm-btn">확인</button>
+  </div>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Ending Screen</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Pretendard', sans-serif;
+}
+
+body {
+  height: 100vh;
+  background: linear-gradient(to bottom, #0b1c3a, #d8b88a);
+  overflow: hidden;
+  color: white;
+  position: relative;
+}
+
+/* ⭐ 별 */
+body::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(white 1px, transparent 1px);
+  background-size: 35px 35px;
+  opacity: 0.4;
+  animation: moveStars 80s linear infinite;
+}
+
+@keyframes moveStars {
+  from { transform: translateY(0); }
+  to { transform: translateY(-600px); }
+}
+
+/* 전체 컨테이너 */
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 60px;
+}
+
+/* 제목 */
+.title {
+  text-align: center;
+  font-size: 28px;
+  color: #f5d7a1;
+  margin-bottom: 40px;
+}
+
+/* 좌측 텍스트 */
+.left {
+  position: absolute;
+  top: 140px;
+  left: 60px;
+}
+
+.left h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.left p {
+  font-size: 24px;
+  opacity: 0.9;
+}
+
+/* 가운데 선 */
+.divider {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.3);
+}
+
+/* 우측 텍스트 */
+.right {
+  position: absolute;
+  bottom: 120px;
+  right: 120px;
+  text-align: right;
+  color: #2b1e0f;
+}
+
+.right h2 {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.right p {
+  font-size: 24px;
+}
+
+/* D-day 사이드 바 */
+.dday-bar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 90px;
+  height: 100%;
+  background: linear-gradient(to bottom, #c9b08a, #2c2f3a);
+  border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  font-size: 40px;
+  font-weight: bold;
+  color: rgba(255,255,255,0.6);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="title">To.Me ; From.Me</div>
+
+  <div class="left">
+    <h2>보내는 사람</h2>
+    <p>2026년 1월 20일의 user</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="right">
+    <h2>받는 사람</h2>
+    <p>2027년 1월 1일의 user 귀하</p>
+  </div>
+
+  <div class="dday-bar">
+    <div>D</div>
+    <div>-</div>
+    <div>3</div>
+    <div>3</div>
+    <div>4</div>
+  </div>
+
+</div>
+
+</body>
+</html>

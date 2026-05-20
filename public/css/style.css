@@ -1,0 +1,308 @@
+/* 기본 설정 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    background: linear-gradient(to bottom,
+        #151f2e 0%,
+        #1e2d3f 20%,
+        #2a3a4d 40%,
+        #3d4b5a 55%,
+        #5a5a5a 68%,
+        #766652 78%,
+        #9a8568 86%,
+        #b89a73 93%,
+        #d4b08a 100%
+    );
+    min-height: 100vh;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', 'Segoe UI', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+}
+
+/* 별 애니메이션 */
+.stars {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle 4s infinite;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.2); }
+}
+
+/* 컨텐츠 레이아웃 */
+.container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    gap: 80px;
+}
+
+/* 타이틀 디자인 */
+.title {
+    font-size: 88px;
+    font-weight: 300;
+    letter-spacing: 0;
+    text-align: center;
+    line-height: 1;
+    filter: drop-shadow(0 0 8px rgba(255, 252, 223, 0.3))
+            drop-shadow(0 0 16px rgba(205, 154, 99, 0.2));
+}
+
+.title .to {
+    color: #cd9a63;
+}
+
+.title .semicolon {
+    color: #ffffff;
+    font-size: 88px;
+    margin: 0 15px;
+}
+
+.title .from {
+    color: #f0ebe0;
+}
+
+/* 버튼 및 폼 그룹 */
+.buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    max-width: 530px;
+}
+
+/* 버튼 스타일 (투명 테두리) */
+.btn {
+    min-width: 450px;
+    padding: 19px 0;
+    font-size: 21px;
+    background: rgba(160, 155, 145, 0.18);
+    border: 1px solid rgba(205, 154, 99, 0.25);
+    border-radius: 52px;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    backdrop-filter: blur(10px);
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    font-weight: 400;
+    box-shadow: 0 0 12px 2px rgba(255, 252, 223, 0.15);
+}
+
+.btn:hover {
+    background: rgba(160, 155, 145, 0.28);
+    color: rgba(255, 255, 255, 0.95);
+    transform: translateY(-2px);
+    border-color: rgba(205, 154, 99, 0.4);
+    box-shadow: 0 0 18px 3px rgba(255, 252, 223, 0.25);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* 입력창 스타일 */
+.input-field {
+    padding: 19px 40px;
+    font-size: 19px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(205, 154, 99, 0.2);
+    border-radius: 52px;
+    color: #3a3a3a;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 0 0 10px 2px rgba(255, 252, 223, 0.12);
+}
+
+.input-field::placeholder {
+    color: #5a5a5a;
+}
+
+.input-field:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.65);
+    transform: scale(1.01);
+    border-color: rgba(205, 154, 99, 0.35);
+    box-shadow: 0 0 16px 3px rgba(255, 252, 223, 0.2);
+}
+
+/* 제출 버튼 (갈색) */
+.submit-btn {
+    background: rgba(75, 62, 50, 0.78);
+    border: none;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.submit-btn:hover {
+    background: rgba(75, 62, 50, 0.88);
+    border: none;
+}
+
+/* 돌아가기 링크 */
+.back-link {
+    position: absolute;
+    bottom: 40px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    text-decoration: none;
+    font-size: 15px;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.back-link:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ✅ 아이디 입력 그룹 - 중복확인 버튼을 입력창 밖으로 배치 */
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+/* ✅ 아이디 입력창 - 다른 입력창과 완전히 동일한 너비 */
+.input-group .input-field {
+    width: 100%;
+    padding-right: 130px; /* 오른쪽에 버튼 공간 확보 */
+}
+
+/* ✅ 중복확인 버튼 - 입력창 위에 absolute로 배치 */
+.check-btn {
+    position: absolute;
+    right: 5px;
+    top: 13%;
+    transform: translateY(-50%);
+    width: 100px;
+    padding: 12px 0;
+    font-size: 14px;
+    background: rgba(90, 90, 90, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 52px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.check-btn:hover {
+    background: rgba(118, 102, 82, 0.9);
+    border-color: rgba(205, 154, 99, 0.5);
+}
+
+/* 메시지 텍스트 */
+#idMsg {
+    margin-top: -15px;
+    margin-bottom: -10px;
+    padding-left: 20px;
+    font-size: 13px;
+    min-height: 20px;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+    .title {
+        font-size: 60px;
+    }
+
+    .title .semicolon {
+        font-size: 60px;
+        margin: 0 10px;
+    }
+
+    .btn {
+        min-width: 320px;
+        padding: 16px 0;
+        font-size: 18px;
+    }
+
+    .form-container {
+        max-width: 400px;
+    }
+
+    .input-field {
+        padding: 16px 30px;
+        font-size: 17px;
+    }
+
+    .input-group .input-field {
+        padding-right: 110px;
+    }
+
+    .check-btn {
+        width: 85px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .title {
+        font-size: 48px;
+    }
+
+    .title .semicolon {
+        font-size: 48px;
+        margin: 0 8px;
+    }
+
+    .btn {
+        min-width: 280px;
+        padding: 14px 0;
+        font-size: 16px;
+    }
+
+    .container {
+        gap: 60px;
+    }
+
+    .form-container {
+        max-width: 320px;
+    }
+
+    .input-field {
+        padding: 14px 25px;
+        font-size: 16px;
+    }
+
+    .input-group .input-field {
+        padding-right: 95px;
+    }
+
+    .check-btn {
+        width: 75px;
+        font-size: 12px;
+    }
+}

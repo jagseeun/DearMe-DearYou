@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To.Me ; From.Me - 편지 쓰기</title>
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#151f2e">
+
+    <style>
+        @font-face {
+            font-family: 'PyeojinGothic';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Light.woff2') format('woff2');
+            font-weight: 300; font-display: swap;
+        }
+        @font-face {
+            font-family: 'PyeojinGothic';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Regular.woff2') format('woff2');
+            font-weight: 400; font-display: swap;
+        }
+        @font-face {
+            font-family: 'PyeojinGothic';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Bold.woff2') format('woff2');
+            font-weight: 700; font-display: swap;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            background: linear-gradient(to bottom, #151f2e 0%, #1e2d3f 20%, #2a3a4d 40%, #3d4b5a 55%, #5a5a5a 68%, #766652 78%, #9a8568 86%, #b89a73 93%, #d4b08a 100%);
+            min-height: 100vh;
+        }
+
+        body {
+            font-family: 'PyeojinGothic', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+            height: 100vh; overflow: hidden; position: relative; background: transparent;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .stars { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 0; pointer-events: none; }
+        .star { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; animation: twinkle 4s infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.9; transform: scale(1.2); } }
+
+        .top-title {
+            position: absolute; top: 40px; left: 50%; transform: translateX(-50%);
+            font-size: 32px; font-weight: 300; z-index: 10;
+            filter: drop-shadow(0 0 8px rgba(255, 252, 223, 0.3));
+            opacity: 0;
+        }
+        .top-title .to { color: #cd9a63; }
+        .top-title .semicolon { color: #ffffff; margin: 0 8px; }
+        .top-title .from { color: #f0ebe0; }
+
+        .main-wrapper {
+            position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; margin-top: 60px;
+        }
+
+        .page-title {
+            font-size: 42px; font-weight: 400; color: rgba(245, 245, 245, 0.7);
+            margin-bottom: 16px; align-self: flex-start;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            opacity: 0;
+        }
+
+        /* 모드 토글 */
+        .mode-toggle {
+            display: flex; gap: 12px; margin-bottom: 20px; align-self: flex-start;
+            opacity: 0;
+        }
+        .mode-btn {
+            padding: 8px 22px; border-radius: 50px; font-size: 16px; font-family: inherit;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.25);
+            background: rgba(255,255,255,0.07); color: rgba(255,252,223,0.6);
+            transition: all 0.25s;
+        }
+        .mode-btn.active {
+            background: rgba(72, 56, 41, 0.7); color: #ffeacd;
+            border-color: rgba(255,220,160,0.4);
+            box-shadow: 0 0 10px rgba(255,220,160,0.15);
+        }
+
+        /* 텍스트 모드 */
+        .input-container {
+            width: 1000px; height: 480px;
+            background: rgba(140, 130, 115, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-radius: 28px;
+            backdrop-filter: blur(10px);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 40px; position: relative; cursor: text;
+            opacity: 0;
+        }
+
+        .placeholder-text {
+            color: rgba(255, 252, 223, 0.67); font-size: 28px; font-weight: 300; text-align: center;
+            user-select: none; position: absolute; transition: opacity 0.2s ease;
+        }
+
+        .text-input {
+            width: 100%; height: 100%; background: transparent; border: none; outline: none;
+            padding: 50px; color: #fffcdf; font-size: 28px; font-weight: 300; resize: none;
+            text-align: left; font-family: inherit; line-height: 1.6;
+        }
+
+        /* 영상 모드 */
+        .video-wrap {
+            width: 1000px; margin-bottom: 40px; opacity: 0;
+        }
+
+        .video-container {
+            width: 100%; height: 480px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            border-radius: 28px; overflow: hidden;
+            position: relative;
+        }
+
+        .video-container video {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .countdown-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 120px; color: white; font-weight: 700;
+            text-shadow: 0 0 30px rgba(255,255,255,0.5);
+            display: none;
+        }
+
+        .rec-timer {
+            position: absolute; top: 24px; left: 28px;
+            color: #ff4444; font-weight: 700; font-size: 18px;
+            background: rgba(0,0,0,0.55); padding: 6px 14px; border-radius: 8px;
+            display: none;
+        }
+
+        .done-overlay {
+            position: absolute; inset: 0; display: none;
+            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.45); backdrop-filter: blur(2px);
+        }
+        .done-overlay span {
+            color: #fffcdf; font-size: 22px; font-weight: 300;
+            text-shadow: 0 0 12px rgba(255,252,223,0.6);
+        }
+
+        .video-controls {
+            margin-top: 16px; display: flex; gap: 14px; justify-content: center; align-items: center;
+        }
+
+        .vid-btn {
+            padding: 12px 28px; border-radius: 50px; font-size: 18px; font-family: inherit;
+            cursor: pointer; border: none; transition: all 0.25s;
+        }
+        .vid-btn.start { background: rgba(72, 56, 41, 0.75); color: #ffeacd; box-shadow: 0 0 10px rgba(255,220,160,0.15); }
+        .vid-btn.start:hover { background: rgba(72, 56, 41, 0.95); }
+        .vid-btn.stop { background: rgba(180, 40, 40, 0.75); color: #ffe0e0; }
+        .vid-btn.stop:hover { background: rgba(180, 40, 40, 0.95); }
+        .vid-btn.retry { background: rgba(255,255,255,0.1); color: rgba(255,252,223,0.8); border: 1px solid rgba(255,255,255,0.2); }
+
+        .upload-msg {
+            color: rgba(255,252,223,0.7); font-size: 16px;
+        }
+
+        /* 제출 버튼 */
+        .submit-button {
+            width: 300px; height: 70px; background: rgba(72, 56, 41, 0.7);
+            border: none; border-radius: 50px; color: #ffeacd; font-size: 30px; font-weight: 400;
+            cursor: pointer; box-shadow: 0 0 12px 2px rgba(255, 252, 223, 0.15); transition: all 0.3s;
+            opacity: 0;
+        }
+        .submit-button:hover { background: rgba(72, 56, 41, 0.85); transform: translateY(-2px); }
+        .submit-button:disabled { opacity: 0.4 !important; cursor: not-allowed; transform: none; }
+    </style>
+</head>
+
+<body>
+
+    <div class="stars" id="stars"></div>
+
+    <div class="top-title">
+        <span class="to">To.Me</span><span class="semicolon">;</span><span class="from">From.Me</span>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="page-title">To. me</div>
+
+        <div class="mode-toggle" id="modeToggle">
+            <button class="mode-btn active" id="btnModeText" onclick="switchMode('text')">✉ 텍스트</button>
+            <button class="mode-btn" id="btnModeVideo" onclick="switchMode('video')">🎥 영상</button>
+        </div>
+
+        <!-- 텍스트 모드 -->
+        <div id="textSection">
+            <div class="input-container" id="inputContainer" onclick="document.getElementById('textInput').focus()">
+                <span class="placeholder-text" id="placeholder">내년의 나에게 하고 싶은 말을 적어주세요</span>
+                <textarea class="text-input" id="textInput"></textarea>
+            </div>
+        </div>
+
+        <!-- 영상 모드 -->
+        <div id="videoSection" style="display:none">
+            <div class="video-wrap" id="videoWrap">
+                <div class="video-container">
+                    <video id="videoPreview" autoplay muted playsinline></video>
+                    <div class="countdown-overlay" id="countdownOverlay"></div>
+                    <div class="rec-timer" id="recTimer"></div>
+                    <div class="done-overlay" id="doneOverlay">
+                        <span>촬영이 완료되었습니다</span>
+                    </div>
+                </div>
+                <div class="video-controls" id="videoControls">
+                    <button class="vid-btn start" id="startBtn" onclick="prepareCamera()">🎥 촬영 시작</button>
+                </div>
+            </div>
+        </div>
+
+        <button class="submit-button" id="submitBtn">From.Me</button>
+    </div>
+
+    <script>
+    /* ===== 별 생성 ===== */
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 180; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDelay = Math.random() * 3 + 's';
+        starsContainer.appendChild(star);
+    }
+
+    /* ===== Placeholder ===== */
+    const input = document.getElementById('textInput');
+    const placeholder = document.getElementById('placeholder');
+    input.addEventListener('input', () => {
+        placeholder.style.opacity = input.value ? '0' : '1';
+    });
+    input.addEventListener('focus', () => placeholder.style.opacity = '0');
+    input.addEventListener('blur', () => { if (!input.value) placeholder.style.opacity = '1'; });
+
+    /* ===== 등장 애니메이션 ===== */
+    window.addEventListener('load', () => {
+        const title = document.querySelector('.top-title');
+        title.style.transition = 'all 1.4s cubic-bezier(0.22, 1, 0.36, 1)';
+        title.style.transform = 'translate(-50%, -20px)';
+        setTimeout(() => { title.style.opacity = '1'; title.style.transform = 'translate(-50%, 0)'; }, 100);
+
+        const els = document.querySelectorAll('.page-title, .mode-toggle, #inputContainer, .submit-button');
+        els.forEach((el, i) => {
+            el.style.transform = 'translateY(40px)';
+            el.style.transition = 'all 1.2s cubic-bezier(0.22, 1, 0.36, 1)';
+            setTimeout(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; }, 400 + i * 180);
+        });
+    });
+
+    /* ===== 모드 전환 ===== */
+    let currentMode = 'text';
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('btnModeText').classList.toggle('active', mode === 'text');
+        document.getElementById('btnModeVideo').classList.toggle('active', mode === 'video');
+        document.getElementById('textSection').style.display = mode === 'text' ? '' : 'none';
+        document.getElementById('videoSection').style.display = mode === 'video' ? '' : 'none';
+
+        // 영상 모드로 전환 시 videoWrap도 애니메이션
+        if (mode === 'video') {
+            const vw = document.getElementById('videoWrap');
+            vw.style.opacity = '0';
+            vw.style.transform = 'translateY(20px)';
+            vw.style.transition = 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+            setTimeout(() => { vw.style.opacity = '1'; vw.style.transform = 'translateY(0)'; }, 50);
+        }
+
+        // 텍스트 모드 전환 시 카메라 정리
+        if (mode === 'text' && streamRef) {
+            streamRef.getTracks().forEach(t => t.stop());
+            streamRef = null;
+            videoStage = 'idle';
+            renderVideoControls();
+        }
+    }
+
+    /* ===== 영상 녹화 ===== */
+    let streamRef = null;
+    let mediaRecorder = null;
+    let videoChunks = [];
+    let videoUrl = '';
+    let videoStage = 'idle'; // idle | counting | recording | uploading | done
+    let countdownVal = 3;
+    let timeLeft = 30;
+    let countdownTimer = null;
+    let recordingTimer = null;
+
+    async function prepareCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            streamRef = stream;
+            document.getElementById('videoPreview').srcObject = stream;
+            videoStage = 'counting';
+            countdownVal = 3;
+            renderVideoControls();
+            runCountdown();
+        } catch {
+            alert("카메라 권한을 허용해주세요.");
+        }
+    }
+
+    function runCountdown() {
+        const overlay = document.getElementById('countdownOverlay');
+        overlay.style.display = 'block';
+        overlay.textContent = countdownVal;
+        countdownTimer = setInterval(() => {
+            countdownVal--;
+            if (countdownVal > 0) {
+                overlay.textContent = countdownVal;
+            } else {
+                clearInterval(countdownTimer);
+                overlay.style.display = 'none';
+                startRecording();
+            }
+        }, 1000);
+    }
+
+    function startRecording() {
+        videoChunks = [];
+        videoUrl = '';
+        mediaRecorder = new MediaRecorder(streamRef, { mimeType: 'video/webm;codecs=vp8,opus' });
+        mediaRecorder.ondataavailable = (e) => { if (e.data?.size > 0) videoChunks.push(e.data); };
+        mediaRecorder.onstop = handleUpload;
+        mediaRecorder.start(1000);
+
+        videoStage = 'recording';
+        timeLeft = 30;
+        renderVideoControls();
+
+        recordingTimer = setInterval(() => {
+            timeLeft--;
+            document.getElementById('recTimer').textContent = `● REC ${timeLeft}s`;
+            if (timeLeft <= 0) stopRecording();
+        }, 1000);
+    }
+
+    function stopRecording() {
+        clearInterval(recordingTimer);
+        if (mediaRecorder?.state === 'recording') mediaRecorder.stop();
+        if (streamRef) { streamRef.getTracks().forEach(t => t.stop()); streamRef = null; }
+        videoStage = 'uploading';
+        renderVideoControls();
+    }
+
+    async function handleUpload() {
+        const blob = new Blob(videoChunks, { type: 'video/webm' });
+
+        // 서버에서 presigned URL 받기
+        let uploadUrl, publicUrl;
+        try {
+            const res = await fetch('/get-upload-url');
+            if (!res.ok) throw new Error();
+            ({ uploadUrl, publicUrl } = await res.json());
+        } catch {
+            alert('업로드 URL 발급 실패');
+            videoStage = 'idle';
+            renderVideoControls();
+            return;
+        }
+
+        // R2에 직접 업로드
+        try {
+            const putRes = await fetch(uploadUrl, {
+                method: 'PUT',
+                body: blob,
+                headers: { 'Content-Type': 'video/webm' },
+            });
+            if (!putRes.ok) throw new Error();
+            videoUrl = publicUrl;
+            videoStage = 'done';
+        } catch {
+            alert('업로드 실패. 다시 시도해주세요.');
+            videoStage = 'idle';
+        }
+        renderVideoControls();
+    }
+
+    function renderVideoControls() {
+        const controls = document.getElementById('videoControls');
+        const recTimer = document.getElementById('recTimer');
+        const doneOverlay = document.getElementById('doneOverlay');
+
+        recTimer.style.display = videoStage === 'recording' ? 'block' : 'none';
+        doneOverlay.style.display = videoStage === 'done' ? 'flex' : 'none';
+
+        let html = '';
+        if (videoStage === 'idle') {
+            html = `<button class="vid-btn start" onclick="prepareCamera()">🎥 촬영 시작</button>`;
+        } else if (videoStage === 'counting') {
+            html = `<span class="upload-msg">잠시 후 촬영이 시작됩니다...</span>`;
+        } else if (videoStage === 'recording') {
+            html = `<button class="vid-btn stop" onclick="stopRecording()">⏹ 중지</button>`;
+        } else if (videoStage === 'uploading') {
+            html = `<span class="upload-msg">📤 업로드 중...</span>`;
+        } else if (videoStage === 'done') {
+            html = `<button class="vid-btn retry" onclick="retryVideo()">🔄 다시 촬영</button>`;
+        }
+        controls.innerHTML = html;
+    }
+
+    function retryVideo() {
+        videoUrl = '';
+        videoStage = 'idle';
+        document.getElementById('videoPreview').srcObject = null;
+        renderVideoControls();
+    }
+
+    /* ===== 제출 ===== */
+    document.getElementById('submitBtn').addEventListener('click', () => {
+        if (currentMode === 'text') {
+            const content = document.getElementById('textInput').value;
+            if (!content.trim()) { alert("내용을 작성해주세요!"); return; }
+            sessionStorage.setItem("draftLetter", content);
+            sessionStorage.removeItem("draftVideoUrl");
+            window.location.href = "write_check.html";
+        } else {
+            if (!videoUrl) { alert("먼저 영상을 촬영해주세요!"); return; }
+            sessionStorage.setItem("draftVideoUrl", videoUrl);
+            sessionStorage.removeItem("draftLetter");
+            window.location.href = "write_check.html";
+        }
+    });
+    </script>
+</body>
+</html>

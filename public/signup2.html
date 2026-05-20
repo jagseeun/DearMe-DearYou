@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To.Me ; From.Me - 회원가입</title>
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#151f2e">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <style>
+        html {
+    
+            height: 100%;
+        
+            background: linear-gradient(
+        
+                    to bottom,
+        
+                     #c59292 0%,
+        
+                     #f7bfae 30%,
+        
+                     #e7c2a6 55%,
+        
+                     #cab390 75%,
+        
+                     #c8b590 100%
+        
+                    ) no-repeat fixed;
+        
+                }
+        
+                body {
+        
+            margin: 0;
+        
+            height: 100%;
+        
+            background-image:
+        
+                radial-gradient(white 1px, transparent 1px),
+        
+                linear-gradient(
+        
+                    to bottom,
+        
+                    #f6b1b1 0%,
+        
+                    #f7bfae 30%,
+        
+                    #f8caa7 55%,
+        
+                    #f6d3a0 75%,
+        
+                    #f3d8a3 100%
+        
+                );
+        
+            background-size: 3px 3px, cover;
+        
+            margin: 0; background: transparent !important;
+        
+        }
+        
+        
+        
+        .title .to {
+        
+            color: #ffffff; /* 밝은 흰색 */
+        
+        }
+        
+        
+        
+        .title .semicolon {
+        
+            color: rgba(255, 255, 255, 0.6); /* 은은하게 */
+        
+        }
+        
+        
+        
+        .title .from {
+        
+            color: #8d6e63; /* 브라운 핑크 느낌 */
+        
+        }
+        
+        
+        #registerBtn{
+        
+            background-color: #662B2C80;
+        
+        }
+    
+    
+        </style>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <h1 class="title">
+            <span class="to">To.Me</span><span class="semicolon"> ; </span><span class="from">From.Me</span>
+        </h1>
+        
+        <div class="form-container">
+            <input type="text" id="name" class="input-field" placeholder="이름을 입력하세요" maxlength="10">
+            
+            <div class="input-group">
+                <input type="text" id="username" class="input-field" placeholder="아이디를 입력하세요" maxlength="20">
+                <button type="button" id="checkBtn" class="check-btn">중복확인</button>
+            </div>
+            <p id="idMsg"></p>
+
+            <input type="password" id="password" class="input-field" placeholder="비밀번호를 입력하세요" maxlength="20">
+            
+            <button id="registerBtn" class="btn submit-btn">회원가입</button>
+        </div>
+        
+        <a href="login2.html" class="back-link">← 돌아가기</a>
+    </div>
+
+    <script>
+        let isIdChecked = false;
+        const idInput = document.getElementById("username");
+        const msgBox = document.getElementById("idMsg");
+
+        // 아이디 입력 변경 시 초기화
+        idInput.addEventListener("input", () => {
+            isIdChecked = false;
+            msgBox.innerText = "";
+        });
+
+        // 1. 중복 확인
+        document.getElementById("checkBtn").addEventListener("click", async () => {
+            const inputVal = idInput.value;
+
+            if (!inputVal) {
+                alert("아이디를 입력하세요.");
+                return;
+            }
+
+            try {
+                // 서버로 'userid' 이름으로 전송
+                const response = await fetch("/check-username", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userid: inputVal }), 
+                });
+
+                const result = await response.json();
+
+                if (result.available) {
+                    msgBox.innerText = result.message;
+                    msgBox.style.color = "#81c784";
+                    isIdChecked = true;
+                } else {
+                    msgBox.innerText = result.message;
+                    msgBox.style.color = "#ff8a80";
+                    isIdChecked = false;
+                }
+            } catch (err) {
+                console.error(err);
+                alert("서버 연결 오류");
+            }
+        });
+
+        // 2. 회원가입
+        document.getElementById("registerBtn").addEventListener("click", async () => {
+            const name = document.getElementById("name").value;
+            const userid = idInput.value;
+            const password = document.getElementById("password").value;
+
+            if (!name || !userid || !password) {
+                alert("모든 정보를 입력해주세요.");
+                return;
+            }
+
+            if (!isIdChecked) {
+                alert("아이디 중복 확인을 해주세요.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, userid, password }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("가입 성공! 로그인 페이지로 이동합니다.");
+                    window.location.href = "login.html";
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("서버 오류가 발생했습니다.");
+            }
+        });
+    </script>
+    <script>
+
+        const starsContainer = document.getElementById('stars');
+
+        for (let i = 0; i < 200; i++) {
+
+            const star = document.createElement('div');
+
+            star.className = 'star';
+
+            star.style.top = `${Math.random() * 100}%`;
+
+            star.style.left = `${Math.random() * 100}%`;
+
+            star.style.animationDelay = `${Math.random() * 4}s`;
+
+            starsContainer.appendChild(star);
+
+        }
+
+    </script>
+</body>
+</html>

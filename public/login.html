@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To.Me ; From.Me - 로그인</title>
+    
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#151f2e">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 로그인 페이지 전용 스타일 보정 */
+        html {
+            height: 100%;
+            background: linear-gradient(to bottom, #151f2e 0%, #1e2d3f 20%, #2a3a4d 40%, #3d4b5a 55%, #5a5a5a 68%, #766652 78%, #9a8568 86%, #b89a73 93%, #d4b08a 100%) no-repeat fixed;
+        }
+        body { margin: 0; background: transparent !important; }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="container">
+        <h1 class="title">
+            <span class="to">To.Me</span><span class="semicolon"> ; </span><span class="from">From.Me</span>
+        </h1>
+        
+        <div class="form-container">
+            <input type="text" id="userid" class="input-field" placeholder="아이디를 입력하세요" maxlength="20">
+            <input type="password" id="password" class="input-field" placeholder="비밀번호를 입력하세요" maxlength="20">
+            <button id="loginBtn" class="btn submit-btn">로그인</button>
+        </div>
+        
+        <a href="index.html" class="back-link">← 돌아가기</a>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. 별 생성 및 배경 효과
+        // ==========================================
+        const starsContainer = document.getElementById('stars');
+        const starCount = 180;
+
+        class Star {
+            constructor() {
+                this.element = document.createElement('div');
+                this.element.className = 'star';
+                this.x = Math.random() * 100;
+                this.y = Math.random() * 100;
+                this.size = Math.random() * 2 + 0.5;
+                this.opacity = Math.random() * 0.6 + 0.3;
+                this.duration = Math.random() * 3 + 2;
+                
+                this.element.style.left = this.x + '%';
+                this.element.style.top = this.y + '%';
+                this.element.style.width = this.size + 'px';
+                this.element.style.height = this.size + 'px';
+                this.element.style.opacity = this.opacity;
+                this.element.style.animation = `twinkle ${this.duration}s ease-in-out infinite`; 
+                this.element.style.animationDelay = Math.random() * 3 + 's';
+                
+                if (starsContainer) {
+                    starsContainer.appendChild(this.element);
+                }
+            }
+        }
+        
+        if (starsContainer) {
+            for (let i = 0; i < starCount; i++) { new Star(); }
+        }
+
+        // ==========================================
+        // 2. 페이지 등장 애니메이션 (페이드인)
+        // ==========================================
+        function playEnterAnimation() {
+            const title = document.querySelector('.title'); 
+            // 버튼, 인풋, 링크들을 모두 선택
+            const elements = document.querySelectorAll('.btn, .input-field, .submit-btn, .back-link');
+            
+            // (1) 타이틀 등장
+            if (title) {
+                title.style.opacity = '0';
+                title.style.transform = 'translateY(50px)';
+                title.style.transition = 'all 1.4s cubic-bezier(0.22, 1, 0.36, 1)';
+                
+                setTimeout(() => {
+                    title.style.opacity = '1';
+                    title.style.transform = 'translateY(0)';
+                }, 100);
+            }
+            
+            // (2) 나머지 요소들 순차 등장 (거북이처럼 천천히 🐢)
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(40px)';
+                el.style.transition = 'all 1.2s cubic-bezier(0.22, 1, 0.36, 1)';
+                
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, 300 + (index * 250)); 
+            });
+
+            attachInputEvents();
+        }
+
+        // 입력창 포커스 효과
+        function attachInputEvents() {
+            document.querySelectorAll('.input-field').forEach(input => {
+                input.style.transition = 'all 0.3s ease-out';
+                
+                input.addEventListener('focus', function() {
+                    this.style.transform = 'scale(1.02)';
+                    this.style.boxShadow = '0 4px 20px rgba(212, 165, 116, 0.3)';
+                    this.style.background = 'rgba(255, 255, 255, 0.65)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.style.transform = 'scale(1)';
+                    this.style.boxShadow = 'none';
+                    this.style.background = 'rgba(255, 255, 255, 0.5)';
+                });
+            });
+        }
+
+        // 화면이 로드되면 애니메이션 실행!
+        window.addEventListener('load', () => {
+            playEnterAnimation();
+        });
+
+        // ==========================================
+        // 3. 로그인 기능 (서버 통신)
+        // ==========================================
+        document.getElementById("loginBtn").addEventListener("click", async () => {
+            const userid = document.getElementById("userid").value;
+            const password = document.getElementById("password").value;
+
+            if (!userid || !password) {
+                alert("아이디와 비밀번호를 입력해주세요.");
+                return;
+            }
+
+            try {
+                const response = await fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userid, password }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(`${result.name}님 환영합니다!`);
+                    // 서버가 정해준 주소로 이동
+                    window.location.href = result.redirectUrl; 
+                } else {
+                    alert(result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("서버 오류가 발생했습니다.");
+            }
+        });
+        
+        // 엔터키 처리
+        document.getElementById("password").addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                document.getElementById("loginBtn").click();
+            }
+        });
+    </script>
+</body>
+</html>

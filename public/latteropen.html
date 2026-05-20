@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>편지 열어보기</title>
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(
+        to bottom,
+        #f3a6a6,
+        #f7bfae,
+        #f3d8a3
+    );
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+/* 카드 (👉 완전 투명) */
+.card {
+    position: relative;
+    width: 85%;
+    height: 80vh;
+    margin: 5vh auto;
+    border-radius: 10px;
+    overflow: hidden;
+    z-index: 2;
+}
+
+/* 타이틀 */
+.title {
+    text-align: center;
+    color: white;
+    margin-top: 20px;
+    font-size: 30px;
+    opacity: 0.9;
+}
+
+.title .from {
+    color: #662B2C80;
+}
+
+/* 콘텐츠 */
+.content {
+    position: absolute;
+    left: 0;
+    width: calc(100% - 80px);
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* 상단 */
+.top {
+    top: 80px;
+    color: white;
+}
+
+/* 하단 */
+.bottom {
+    bottom: 80px;
+}
+
+/* 텍스트 */
+.label {
+    font-weight: bold;
+    font-size: 30px;
+}
+
+.text {
+    margin-top: 10px;
+    font-size: 30px;
+}
+
+/* 정렬 */
+.right {
+    text-align: right;
+}
+
+/* 👉 받는 사람 색상 */
+.bottom .label {
+    color: #662B2C80;
+    font-size: 30px;
+    bottom: 100px;
+    transform: translateY(100px);
+}
+
+.bottom .text {
+    color: #662B2C80; 
+    font-size: 30px;
+    bottom: 100px;
+    transform: translateY(100px);
+}
+
+/* 구분선 */
+.divider {
+    position: fixed; 
+    top: 50%;
+    left: 0;
+    width: 100vw;
+    height: 1px;
+    background: rgba(255,255,255,0.5);
+    z-index: 1;
+}
+
+/* 오른쪽 탭 */
+.side-tab {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    width: 80px;
+
+    background: linear-gradient(
+        to bottom,
+        #e6a4a4,
+        #d9a38f
+    );
+
+    border-top-left-radius: 30px;
+    border-bottom-left-radius: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 50px;
+    color: #b96b6b;
+    font-weight: bold;
+    line-height: 1.6;
+
+    z-index: 5; 
+}
+
+/* 별 */
+.stars {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    opacity: 0.8;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    
+    <div class="title">
+        <span class="to">To.Me</span>
+        <span class="semicolon"> ; </span>
+        <span class="from">From.Me</span>
+    </div>
+
+    <div class="content top">
+        <div class="label">보내는 사람</div>
+        <div class="text">2026년 1월 20일의 user</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="content bottom">
+        <div class="label right">받는 사람</div>
+        <div class="text right">2027년 1월 1일의 user 귀하</div>
+    </div>
+
+    <div class="side-tab">
+        D<br>+<br>3<br>3<br>4
+    </div>
+
+</div>
+
+<div class="stars" id="stars"></div>
+
+<script>
+const starsContainer = document.getElementById('stars');
+
+for (let i = 0; i < 200; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.left = Math.random() * 100 + '%';
+    starsContainer.appendChild(star);
+}
+</script>
+
+</body>
+</html>

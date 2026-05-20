@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Member {
+  id          Int       @id @default(autoincrement())
+  userid      String    @unique
+  password    String
+  name        String
+  email       String?
+  lastLoginAt DateTime?
+
+  letters                 Letter[]
+  teacherLetters          TeacherLetter[]
+  teacherLetterDeliveries TeacherLetterDelivery[]
+}
+
+model Letter {
+  id                    Int       @id @default(autoincrement())
+  type                  String    @default("text")
+  content               String?
+  videoUrl              String?
+  imageUrl              String?
+  signatureData         String?
+  recipientEmail        String?
+  recipientName         String?
+  callReplyVideoUrl     String?
+  callCompositeVideoUrl String?
+  callReplyEmail        String?
+  callReplySentAt       DateTime?
+  openDate              DateTime
+  createdAt             DateTime  @default(now())
+  sentAt                DateTime?
+
+  author   Member @relation(fields: [authorId], references: [id])
+  authorId Int
+}
+
+model TeacherLetter {
+  id          Int      @id @default(autoincrement())
+  title       String?
+  teacherName String
+  content     String
+  createdAt   DateTime @default(now())
+  active      Boolean  @default(true)
+
+  author     Member                  @relation(fields: [authorId], references: [id])
+  authorId   Int
+  deliveries TeacherLetterDelivery[]
+}
+
+model TeacherLetterDelivery {
+  id              Int       @id @default(autoincrement())
+  memberId        Int       @unique
+  teacherLetterId Int
+  createdAt       DateTime  @default(now())
+  sentAt          DateTime?
+  lastError       String?
+
+  member        Member        @relation(fields: [memberId], references: [id])
+  teacherLetter TeacherLetter @relation(fields: [teacherLetterId], references: [id])
+}

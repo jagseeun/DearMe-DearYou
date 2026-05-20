@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: dearme-dearyou
+    env: node
+    plan: free
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: DATABASE_URL
+        sync: false
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: EMAIL_REPLY_TO
+        sync: false
+      - key: VITE_R2_BUCKET_NAME
+        sync: false
+      - key: VITE_R2_PUBLIC_URL
+        sync: false
+      - key: VITE_R2_ENDPOINT
+        sync: false
+      - key: VITE_R2_ACCESS_KEY_ID
+        sync: false
+      - key: VITE_R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: ADMIN_USERIDS
+        sync: false
+      - key: LETTER_PIN
+        sync: false

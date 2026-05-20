@@ -1,0 +1,38 @@
+{
+  "name": "dearme-dearyou",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "concurrently \"cd client && npm run dev\" \"node app.js\"",
+    "build": "cd client && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jagseeun/DearMe-DearYou.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jagseeun/DearMe-DearYou/issues"
+  },
+  "homepage": "https://github.com/jagseeun/DearMe-DearYou#readme",
+  "description": "",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1026.0",
+    "@aws-sdk/s3-request-presigner": "^3.1026.0",
+    "@prisma/client": "^6.19.2",
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^8.0.5",
+    "prisma": "^6.19.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
