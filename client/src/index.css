@@ -4,6 +4,7 @@
   font-weight: 300;
   font-display: swap;
 }
+
 @font-face {
   font-family: 'PyeojinGothic';
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2504-1@1.0/PyeojinGothic-Regular.woff2') format('woff2');
@@ -1492,6 +1493,7 @@ canvas {
     margin-right: auto !important;
   }
 }
+
 
 .letter-done-actions {
   display: flex;
@@ -4457,4 +4459,51 @@ canvas {
     font-size: 10px !important;
     line-height: 1.1 !important;
   }
+}
+
+/* Final drawing size controls: no button box, no layout jump. */
+.draw-editor.draw-editor-clean .draw-size-group {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  align-items: center !important;
+}
+
+.draw-editor.draw-editor-clean .draw-size {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+  transform: none !important;
+  color: inherit !important;
+}
+
+.draw-editor.draw-editor-clean .draw-size:hover,
+.draw-editor.draw-editor-clean .draw-size.is-active {
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.draw-editor.draw-editor-clean .draw-size span {
+  display: block !important;
+  border-radius: 50% !important;
+  background: rgba(255, 244, 226, 0.88) !important;
+  box-shadow: none !important;
+  outline: 0 !important;
+}
+
+.draw-editor.draw-editor-clean .draw-size.is-active span {
+  background: #ffe7bd !important;
+  box-shadow:
+    0 0 0 2px rgba(255, 231, 189, 0.38),
+    0 0 12px rgba(232, 194, 138, 0.28) !important;
 }
