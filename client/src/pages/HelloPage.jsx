@@ -31,10 +31,15 @@ export default function HelloPage() {
   const [email, setEmail] = useState('');
   const [qIdx, setQIdx] = useState(0);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [draftName, setDraftName] = useState('');
   const [draftEmail, setDraftEmail] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [nextPassword, setNextPassword] = useState('');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState('');
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMsg, setPasswordMsg] = useState('');
 
   useEffect(() => {
     fetch('/get-user-info')
@@ -86,6 +91,42 @@ export default function HelloPage() {
     finally { setProfileSaving(false); }
   }
 
+  function openPasswordModal() {
+    setCurrentPassword('');
+    setNextPassword('');
+    setPasswordMsg('');
+    setShowPasswordModal(true);
+  }
+
+  async function handlePasswordSave() {
+    if (!currentPassword || !nextPassword) { setPasswordMsg('현재 비밀번호와 새 비밀번호를 입력해주세요.'); return; }
+    if (nextPassword.length < 6) { setPasswordMsg('새 비밀번호는 6자 이상으로 입력해주세요.'); return; }
+    if (nextPassword.length > 20) { setPasswordMsg('새 비밀번호는 20자를 넘을 수 없습니다.'); return; }
+
+    setPasswordSaving(true);
+    setPasswordMsg('');
+    try {
+      const res = await fetch('/change-password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, nextPassword }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setPasswordMsg(data.message || '비밀번호 변경에 실패했습니다.');
+        return;
+      }
+      setPasswordMsg('비밀번호가 변경되었습니다.');
+      setCurrentPassword('');
+      setNextPassword('');
+      setTimeout(() => setShowPasswordModal(false), 900);
+    } catch {
+      setPasswordMsg('서버 연결 오류');
+    } finally {
+      setPasswordSaving(false);
+    }
+  }
+
   return (
     <motion.div
       className="hello-shell"
@@ -125,6 +166,13 @@ export default function HelloPage() {
           style={navBtnStyle}
         >
           이름/이메일 변경
+        </motion.button>
+        <motion.button
+          onClick={openPasswordModal}
+          whileHover={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,252,223,0.9)' }}
+          style={navBtnStyle}
+        >
+          비밀번호 변경
         </motion.button>
         <motion.button
           onClick={() => window.location.href = '/logout'}
@@ -228,6 +276,62 @@ export default function HelloPage() {
                   onClick={handleProfileSave} disabled={profileSaving}
                   style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.25s', opacity: profileSaving ? 0.6 : 1 }}>
                   {profileSaving ? '저장 중...' : '저장'}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showPasswordModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="modal-backdrop"
+            onClick={e => { if (e.target === e.currentTarget) setShowPasswordModal(false); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }}
+              transition={{ duration: 0.35, ease }}
+              className="modal-panel"
+            >
+              <div style={{ fontSize: 28, fontWeight: 400, color: '#e9dcc6' }}>비밀번호 변경</div>
+              <div style={{ color: 'rgba(255,252,223,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 1.7 }}>
+                현재 비밀번호를 확인한 뒤<br />새 비밀번호로 바꿉니다.
+              </div>
+              <input
+                type="password"
+                placeholder="현재 비밀번호"
+                value={currentPassword}
+                maxLength={20}
+                onChange={e => { setCurrentPassword(e.target.value); setPasswordMsg(''); }}
+                autoFocus
+                style={modalInputStyle}
+              />
+              <input
+                type="password"
+                placeholder="새 비밀번호 (6~20자)"
+                value={nextPassword}
+                maxLength={20}
+                onChange={e => { setNextPassword(e.target.value); setPasswordMsg(''); }}
+                onKeyDown={e => { if (e.key === 'Enter') handlePasswordSave(); }}
+                style={modalInputStyle}
+              />
+              {passwordMsg && (
+                <div style={{ fontSize: 13, color: passwordMsg === '비밀번호가 변경되었습니다.' ? '#81c784' : 'rgba(255,130,130,0.85)', marginTop: -8 }}>
+                  {passwordMsg}
+                </div>
+              )}
+              <div className="modal-actions" style={{ marginTop: 4 }}>
+                <motion.button whileHover={{ background: 'rgba(255,255,255,0.12)' }}
+                  onClick={() => setShowPasswordModal(false)}
+                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', transition: 'all 0.25s' }}>
+                  취소
+                </motion.button>
+                <motion.button whileHover={{ translateY: -2 }}
+                  onClick={handlePasswordSave} disabled={passwordSaving}
+                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.25s', opacity: passwordSaving ? 0.6 : 1 }}>
+                  {passwordSaving ? '변경 중...' : '변경'}
                 </motion.button>
               </div>
             </motion.div>

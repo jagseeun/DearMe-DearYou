@@ -12,7 +12,7 @@ model Member {
   userid      String    @unique
   password    String
   name        String
-  email       String?
+  email       String?   @unique
   lastLoginAt DateTime?
 
   letters                 Letter[]

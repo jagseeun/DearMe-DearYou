@@ -262,6 +262,29 @@ async function sendTeacherDelivery(delivery) {
   }
 }
 
+async function assignRandomTeacherLetterToMember(memberId) {
+  const existing = await prisma.teacherLetterDelivery.findUnique({ where: { memberId } });
+  if (existing) return { created: false, sent: false, reason: "already assigned" };
+
+  const teacherLetters = await prisma.teacherLetter.findMany({
+    where: { active: true },
+    orderBy: { createdAt: "asc" },
+  });
+  if (teacherLetters.length === 0) return { created: false, sent: false, reason: "no active teacher letters" };
+
+  const teacherLetter = pickRandom(teacherLetters);
+  const delivery = await prisma.teacherLetterDelivery.create({
+    data: {
+      memberId,
+      teacherLetterId: teacherLetter.id,
+    },
+    include: { member: true, teacherLetter: true },
+  });
+
+  const result = await sendTeacherDelivery(delivery);
+  return { created: true, sent: result.sent, reason: result.error || null };
+}
+
 async function sendRandomTeacherLetters() {
   const teacherLetters = await prisma.teacherLetter.findMany({
     where: { active: true },
@@ -436,16 +459,54 @@ app.post("/check-username", async (req, res) => {
 
 // 2. 회원가입
 app.post("/register", async (req, res) => {
-  const { name, userid, password, email } = req.body;
+  const { name, userid, password } = req.body;
+  const email = String(req.body.email || "").trim().toLowerCase();
   if (!name || !userid || !password) return res.status(400).json({ message: "모든 값을 입력해주세요." });
   if (name.length > 10) return res.status(400).json({ message: "이름은 10자를 넘을 수 없습니다." });
   if (userid.length > 20) return res.status(400).json({ message: "아이디는 20자를 넘을 수 없습니다." });
   if (password.length > 20) return res.status(400).json({ message: "비밀번호는 20자를 넘을 수 없습니다." });
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   try {
+    if (email) {
+      const existingEmail = await prisma.member.findUnique({ where: { email } });
+      if (existingEmail) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
-    await prisma.member.create({ data: { name, userid, password: hashedPassword, email: email || null } });
+    const member = await prisma.member.create({ data: { name, userid, password: hashedPassword, email: email || null } });
+    if (email) {
+      assignRandomTeacherLetterToMember(member.id).catch(err => console.error("signup teacher letter send error:", err));
+    }
     res.status(201).json({ message: "회원가입 성공!" });
-  } catch { res.status(400).json({ message: "회원가입 실패" }); }
+  } catch (err) {
+    if (err.code === "P2002") return res.status(400).json({ message: "이미 사용 중인 아이디 또는 이메일입니다." });
+    console.error("register error:", err);
+    res.status(400).json({ message: "회원가입 실패" });
+  }
+});
+
+app.post("/find-id", async (req, res) => {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  if (!email) return res.status(400).json({ message: "이메일을 입력해주세요." });
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+
+  try {
+    const member = await prisma.member.findUnique({ where: { email } });
+    if (!member) return res.status(404).json({ message: "해당 이메일로 가입된 아이디가 없습니다." });
+
+    await mailer.sendMail({
+      from: emailFromHeader,
+      replyTo: emailReplyTo,
+      to: email,
+      subject: "Dear Me; Dear You 아이디 안내",
+      text: `${member.name}님의 아이디는 ${member.userid} 입니다.`,
+      html: `<div style="font-family:sans-serif;line-height:1.7"><h2>Dear Me; Dear You</h2><p>${escapeHtml(member.name)}님의 아이디는 <strong>${escapeHtml(member.userid)}</strong> 입니다.</p></div>`,
+    });
+
+    res.json({ message: "가입된 이메일로 아이디를 보냈습니다." });
+  } catch (err) {
+    console.error("find id error:", err);
+    res.status(500).json({ message: "아이디 찾기 메일 발송에 실패했습니다." });
+  }
 });
 
 // 3. 로그인
@@ -482,21 +543,26 @@ app.get("/logout", (req, res) => {
 // 6. 이메일 변경
 app.put("/update-email", async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
-  const { email } = req.body;
+  const email = String(req.body.email || "").trim().toLowerCase();
   if (!email) return res.status(400).json({ message: "이메일을 입력해주세요." });
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   try {
+    const existingEmail = await prisma.member.findUnique({ where: { email } });
+    if (existingEmail && existingEmail.id !== req.session.user.id) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
     await prisma.member.update({ where: { id: req.session.user.id }, data: { email } });
     req.session.user.email = email;
     req.session.save(() => res.json({ message: "이메일이 변경되었습니다." }));
-  } catch { res.status(500).json({ message: "서버 오류" }); }
+  } catch (err) {
+    if (err.code === "P2002") return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
+    res.status(500).json({ message: "서버 오류" });
+  }
 });
 
 // 6-1. 이름/이메일 변경
 app.put("/update-profile", async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
   const name = String(req.body.name || "").trim();
-  const email = String(req.body.email || "").trim();
+  const email = String(req.body.email || "").trim().toLowerCase();
 
   if (!name) return res.status(400).json({ message: "이름을 입력해주세요." });
   if (name.length > 10) return res.status(400).json({ message: "이름은 10자를 넘을 수 없습니다." });
@@ -505,6 +571,10 @@ app.put("/update-profile", async (req, res) => {
   }
 
   try {
+    if (email) {
+      const existingEmail = await prisma.member.findUnique({ where: { email } });
+      if (existingEmail && existingEmail.id !== req.session.user.id) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
+    }
     const updated = await prisma.member.update({
       where: { id: req.session.user.id },
       data: { name, email: email || null },
@@ -512,8 +582,32 @@ app.put("/update-profile", async (req, res) => {
     req.session.user.name = updated.name;
     req.session.user.email = updated.email || "";
     req.session.save(() => res.json({ message: "프로필이 변경되었습니다.", name: updated.name, email: updated.email || "" }));
-  } catch {
+  } catch (err) {
+    if (err.code === "P2002") return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
     res.status(500).json({ message: "서버 오류" });
+  }
+});
+
+app.put("/change-password", async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  const currentPassword = String(req.body.currentPassword || "");
+  const nextPassword = String(req.body.nextPassword || "");
+  if (!currentPassword || !nextPassword) return res.status(400).json({ message: "현재 비밀번호와 새 비밀번호를 입력해주세요." });
+  if (nextPassword.length > 20) return res.status(400).json({ message: "비밀번호는 20자를 넘을 수 없습니다." });
+  if (nextPassword.length < 6) return res.status(400).json({ message: "비밀번호는 6자 이상으로 입력해주세요." });
+
+  try {
+    const member = await prisma.member.findUnique({ where: { id: req.session.user.id } });
+    if (!member) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    const isMatch = await bcrypt.compare(currentPassword, member.password);
+    if (!isMatch) return res.status(400).json({ message: "현재 비밀번호가 틀렸습니다." });
+
+    const hashedPassword = await bcrypt.hash(nextPassword, 10);
+    await prisma.member.update({ where: { id: member.id }, data: { password: hashedPassword } });
+    res.json({ message: "비밀번호가 변경되었습니다." });
+  } catch (err) {
+    console.error("change password error:", err);
+    res.status(500).json({ message: "비밀번호 변경에 실패했습니다." });
   }
 });
 
