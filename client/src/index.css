@@ -3908,3 +3908,146 @@ canvas {
     line-height: 1.9 !important;
   }
 }
+
+/* Clean drawing board override */
+.draw-editor.draw-editor-clean {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  grid-template-rows: auto auto !important;
+  gap: 14px !important;
+  width: 100% !important;
+  max-width: 980px !important;
+  margin: 0 auto !important;
+  min-height: 0 !important;
+}
+
+.draw-editor.draw-editor-clean .draw-canvas-wrap {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  width: 100% !important;
+  aspect-ratio: 1000 / 480 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 236, 205, 0.22) !important;
+  background: #fdf6e8 !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22), 0 0 28px rgba(232, 194, 138, 0.14) !important;
+}
+
+.draw-editor.draw-editor-clean .draw-canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1000 / 480 !important;
+  touch-action: none !important;
+}
+
+.draw-editor.draw-editor-clean .draw-toolbar {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  width: 100% !important;
+  height: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 12px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 236, 205, 0.18) !important;
+  background: rgba(25, 27, 30, 0.72) !important;
+  backdrop-filter: blur(22px) saturate(0.9) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(0.9) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18) !important;
+  overflow: visible !important;
+}
+
+.draw-editor.draw-editor-clean .draw-toolbar::before,
+.draw-editor.draw-editor-clean .draw-divider {
+  display: none !important;
+}
+
+.draw-editor.draw-editor-clean .draw-palette {
+  width: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  padding: 8px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 236, 205, 0.12) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+}
+
+.draw-editor.draw-editor-clean .draw-swatch {
+  flex: 0 0 auto !important;
+  width: 24px !important;
+  height: 24px !important;
+  border-radius: 999px !important;
+}
+
+.draw-editor.draw-editor-clean .draw-size-group {
+  display: grid !important;
+  grid-template-columns: repeat(3, 38px) !important;
+  gap: 6px !important;
+  padding: 6px !important;
+  margin: 0 !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+}
+
+.draw-editor.draw-editor-clean .draw-size {
+  width: 38px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+}
+
+.draw-editor.draw-editor-clean .draw-tool-button {
+  min-width: 76px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 640px) {
+  .draw-editor.draw-editor-clean {
+    gap: 10px !important;
+  }
+
+  .draw-editor.draw-editor-clean .draw-canvas-wrap {
+    border-radius: 12px !important;
+  }
+
+  .draw-editor.draw-editor-clean .draw-toolbar {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+
+  .draw-editor.draw-editor-clean .draw-palette {
+    justify-content: center !important;
+    gap: 7px !important;
+  }
+
+  .draw-editor.draw-editor-clean .draw-swatch {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .draw-editor.draw-editor-clean .draw-size-group {
+    width: 100% !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .draw-editor.draw-editor-clean .draw-size {
+    width: auto !important;
+  }
+
+  .draw-editor.draw-editor-clean .draw-tool-button {
+    width: 100% !important;
+  }
+}

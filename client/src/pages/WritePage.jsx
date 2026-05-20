@@ -397,7 +397,25 @@ function DrawCanvas({ onHasDrawn, onCanvasReady }) {
   }
 
   return (
-    <div className="draw-editor">
+    <div className="draw-editor draw-editor-clean">
+      {/* 캔버스 */}
+      <div className="draw-canvas-wrap">
+        <canvas
+          ref={canvasRef}
+          width={1000}
+          height={480}
+          className="draw-canvas"
+          style={{ cursor: tool === 'eraser' ? 'cell' : 'crosshair' }}
+          onMouseDown={onDown}
+          onMouseMove={onMove}
+          onMouseUp={onUp}
+          onMouseLeave={onUp}
+          onTouchStart={onDown}
+          onTouchMove={onMove}
+          onTouchEnd={onUp}
+        />
+      </div>
+
       {/* 툴바 */}
       <div className="draw-toolbar">
         {/* 팔레트 */}
@@ -439,23 +457,6 @@ function DrawCanvas({ onHasDrawn, onCanvasReady }) {
         </button>
       </div>
 
-      {/* 캔버스 */}
-      <div className="draw-canvas-wrap">
-        <canvas
-          ref={canvasRef}
-          width={1000}
-          height={480}
-          className="draw-canvas"
-          style={{ cursor: tool === 'eraser' ? 'cell' : 'crosshair' }}
-          onMouseDown={onDown}
-          onMouseMove={onMove}
-          onMouseUp={onUp}
-          onMouseLeave={onUp}
-          onTouchStart={onDown}
-          onTouchMove={onMove}
-          onTouchEnd={onUp}
-        />
-      </div>
     </div>
   );
 }
