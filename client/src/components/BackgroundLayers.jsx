@@ -30,6 +30,13 @@ export default function BackgroundLayers() {
   return (
     <>
       <motion.div
+        key={location.pathname}
+        className="route-light-sweep"
+        initial={{ opacity: 0, x: '-120%', skewX: -16 }}
+        animate={{ opacity: [0, 0.5, 0], x: '120%', skewX: -16 }}
+        transition={{ duration: 1.35, ease }}
+      />
+      <motion.div
         animate={{ opacity: isPink ? 0 : 1 }}
         transition={{ duration: 1.6, ease }}
         style={{ ...layerStyle, background: DARK_GRADIENT }}
@@ -53,6 +60,10 @@ export default function BackgroundLayers() {
       >
         <PinkStars />
       </motion.div>
+      <div className="ambient-detail-layer" aria-hidden="true">
+        <span className="ambient-thread thread-a" />
+        <span className="ambient-thread thread-b" />
+      </div>
     </>
   );
 }
