@@ -8,18 +8,62 @@ import rateLimit from "express-rate-limit";
 import prisma from "./prisma/client.js";
 import path from "path";
 import bcrypt from "bcrypt";
+import { randomUUID } from "crypto";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import nodemailer from "nodemailer";
 import cron from "node-cron";
 
+const isProduction = process.env.NODE_ENV === "production";
+const SESSION_COOKIE_NAME = "dearme.sid";
+const USERID_REGEX = /^[a-zA-Z0-9]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PASSWORD_MIN_LENGTH = 6;
+const PASSWORD_MAX_LENGTH = 128;
+const USERID_MAX_LENGTH = 20;
+const NAME_MAX_LENGTH = 10;
+const RECIPIENT_NAME_MAX_LENGTH = 50;
+const LETTER_CONTENT_MAX_LENGTH = 5000;
+const TEACHER_TITLE_MAX_LENGTH = 120;
+const TEACHER_CONTENT_MAX_LENGTH = 10000;
+const URL_MAX_LENGTH = 2048;
+const ALLOWED_LETTER_TYPES = new Set(["text", "video", "draw", "call"]);
+const IMAGE_CONTENT_TYPES = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+};
+
+function envValue(primary, legacy) {
+  return process.env[primary] || (legacy ? process.env[legacy] : undefined);
+}
+
+function stripTrailingSlash(value = "") {
+  return value.replace(/\/+$/, "");
+}
+
+const r2BucketName = envValue("R2_BUCKET_NAME", "VITE_R2_BUCKET_NAME");
+const r2PublicBaseUrl = stripTrailingSlash(envValue("R2_PUBLIC_URL", "VITE_R2_PUBLIC_URL") || "");
+const r2Endpoint = envValue("R2_ENDPOINT", "VITE_R2_ENDPOINT");
+const r2AccessKeyId = envValue("R2_ACCESS_KEY_ID", "VITE_R2_ACCESS_KEY_ID");
+const r2SecretAccessKey = envValue("R2_SECRET_ACCESS_KEY", "VITE_R2_SECRET_ACCESS_KEY");
+const scheduledEmailsEnabled = process.env.ENABLE_SCHEDULED_EMAILS !== "false";
+
+if (isProduction && !process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET is required in production.");
+}
+if (!isProduction && !process.env.SESSION_SECRET) {
+  console.warn("SESSION_SECRET is not set. Using a development-only fallback secret.");
+}
+
 const s3 = new S3Client({
   region: "auto",
-  endpoint: process.env.VITE_R2_ENDPOINT,
+  endpoint: r2Endpoint,
   forcePathStyle: true,
   credentials: {
-    accessKeyId: process.env.VITE_R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.VITE_R2_SECRET_ACCESS_KEY,
+    accessKeyId: r2AccessKeyId,
+    secretAccessKey: r2SecretAccessKey,
   },
 });
 
@@ -44,6 +88,91 @@ function serializeMailError(err) {
   };
 }
 
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function isValidEmail(value) {
+  return typeof value === "string" && value.length <= 254 && EMAIL_REGEX.test(value);
+}
+
+function mailHeader(value, maxLength = 180) {
+  return String(value || "").replace(/[\r\n]+/g, " ").slice(0, maxLength);
+}
+
+function validatePassword(value) {
+  if (typeof value !== "string" || value.length < PASSWORD_MIN_LENGTH) {
+    return `비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상으로 입력해주세요.`;
+  }
+  if (value.length > PASSWORD_MAX_LENGTH) {
+    return `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`;
+  }
+  return null;
+}
+
+function parseOpenDate(value) {
+  const date = new Date(value);
+  if (!value || Number.isNaN(date.getTime())) return null;
+  return date;
+}
+
+function safeHttpUrl(value) {
+  if (!value || String(value).length > URL_MAX_LENGTH) return null;
+  try {
+    const url = new URL(String(value).trim());
+    if (!["http:", "https:"].includes(url.protocol)) return null;
+    return url.href;
+  } catch {
+    return null;
+  }
+}
+
+function originFromUrl(value) {
+  try {
+    return value ? new URL(value).origin : null;
+  } catch {
+    return null;
+  }
+}
+
+function isPublicAssetUrl(value) {
+  const safeUrl = safeHttpUrl(value);
+  if (!safeUrl || !r2PublicBaseUrl) return false;
+
+  try {
+    const url = new URL(safeUrl);
+    const baseUrl = new URL(r2PublicBaseUrl);
+    if (url.origin !== baseUrl.origin) return false;
+
+    const basePath = baseUrl.pathname.endsWith("/")
+      ? baseUrl.pathname
+      : `${baseUrl.pathname}/`;
+    return baseUrl.pathname === "/" || url.pathname.startsWith(basePath);
+  } catch {
+    return false;
+  }
+}
+
+function normalizePublicAssetUrl(value) {
+  if (!value) return null;
+  const safeUrl = safeHttpUrl(value);
+  return safeUrl && isPublicAssetUrl(safeUrl) ? safeUrl : null;
+}
+
+function publicAssetUrl(key) {
+  if (!r2PublicBaseUrl) return "";
+  return `${r2PublicBaseUrl}/${key}`;
+}
+
+function makeObjectKey(folder, userId, extension) {
+  return `${folder}/${userId}/${randomUUID()}.${extension}`;
+}
+
 async function verifyMailerConfig() {
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     console.warn("mail config missing: GMAIL_USER and GMAIL_APP_PASSWORD are required");
@@ -61,16 +190,16 @@ async function verifyMailerConfig() {
 verifyMailerConfig();
 
 // 개봉일이 된 편지 이메일 발송
-async function sendDueLetters() {
+async function sendDueLetters({ authorId } = {}) {
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+  const stats = { sent: 0, failed: 0, skippedNoEmail: 0 };
 
   try {
     const letters = await prisma.letter.findMany({
       where: {
+        ...(authorId ? { authorId } : {}),
         sentAt: null,
-        openDate: { lte: todayEnd },
+        openDate: { lte: now },
       },
       include: { author: true },
     });
@@ -78,7 +207,10 @@ async function sendDueLetters() {
     for (const letter of letters) {
       // 타인에게 보내는 편지면 recipientEmail, 아니면 author.email
       const email = letter.recipientEmail || letter.author.email;
-      if (!email) continue;
+      if (!isValidEmail(email)) {
+        stats.skippedNoEmail += 1;
+        continue;
+      }
 
       const recipientName = letter.recipientName || letter.author.name;
       const senderName = letter.author.name;
@@ -104,21 +236,21 @@ async function sendDueLetters() {
           from: emailFromHeader,
           replyTo: emailReplyTo,
           to: email,
-          subject: isToOther
+          subject: mailHeader(isToOther
             ? `${senderName}이(가) 보낸 편지가 도착했어요`
-            : "과거의 내가 보낸 편지가 도착했어요",
+            : "과거의 내가 보낸 편지가 도착했어요"),
           text,
           html,
         });
 
         // 타인에게 보내는 편지라면 발신자에게도 발송 알림
-        if (isToOther && letter.author.email) {
+        if (isToOther && isValidEmail(letter.author.email)) {
           const senderHtml = buildSenderNotifyEmail(senderName, recipientName, letter.openDate);
           await mailer.sendMail({
             from: emailFromHeader,
             replyTo: emailReplyTo,
             to: letter.author.email,
-            subject: `${recipientName}에게 보낸 편지가 전달되었어요`,
+            subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었어요`),
             text: `안녕, ${senderName}.\n네가 ${recipientName}에게 보낸 편지가 오늘 전달되었어.`,
             html: senderHtml,
           });
@@ -129,17 +261,24 @@ async function sendDueLetters() {
           data: { sentAt: new Date() },
         });
 
+        stats.sent += 1;
         console.log(`✉ 발송 완료: ${email} (편지 #${letter.id})`);
       } catch (err) {
+        stats.failed += 1;
         console.error(`✉ 발송 실패: ${email}`, err.message);
       }
     }
   } catch (err) {
     console.error("sendDueLetters 오류:", err);
+    stats.failed += 1;
   }
+
+  return stats;
 }
 
 function buildSenderNotifyEmail(senderName, recipientName, openDate) {
+  const safeSenderName = escapeHtml(senderName);
+  const safeRecipientName = escapeHtml(recipientName);
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
@@ -148,8 +287,8 @@ function buildSenderNotifyEmail(senderName, recipientName, openDate) {
     </div>
     <div style="padding:36px 40px">
       <p style="font-size:16px;line-height:1.9;color:#d9cfc0">
-        안녕, <strong>${senderName}</strong>.<br><br>
-        네가 <strong>${recipientName}</strong>에게 보낸 편지가 오늘 잘 전달되었어.<br>
+        안녕, <strong>${safeSenderName}</strong>.<br><br>
+        네가 <strong>${safeRecipientName}</strong>에게 보낸 편지가 오늘 잘 전달되었어.<br>
         소중한 마음이 닿았길 바라.
       </p>
     </div>
@@ -160,8 +299,13 @@ function buildSenderNotifyEmail(senderName, recipientName, openDate) {
 }
 
 function buildTextEmail(recipientName, senderName, content, openDate, isToOther, imageUrl, signatureData) {
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeSenderName = escapeHtml(senderName);
+  const safeContent = escapeHtml(content || "");
+  const safeImageUrl = normalizePublicAssetUrl(imageUrl);
+  const safeSignatureUrl = normalizePublicAssetUrl(signatureData);
   const headerMsg = isToOther
-    ? `<strong>${senderName}</strong>이(가 보낸 편지야.`
+    ? `<strong>${safeSenderName}</strong>이(가) 보낸 편지야.`
     : `과거의 네가 보낸 편지야.`;
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
@@ -170,18 +314,21 @@ function buildTextEmail(recipientName, senderName, content, openDate, isToOther,
       <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
     </div>
     <div style="padding:40px">
-      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕, <strong>${recipientName}</strong>.<br>${headerMsg}</p>
-      <div style="background:rgba(140,130,115,0.2);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:28px;font-size:16px;line-height:1.8;color:#fffcdf;white-space:pre-wrap">${content || ''}</div>
-      ${imageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${imageUrl}" style="max-width:100%;border-radius:10px" /></div>` : ''}
-      ${signatureData ? `<div style="margin-top:20px;text-align:right"><img src="${signatureData}" style="max-height:80px" /></div>` : ''}
+      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
+      <div style="background:rgba(140,130,115,0.2);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:28px;font-size:16px;line-height:1.8;color:#fffcdf;white-space:pre-wrap">${safeContent}</div>
+      ${safeImageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${escapeHtml(safeImageUrl)}" style="max-width:100%;border-radius:10px" /></div>` : ''}
+      ${safeSignatureUrl ? `<div style="margin-top:20px;text-align:right"><img src="${escapeHtml(safeSignatureUrl)}" style="max-height:80px" /></div>` : ''}
     </div>
     <div style="padding:20px 40px 40px;text-align:center;color:rgba(255,252,223,0.4);font-size:12px">Dear Me; Dear You</div>
   </div>`;
 }
 
 function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther) {
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeSenderName = escapeHtml(senderName);
+  const safeImageUrl = normalizePublicAssetUrl(imageUrl);
   const headerMsg = isToOther
-    ? `<strong>${senderName}</strong>이(가) 보낸 그림 편지야.`
+    ? `<strong>${safeSenderName}</strong>이(가) 보낸 그림 편지야.`
     : `과거의 네가 그린 그림 편지야.`;
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
@@ -190,9 +337,9 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
       <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
     </div>
     <div style="padding:40px">
-      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕, <strong>${recipientName}</strong>.<br>${headerMsg}</p>
+      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
       <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)">
-        <img src="${imageUrl}" style="width:100%;display:block" />
+        ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" style="width:100%;display:block" />` : `<div style="padding:24px;text-align:center;color:rgba(255,252,223,0.55)">그림 URL을 확인할 수 없습니다.</div>`}
       </div>
     </div>
     <div style="padding:20px 40px 40px;text-align:center;color:rgba(255,252,223,0.4);font-size:12px">Dear Me; Dear You</div>
@@ -200,8 +347,11 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
 }
 
 function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOther, isCall) {
+  const safeRecipientName = escapeHtml(recipientName);
+  const safeSenderName = escapeHtml(senderName);
+  const safeVideoUrl = normalizePublicAssetUrl(videoUrl);
   const headerMsg = isToOther
-    ? `<strong>${senderName}</strong>이(가) 보낸 ${isCall ? '영상통화' : '영상 편지'}야.`
+    ? `<strong>${safeSenderName}</strong>이(가) 보낸 ${isCall ? '영상통화' : '영상 편지'}야.`
     : `과거의 네가 보낸 ${isCall ? '영상통화' : '영상 편지'}야.`;
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
@@ -210,22 +360,12 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
       <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
     </div>
     <div style="padding:40px;text-align:center">
-      <p style="font-size:18px;color:#e9dcc6;margin-bottom:28px">안녕, <strong>${recipientName}</strong>.<br>${headerMsg}</p>
-      <a href="${videoUrl}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">${isCall ? '📱 영상통화 보기' : '▶ 영상 보기'}</a>
-      <p style="margin-top:20px;color:rgba(255,252,223,0.4);font-size:12px">버튼이 작동하지 않으면: ${videoUrl}</p>
+      <p style="font-size:18px;color:#e9dcc6;margin-bottom:28px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
+      ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">${isCall ? '영상통화 보기' : '영상 보기'}</a>
+      <p style="margin-top:20px;color:rgba(255,252,223,0.4);font-size:12px">버튼이 작동하지 않으면: ${escapeHtml(safeVideoUrl)}</p>` : `<p style="color:rgba(255,252,223,0.55)">영상 URL을 확인할 수 없습니다.</p>`}
     </div>
     <div style="padding:20px 40px 40px;text-align:center;color:rgba(255,252,223,0.4);font-size:12px">Dear Me; Dear You</div>
   </div>`;
-}
-
-// 매일 오전 9시에 발송 체크 (한국 시간)
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }
 
 function pickRandom(items) {
@@ -258,12 +398,12 @@ async function sendTeacherDelivery(delivery) {
   const member = delivery.member;
   const teacherLetter = delivery.teacherLetter;
 
-  if (!member.email) {
+  if (!isValidEmail(member.email)) {
     await prisma.teacherLetterDelivery.update({
       where: { id: delivery.id },
-      data: { lastError: "member has no email" },
+      data: { lastError: "member has no valid email" },
     });
-    return { sent: false, error: "member has no email" };
+    return { sent: false, error: "member has no valid email" };
   }
 
   try {
@@ -272,7 +412,7 @@ async function sendTeacherDelivery(delivery) {
       from: emailFromHeader,
       replyTo: emailReplyTo,
       to: member.email,
-      subject: teacherIntro,
+      subject: mailHeader(teacherIntro),
       text: `${teacherIntro}\n\n${teacherLetter.content}`,
       html: buildTeacherLetterEmail(member.name, teacherLetter),
     });
@@ -420,30 +560,102 @@ async function resendTeacherLetters() {
   };
 }
 
-cron.schedule("0 9 * * *", () => {
-  console.log("📬 개봉일 편지 체크 중...");
-  sendDueLetters();
-}, { timezone: "Asia/Seoul" });
+if (scheduledEmailsEnabled) {
+  cron.schedule("0 9 * * *", () => {
+    console.log("📬 개봉일 편지 체크 중...");
+    sendDueLetters();
+  }, { timezone: "Asia/Seoul" });
 
-// 서버 시작 시 한 번 체크
-sendDueLetters();
+  // 서버 시작 시 한 번 체크
+  sendDueLetters();
+} else {
+  console.warn("scheduled email jobs disabled: ENABLE_SCHEDULED_EMAILS=false");
+}
 
 // ─────────────────────────────────────────
 const app = express();
 const PORT = process.env.PORT || 4000;
-const isProduction = process.env.NODE_ENV === "production";
 const PgSession = connectPgSimple(session);
 const sessionPool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: isProduction ? { rejectUnauthorized: false } : undefined,
 });
 
+const r2EndpointOrigin = originFromUrl(r2Endpoint);
+const r2PublicOrigin = originFromUrl(r2PublicBaseUrl);
+const configuredAllowedOrigins = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map(origin => origin.trim())
+  .filter(Boolean);
+const devAllowedOrigins = isProduction
+  ? []
+  : ["http://localhost:5173", "http://127.0.0.1:5173"];
+
+function compactSources(sources) {
+  return [...new Set(sources.filter(Boolean))];
+}
+
+function requestOrigin(req) {
+  return `${req.protocol}://${req.get("host")}`;
+}
+
+function allowedOriginsForRequest(req) {
+  return new Set([
+    requestOrigin(req),
+    ...configuredAllowedOrigins,
+    ...devAllowedOrigins,
+  ]);
+}
+
+function sameOriginGuard(req, res, next) {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+
+  const origin = req.get("origin");
+  const referer = req.get("referer");
+  const allowedOrigins = allowedOriginsForRequest(req);
+
+  if (isProduction && !origin && !referer) {
+    return res.status(403).json({ message: "요청 출처를 확인할 수 없습니다." });
+  }
+
+  if (origin && !allowedOrigins.has(origin)) {
+    return res.status(403).json({ message: "허용되지 않은 요청 출처입니다." });
+  }
+
+  if (!origin && referer) {
+    const refererOrigin = originFromUrl(referer);
+    if (!refererOrigin || !allowedOrigins.has(refererOrigin)) {
+      return res.status(403).json({ message: "허용되지 않은 요청 출처입니다." });
+    }
+  }
+
+  next();
+}
+
+app.disable("x-powered-by");
 app.set("trust proxy", 1);
 
 app.use(helmet({
-  contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      "default-src": ["'self'"],
+      "base-uri": ["'self'"],
+      "object-src": ["'none'"],
+      "frame-ancestors": ["'none'"],
+      "form-action": ["'self'"],
+      "script-src": ["'self'"],
+      "style-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      "font-src": ["'self'", "data:", "https://cdn.jsdelivr.net"],
+      "img-src": compactSources(["'self'", "data:", "blob:", r2PublicOrigin]),
+      "media-src": compactSources(["'self'", "blob:", r2PublicOrigin]),
+      "connect-src": compactSources(["'self'", r2EndpointOrigin, r2PublicOrigin, ...devAllowedOrigins]),
+    },
+  },
 }));
+
+app.use(sameOriginGuard);
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -461,7 +673,23 @@ const adminLimiter = rateLimit({
   message: { message: "관리자 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
 });
 
-app.use(express.json({ limit: "10mb" }));
+const uploadLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 80,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "업로드 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+});
+
+const writeLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+});
+
+app.use(express.json({ limit: "1mb" }));
 app.use((req, res, next) => {
   if (req.path === "/" || req.path.endsWith(".html")) {
     res.set("Cache-Control", "no-store");
@@ -482,10 +710,10 @@ app.use(session({
     tableName: "user_sessions",
     createTableIfMissing: true,
   }),
-  secret: process.env.SESSION_SECRET || "my-secret-key-1234",
+  secret: process.env.SESSION_SECRET || "development-only-session-secret",
   resave: false,
   saveUninitialized: false,
-  name: "dearme.sid",
+  name: SESSION_COOKIE_NAME,
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7,
     httpOnly: true,
@@ -512,18 +740,17 @@ function requireAdmin(req, res, next) {
 }
 
 // DB 연결 테스트
-app.get("/db-test", async (req, res) => {
+app.get("/db-test", requireAdmin, async (req, res) => {
   try { await prisma.$connect(); res.send("DB 연결 성공"); }
   catch (err) { res.status(500).send("DB 연결 실패"); }
 });
 
 // 1. 아이디 중복 확인
 app.post("/check-username", authLimiter, async (req, res) => {
-  const { userid } = req.body;
-  const engNumRegex = /^[a-zA-Z0-9]+$/;
+  const userid = String(req.body.userid || "").trim();
   if (!userid) return res.status(400).json({ available: false, message: "아이디를 입력해주세요." });
-  if (userid.length > 20) return res.status(400).json({ available: false, message: "아이디는 20자를 넘을 수 없습니다." });
-  if (!engNumRegex.test(userid)) return res.status(400).json({ available: false, message: "영어와 숫자만 가능합니다." });
+  if (userid.length > USERID_MAX_LENGTH) return res.status(400).json({ available: false, message: `아이디는 ${USERID_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (!USERID_REGEX.test(userid)) return res.status(400).json({ available: false, message: "영어와 숫자만 가능합니다." });
   try {
     const existing = await prisma.member.findUnique({ where: { userid } });
     if (existing) return res.status(400).json({ available: false, message: "이미 사용 중인 아이디입니다." });
@@ -533,13 +760,17 @@ app.post("/check-username", authLimiter, async (req, res) => {
 
 // 2. 회원가입
 app.post("/register", authLimiter, async (req, res) => {
-  const { name, userid, password } = req.body;
+  const name = String(req.body.name || "").trim();
+  const userid = String(req.body.userid || "").trim();
+  const password = String(req.body.password || "");
   const email = String(req.body.email || "").trim().toLowerCase();
   if (!name || !userid || !password || !email) return res.status(400).json({ message: "모든 값을 입력해주세요." });
-  if (name.length > 10) return res.status(400).json({ message: "이름은 10자를 넘을 수 없습니다." });
-  if (userid.length > 20) return res.status(400).json({ message: "아이디는 20자를 넘을 수 없습니다." });
-  if (password.length > 20) return res.status(400).json({ message: "비밀번호는 20자를 넘을 수 없습니다." });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+  if (name.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (userid.length > USERID_MAX_LENGTH) return res.status(400).json({ message: `아이디는 ${USERID_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (!USERID_REGEX.test(userid)) return res.status(400).json({ message: "아이디는 영어와 숫자만 사용할 수 있습니다." });
+  const passwordError = validatePassword(password);
+  if (passwordError) return res.status(400).json({ message: passwordError });
+  if (!isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
     if (existingEmail) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
@@ -559,17 +790,33 @@ app.post("/register", authLimiter, async (req, res) => {
 
 // 3. 로그인
 app.post("/login", authLimiter, async (req, res) => {
-  const { userid, password } = req.body;
+  const userid = String(req.body.userid || "").trim();
+  const password = String(req.body.password || "");
+  const invalidLoginMessage = "아이디 또는 비밀번호가 올바르지 않습니다.";
   if (!userid || !password) return res.status(400).json({ message: "아이디와 비밀번호를 입력해주세요." });
+  if (userid.length > USERID_MAX_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
+    return res.status(401).json({ message: invalidLoginMessage });
+  }
   try {
     const member = await prisma.member.findUnique({ where: { userid } });
-    if (!member) return res.status(400).json({ message: "존재하지 않는 아이디입니다." });
+    if (!member) return res.status(401).json({ message: invalidLoginMessage });
     const isMatch = await bcrypt.compare(password, member.password);
-    if (!isMatch) return res.status(400).json({ message: "비밀번호가 틀렸습니다." });
+    if (!isMatch) return res.status(401).json({ message: invalidLoginMessage });
     await prisma.member.update({ where: { id: member.id }, data: { lastLoginAt: new Date() } });
-    req.session.user = { id: member.id, userid: member.userid, name: member.name, email: member.email || "" };
-    req.session.save(() => {
-      res.status(200).json({ message: "로그인 성공", name: member.name });
+    req.session.regenerate(err => {
+      if (err) {
+        console.error("session regenerate error:", err);
+        return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다." });
+      }
+
+      req.session.user = { id: member.id, userid: member.userid, name: member.name, email: member.email || "" };
+      req.session.save(saveErr => {
+        if (saveErr) {
+          console.error("session save error:", saveErr);
+          return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다." });
+        }
+        res.status(200).json({ message: "로그인 성공", name: member.name });
+      });
     });
   } catch (err) {
     console.error("login error:", err);
@@ -585,7 +832,14 @@ app.get("/get-user-info", (req, res) => {
 
 // 5. 로그아웃
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => { res.clearCookie("connect.sid"); res.redirect("/"); });
+  req.session.destroy(() => {
+    res.clearCookie(SESSION_COOKIE_NAME, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: "lax",
+    });
+    res.redirect("/");
+  });
 });
 
 // 6. 이메일 변경
@@ -593,7 +847,7 @@ app.put("/update-email", async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
   const email = String(req.body.email || "").trim().toLowerCase();
   if (!email) return res.status(400).json({ message: "이메일을 입력해주세요." });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+  if (!isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
     if (existingEmail && existingEmail.id !== req.session.user.id) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
@@ -613,8 +867,8 @@ app.put("/update-profile", async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
 
   if (!name) return res.status(400).json({ message: "이름을 입력해주세요." });
-  if (name.length > 10) return res.status(400).json({ message: "이름은 10자를 넘을 수 없습니다." });
-  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (name.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (email && !isValidEmail(email)) {
     return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   }
 
@@ -641,8 +895,9 @@ app.put("/change-password", authLimiter, async (req, res) => {
   const currentPassword = String(req.body.currentPassword || "");
   const nextPassword = String(req.body.nextPassword || "");
   if (!currentPassword || !nextPassword) return res.status(400).json({ message: "현재 비밀번호와 새 비밀번호를 입력해주세요." });
-  if (nextPassword.length > 20) return res.status(400).json({ message: "비밀번호는 20자를 넘을 수 없습니다." });
-  if (nextPassword.length < 6) return res.status(400).json({ message: "비밀번호는 6자 이상으로 입력해주세요." });
+  if (currentPassword.length > PASSWORD_MAX_LENGTH) return res.status(400).json({ message: "현재 비밀번호가 올바르지 않습니다." });
+  const passwordError = validatePassword(nextPassword);
+  if (passwordError) return res.status(400).json({ message: passwordError });
 
   try {
     const member = await prisma.member.findUnique({ where: { id: req.session.user.id } });
@@ -660,38 +915,73 @@ app.put("/change-password", authLimiter, async (req, res) => {
 });
 
 // 7. 영상 업로드 presigned URL
-app.get("/get-upload-url", async (req, res) => {
+app.get("/get-upload-url", uploadLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
-  const fileName = `video_${req.session.user.id}_${Date.now()}.webm`;
-  const command = new PutObjectCommand({ Bucket: process.env.VITE_R2_BUCKET_NAME, Key: fileName, ContentType: "video/webm" });
+  if (!r2BucketName || !r2PublicBaseUrl || !r2Endpoint || !r2AccessKeyId || !r2SecretAccessKey) {
+    return res.status(500).json({ message: "업로드 설정이 완료되지 않았습니다." });
+  }
+  const fileName = makeObjectKey("videos", req.session.user.id, "webm");
+  const command = new PutObjectCommand({ Bucket: r2BucketName, Key: fileName, ContentType: "video/webm" });
   try {
     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
-    res.json({ uploadUrl, publicUrl: `${process.env.VITE_R2_PUBLIC_URL}/${fileName}` });
+    res.json({ uploadUrl, publicUrl: publicAssetUrl(fileName) });
   } catch (err) { console.error(err); res.status(500).json({ message: "URL 발급 실패" }); }
 });
 
 // 8. 이미지 업로드 presigned URL
-app.get("/get-image-upload-url", async (req, res) => {
+app.get("/get-image-upload-url", uploadLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
-  const ext = req.query.ext || "jpg";
-  const fileName = `image_${req.session.user.id}_${Date.now()}.${ext}`;
-  const contentType = ext === "png" ? "image/png" : ext === "gif" ? "image/gif" : "image/jpeg";
-  const command = new PutObjectCommand({ Bucket: process.env.VITE_R2_BUCKET_NAME, Key: fileName, ContentType: contentType });
+  if (!r2BucketName || !r2PublicBaseUrl || !r2Endpoint || !r2AccessKeyId || !r2SecretAccessKey) {
+    return res.status(500).json({ message: "업로드 설정이 완료되지 않았습니다." });
+  }
+  const ext = String(req.query.ext || "jpg").toLowerCase();
+  const contentType = IMAGE_CONTENT_TYPES[ext];
+  if (!contentType) return res.status(400).json({ message: "지원하지 않는 이미지 형식입니다." });
+  const fileName = makeObjectKey("images", req.session.user.id, ext);
+  const command = new PutObjectCommand({ Bucket: r2BucketName, Key: fileName, ContentType: contentType });
   try {
     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
-    res.json({ uploadUrl, publicUrl: `${process.env.VITE_R2_PUBLIC_URL}/${fileName}` });
+    res.json({ uploadUrl, publicUrl: publicAssetUrl(fileName) });
   } catch (err) { console.error(err); res.status(500).json({ message: "URL 발급 실패" }); }
 });
 
 // 9. 편지 저장
-app.post("/write-letter", async (req, res) => {
+app.post("/write-letter", writeLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
-  const { type = "text", content, videoUrl, imageUrl, signatureData, openDate, email, recipientEmail, recipientName } = req.body;
+  const type = String(req.body.type || "text");
+  const content = typeof req.body.content === "string" ? req.body.content : "";
+  const openDate = req.body.openDate;
+  const email = String(req.body.email || "").trim().toLowerCase();
+  const recipientEmail = String(req.body.recipientEmail || "").trim().toLowerCase();
+  const recipientName = String(req.body.recipientName || "").trim();
   const authorId = req.session.user.id;
-  if (type === "text" && !content) return res.status(400).json({ message: "내용을 입력해주세요." });
-  if ((type === "video" || type === "call") && !videoUrl) return res.status(400).json({ message: "영상을 녹화해주세요." });
-  if (type === "draw" && !imageUrl) return res.status(400).json({ message: "그림을 그려주세요." });
-  if (!openDate) return res.status(400).json({ message: "개봉일을 선택해주세요." });
+  if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
+  if (type === "text" && !content.trim()) return res.status(400).json({ message: "내용을 입력해주세요." });
+  if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
+
+  const cleanVideoUrl = (type === "video" || type === "call") ? normalizePublicAssetUrl(req.body.videoUrl) : null;
+  const cleanImageUrl = type === "draw" || (type === "text" && req.body.imageUrl)
+    ? normalizePublicAssetUrl(req.body.imageUrl)
+    : null;
+  const cleanSignatureUrl = type === "text" && req.body.signatureData
+    ? normalizePublicAssetUrl(req.body.signatureData)
+    : null;
+
+  if ((type === "video" || type === "call") && !cleanVideoUrl) return res.status(400).json({ message: "업로드된 영상 URL을 확인할 수 없습니다." });
+  if (type === "draw" && !cleanImageUrl) return res.status(400).json({ message: "업로드된 그림 URL을 확인할 수 없습니다." });
+  if (type === "text" && req.body.imageUrl && !cleanImageUrl) return res.status(400).json({ message: "첨부 이미지 URL을 확인할 수 없습니다." });
+  if (type === "text" && req.body.signatureData && !cleanSignatureUrl) return res.status(400).json({ message: "서명 이미지 URL을 확인할 수 없습니다." });
+
+  const parsedOpenDate = parseOpenDate(openDate);
+  if (!parsedOpenDate) return res.status(400).json({ message: "개봉일을 선택해주세요." });
+  const maxOpenDate = new Date();
+  maxOpenDate.setFullYear(maxOpenDate.getFullYear() + 100);
+  if (parsedOpenDate > maxOpenDate) return res.status(400).json({ message: "개봉일은 100년 이내로 선택해주세요." });
+
+  if (email && !isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+  if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (recipientName && !recipientEmail) return res.status(400).json({ message: "받는 사람 이메일을 입력해주세요." });
+  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받는 사람 이메일 형식이 올바르지 않습니다." });
 
   try {
     if (email) {
@@ -702,21 +992,20 @@ app.post("/write-letter", async (req, res) => {
     await prisma.letter.create({
       data: {
         type,
-        content: content || null,
-        videoUrl: videoUrl || null,
-        imageUrl: imageUrl || null,
-        signatureData: signatureData || null,
+        content: type === "text" ? content : null,
+        videoUrl: cleanVideoUrl,
+        imageUrl: cleanImageUrl,
+        signatureData: cleanSignatureUrl,
         recipientEmail: recipientEmail || null,
         recipientName: recipientName || null,
-        openDate: new Date(openDate),
+        openDate: parsedOpenDate,
         authorId,
       }
     });
 
-    // 개봉일이 오늘(한국 시간 기준) 이하면 즉시 발송
-    const todayKST = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' }); // "YYYY-MM-DD"
-    if (openDate <= todayKST) {
-      sendDueLetters();
+    // 이미 개봉 가능한 날짜라면 현재 사용자의 편지만 즉시 발송한다.
+    if (parsedOpenDate <= new Date()) {
+      sendDueLetters({ authorId });
     }
 
     res.status(201).json({ message: "편지 저장 성공!" });
@@ -730,6 +1019,7 @@ app.post("/write-letter", async (req, res) => {
 app.get("/my-letters", async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
   try {
+    const now = new Date();
     const letters = await prisma.letter.findMany({
       where: { authorId: req.session.user.id },
       orderBy: { createdAt: "desc" },
@@ -741,7 +1031,22 @@ app.get("/my-letters", async (req, res) => {
         openDate: true, createdAt: true,
       },
     });
-    res.json(letters);
+    res.json(letters.map(letter => {
+      const unlocked = new Date(letter.openDate) <= now;
+      if (unlocked) return { ...letter, locked: false };
+      return {
+        ...letter,
+        locked: true,
+        content: null,
+        videoUrl: null,
+        imageUrl: null,
+        signatureData: null,
+        callReplyVideoUrl: null,
+        callCompositeVideoUrl: null,
+        callReplyEmail: null,
+        callReplySentAt: null,
+      };
+    }));
   } catch { res.status(500).json({ message: "서버 오류" }); }
 });
 
@@ -763,21 +1068,26 @@ app.delete("/delete-letter/:id", async (req, res) => {
 // 개봉일 편지 즉시 발송 (테스트용)
 app.post("/trigger-send", async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
-  await sendDueLetters();
-  res.json({ message: "발송 완료" });
+  const result = await sendDueLetters({ authorId: req.session.user.id });
+  res.json({ message: "발송 완료", ...result });
 });
 
 // 영상통화 현재 영상 업로드 후 이메일 발송
 app.post("/teacher-letters", requireAdmin, async (req, res) => {
-  const { title, teacherName, content } = req.body;
-  if (!content?.trim()) return res.status(400).json({ message: "Teacher letter content is required" });
+  const title = String(req.body.title || "").trim();
+  const teacherName = String(req.body.teacherName || "").trim();
+  const content = String(req.body.content || "").trim();
+  if (!content) return res.status(400).json({ message: "Teacher letter content is required" });
+  if (title.length > TEACHER_TITLE_MAX_LENGTH) return res.status(400).json({ message: `제목은 ${TEACHER_TITLE_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (teacherName.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `선생님 이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (content.length > TEACHER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `편지 내용은 ${TEACHER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
 
   try {
     const teacherLetter = await prisma.teacherLetter.create({
       data: {
-        title: title?.trim() || null,
-        teacherName: teacherName?.trim() || req.session.user.name,
-        content: content.trim(),
+        title: title || null,
+        teacherName: teacherName || req.session.user.name,
+        content,
         authorId: req.session.user.id,
       },
     });
@@ -866,8 +1176,8 @@ app.patch("/admin/users/:id/password", adminLimiter, requireAdmin, async (req, r
   if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 사용자입니다." });
   if (id === req.session.user.id) return res.status(400).json({ message: "현재 로그인한 관리자 비밀번호는 여기서 변경할 수 없습니다." });
   if (!nextPassword) return res.status(400).json({ message: "새 비밀번호를 입력해주세요." });
-  if (nextPassword.length < 6) return res.status(400).json({ message: "비밀번호는 6자 이상으로 입력해주세요." });
-  if (nextPassword.length > 20) return res.status(400).json({ message: "비밀번호는 20자를 넘을 수 없습니다." });
+  const passwordError = validatePassword(nextPassword);
+  if (passwordError) return res.status(400).json({ message: passwordError });
 
   try {
     const user = await prisma.member.findUnique({ where: { id }, select: { id: true } });
@@ -904,7 +1214,7 @@ app.get("/admin/letters", requireAdmin, async (req, res) => {
   }
 });
 
-app.patch("/admin/letters/:id/open-date", requireAdmin, async (req, res) => {
+app.patch("/admin/letters/:id/open-date", adminLimiter, requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   const { openDate } = req.body;
   if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 편지입니다." });
@@ -970,15 +1280,18 @@ app.get("/my-teacher-letter", async (req, res) => {
   }
 });
 
-app.post("/send-call-reply", async (req, res) => {
+app.post("/send-call-reply", writeLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
   const { letterId, presentVideoUrl, compositeVideoUrl, email } = req.body;
   const parsedLetterId = Number(letterId);
   if (!Number.isInteger(parsedLetterId)) return res.status(400).json({ message: "Invalid letter id" });
   if (!email?.trim()) return res.status(400).json({ message: "이메일을 입력해주세요" });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+  if (!isValidEmail(String(email).trim().toLowerCase()))
     return res.status(400).json({ message: "이메일 형식을 확인해주세요" });
-  if (!presentVideoUrl?.trim()) return res.status(400).json({ message: "저장할 현재 영상이 없습니다." });
+  const cleanPresentVideoUrl = normalizePublicAssetUrl(presentVideoUrl);
+  const cleanCompositeVideoUrl = compositeVideoUrl ? normalizePublicAssetUrl(compositeVideoUrl) : null;
+  if (!cleanPresentVideoUrl) return res.status(400).json({ message: "저장할 현재 영상 URL을 확인할 수 없습니다." });
+  if (compositeVideoUrl && !cleanCompositeVideoUrl) return res.status(400).json({ message: "통화 기록 영상 URL을 확인할 수 없습니다." });
   try {
     const letter = await prisma.letter.findFirst({
       where: {
@@ -995,18 +1308,17 @@ app.post("/send-call-reply", async (req, res) => {
     });
 
     if (!letter) return res.status(404).json({ message: "영상통화 편지를 찾을 수 없습니다." });
+    if (new Date(letter.openDate) > new Date()) return res.status(403).json({ message: "아직 개봉할 수 없는 편지입니다." });
     if (letter.callReplySentAt) return res.status(409).json({ message: "이미 저장된 영상통화입니다." });
 
     const name = req.session.user.name;
     const savedAt = new Date();
-    const cleanEmail = email.trim();
-    const cleanPresentVideoUrl = presentVideoUrl.trim();
-    const cleanCompositeVideoUrl = compositeVideoUrl?.trim() || null;
+    const cleanEmail = String(email).trim().toLowerCase();
     await mailer.sendMail({
       from: emailFromHeader,
       replyTo: emailReplyTo,
       to: cleanEmail,
-      subject: `${name}님의 시간 여행 통화 기록`,
+      subject: mailHeader(`${name}님의 시간 여행 통화 기록`),
       html: buildCallReplyEmail(name, letter.openDate, letter.videoUrl, cleanPresentVideoUrl, cleanCompositeVideoUrl),
     });
     await prisma.letter.update({
@@ -1034,6 +1346,10 @@ app.post("/send-call-reply", async (req, res) => {
 
 function buildCallReplyEmail(name, openDate, pastVideoUrl, presentVideoUrl, compositeVideoUrl) {
   const dateStr = new Date(openDate).toLocaleDateString("ko-KR");
+  const safeName = escapeHtml(name);
+  const safePastVideoUrl = normalizePublicAssetUrl(pastVideoUrl);
+  const safePresentVideoUrl = normalizePublicAssetUrl(presentVideoUrl);
+  const safeCompositeVideoUrl = normalizePublicAssetUrl(compositeVideoUrl);
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
@@ -1042,26 +1358,26 @@ function buildCallReplyEmail(name, openDate, pastVideoUrl, presentVideoUrl, comp
     </div>
     <div style="padding:40px">
       <p style="font-size:17px;color:#e9dcc6;text-align:center;line-height:1.8;margin-bottom:36px">
-        안녕, <strong>${name}</strong>.<br>
+        안녕, <strong>${safeName}</strong>.<br>
         과거의 너와 현재의 네가 만난 특별한 통화야.<br>
         <span style="color:rgba(255,252,223,0.45);font-size:14px">두 영상을 함께 간직해줘.</span>
       </p>
-      ${compositeVideoUrl ? `
+      ${safeCompositeVideoUrl ? `
       <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(231,207,161,0.24);border-radius:14px;padding:30px;text-align:center;margin-bottom:16px">
         <div style="color:#e7cfa1;font-size:12px;letter-spacing:3px;margin-bottom:14px">통화 기록</div>
-        <a href="${compositeVideoUrl}" style="display:inline-block;padding:14px 34px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">남겨진 통화 보기</a>
-        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${compositeVideoUrl}</p>
+        <a href="${escapeHtml(safeCompositeVideoUrl)}" style="display:inline-block;padding:14px 34px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">남겨진 통화 보기</a>
+        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${escapeHtml(safeCompositeVideoUrl)}</p>
       </div>` : ''}
-      ${!compositeVideoUrl ? `
+      ${!safeCompositeVideoUrl ? `
       <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:28px;text-align:center;margin-bottom:16px">
         <div style="color:rgba(255,252,223,0.4);font-size:11px;letter-spacing:3px;margin-bottom:14px">PAST · 과거의 나</div>
-        <a href="${pastVideoUrl}" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">▶ 과거 영상 보기</a>
-        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${pastVideoUrl}</p>
+        ${safePastVideoUrl ? `<a href="${escapeHtml(safePastVideoUrl)}" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">과거 영상 보기</a>
+        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${escapeHtml(safePastVideoUrl)}</p>` : `<p style="color:rgba(255,252,223,0.55)">과거 영상 URL을 확인할 수 없습니다.</p>`}
       </div>
       <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:28px;text-align:center">
         <div style="color:rgba(255,252,223,0.4);font-size:11px;letter-spacing:3px;margin-bottom:14px">PRESENT · 현재의 나</div>
-        <a href="${presentVideoUrl}" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#a8d8ea,#7bc3d8);color:#1a2a35;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">▶ 현재 영상 보기</a>
-        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${presentVideoUrl}</p>
+        ${safePresentVideoUrl ? `<a href="${escapeHtml(safePresentVideoUrl)}" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#a8d8ea,#7bc3d8);color:#1a2a35;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">현재 영상 보기</a>
+        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${escapeHtml(safePresentVideoUrl)}</p>` : `<p style="color:rgba(255,252,223,0.55)">현재 영상 URL을 확인할 수 없습니다.</p>`}
       </div>` : ''}
     </div>
     <div style="padding:20px 40px 40px;text-align:center;color:rgba(255,252,223,0.3);font-size:12px">Dear Me; Dear You</div>

@@ -8,6 +8,7 @@ const ease = [0.22, 1, 0.36, 1];
 const typeStyles = {
   text: { label: '텍스트', icon: '✉', bg: 'rgba(110,45,45,0.08)', color: '#7a3535', border: 'rgba(110,45,45,0.18)' },
   video: { label: '영상', icon: '▶', bg: 'rgba(55,80,170,0.08)', color: '#4a5f9a', border: 'rgba(55,80,170,0.16)' },
+  call: { label: '영상통화', icon: '☎', bg: 'rgba(45,130,95,0.08)', color: '#2f7a59', border: 'rgba(45,130,95,0.18)' },
   draw: { label: '그림', icon: '🎨', bg: 'rgba(170,85,25,0.08)', color: '#9a5729', border: 'rgba(170,85,25,0.16)' },
 };
 
@@ -37,7 +38,7 @@ export default function LettersPage() {
     fetch('/my-letters')
       .then(r => { if (r.status === 401) { navigate('/login'); return null; } return r.json(); })
       .then(data => {
-        if (data) setLetters(data.filter(letter => letter.type !== 'call'));
+        if (data) setLetters(data);
         setLoading(false);
       })
       .catch(() => setLoading(false));

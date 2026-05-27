@@ -7,6 +7,10 @@ import DrawCanvas from '../components/DrawCanvas.jsx';
 const ease = [0.22, 1, 0.36, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.18 } } };
 const item = { hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 1.2, ease } } };
+const LETTER_CONTENT_MAX_LENGTH = 5000;
+const RECIPIENT_NAME_MAX_LENGTH = 50;
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 const CALL_PROMPTS = [
   '요즘 가장 많이 생각하는 건 뭐야?',
   '지금 제일 소중한 사람은 누구야?',
@@ -34,6 +38,7 @@ function LetterTextarea({ value, onChange, placeholder }) {
       value={value}
       onChange={e => onChange(e.target.value)}
       placeholder={placeholder}
+      maxLength={LETTER_CONTENT_MAX_LENGTH}
       className="write-textarea letters-scroll"
     />
   );
@@ -284,7 +289,7 @@ const sigBtnStyle = {
 export default function WritePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const initialMode = ['text', 'video', 'draw'].includes(location.state?.mode)
+  const initialMode = ['text', 'video', 'draw', 'call'].includes(location.state?.mode)
     ? location.state.mode
     : 'text';
   const [mode, setMode] = useState(initialMode);
@@ -415,6 +420,7 @@ export default function WritePage() {
       const rawBlob = new Blob(chunksRef.current, { type: 'video/webm' });
       const durationMs = Math.max(1, Date.now() - recordingStartedAtRef.current);
       const blob = await fixWebmDuration(rawBlob, durationMs, { logger: false }).catch(() => rawBlob);
+      if (blob.size > MAX_VIDEO_BYTES) throw new Error('영상 파일이 너무 큽니다. 다시 촬영해주세요.');
       const res = await fetch('/get-upload-url');
       if (!res.ok) throw new Error();
       const { uploadUrl, publicUrl } = await res.json();
@@ -478,6 +484,7 @@ export default function WritePage() {
     setImageUploading(true);
     try {
       const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+      if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error();
       const res = await fetch('/get-image-upload-url?ext=jpg');
       if (!res.ok) throw new Error();
       const { uploadUrl, publicUrl } = await res.json();
@@ -491,13 +498,16 @@ export default function WritePage() {
   async function uploadSignature(dataUrl) {
     try {
       const res = await fetch('/get-image-upload-url?ext=png');
-      if (!res.ok) return dataUrl; // 업로드 실패 시 base64 fallback
+      if (!res.ok) throw new Error('서명 업로드 URL 발급에 실패했습니다.');
       const { uploadUrl, publicUrl } = await res.json();
       const blob = await (await fetch(dataUrl)).blob();
+      if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('서명 이미지가 너무 큽니다.');
       const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/png' } });
-      if (!put.ok) return dataUrl;
+      if (!put.ok) throw new Error('서명 업로드에 실패했습니다.');
       return publicUrl;
-    } catch { return dataUrl; }
+    } catch (err) {
+      throw new Error(err.message || '서명 업로드에 실패했습니다.');
+    }
   }
 
   async function uploadCanvas() {
@@ -506,6 +516,7 @@ export default function WritePage() {
       const canvas = drawCanvasEl;
       if (!canvas) throw new Error('canvas not ready');
       const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+      if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('그림 이미지가 너무 큽니다.');
       const res = await fetch('/get-image-upload-url?ext=png');
       if (!res.ok) throw new Error();
       const { uploadUrl, publicUrl } = await res.json();
@@ -524,10 +535,15 @@ export default function WritePage() {
 
   async function handleSave() {
     if (!openDate) return alert('개봉일을 선택해주세요!');
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return alert('이메일 형식이 올바르지 않습니다.');
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
+    const cleanRecipientName = recipientName.trim();
+    if (text.length > LETTER_CONTENT_MAX_LENGTH) return alert(`내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return alert('이메일 형식이 올바르지 않습니다.');
     if (toOther) {
-      if (!recipientEmail) return alert('받는 사람 이메일을 입력해주세요.');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipientEmail)) return alert('받는 사람 이메일 형식이 올바르지 않습니다.');
+      if (!cleanRecipientEmail) return alert('받는 사람 이메일을 입력해주세요.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanRecipientEmail)) return alert('받는 사람 이메일 형식이 올바르지 않습니다.');
+      if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return alert(`받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
     }
     setSaving(true);
     try {
@@ -550,9 +566,9 @@ export default function WritePage() {
         imageUrl: mode === 'text' ? (imageUrl || undefined) : mode === 'draw' ? drawImageUrl : undefined,
         signatureData: mode === 'text' ? (finalSignature || undefined) : undefined,
         openDate,
-        email,
-        recipientEmail: toOther ? recipientEmail : undefined,
-        recipientName: toOther ? recipientName : undefined,
+        email: cleanEmail,
+        recipientEmail: toOther ? cleanRecipientEmail : undefined,
+        recipientName: toOther ? cleanRecipientName : undefined,
       };
       const res = await fetch('/write-letter', {
         method: 'POST',
@@ -566,7 +582,7 @@ export default function WritePage() {
         alert(data.message || '오류가 발생했습니다.');
         if (res.status === 401) navigate('/login');
       }
-    } catch { alert('서버 연결 오류'); }
+    } catch (err) { alert(err.message || '서버 연결 오류'); }
     finally { setSaving(false); }
   }
 
@@ -790,6 +806,7 @@ export default function WritePage() {
             {[
               { key: 'text', label: '✉ 텍스트' },
               { key: 'video', label: '🎥 영상' },
+              { key: 'call', label: '📱 영상통화' },
               { key: 'draw', label: '🎨 그림' },
             ].map(({ key, label }) => (
               <button key={key} onClick={() => handleModeSwitch(key)} style={{

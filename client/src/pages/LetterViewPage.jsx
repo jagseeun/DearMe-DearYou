@@ -5,6 +5,7 @@ import fixWebmDuration from 'fix-webm-duration';
 import { formatDate, daysSince } from '../utils/dates.js';
 
 const ease = [0.22, 1, 0.36, 1];
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 
 function waitForVideoReady(video) {
   return new Promise((resolve, reject) => {
@@ -157,6 +158,7 @@ async function createCombinedCallBlob(pastVideoUrl, presentBlob, name) {
 }
 
 async function uploadVideoBlob(blob) {
+  if (!blob || blob.size > MAX_VIDEO_BYTES) throw new Error('영상 파일이 너무 큽니다.');
   const res = await fetch('/get-upload-url');
   if (!res.ok) throw new Error('업로드 URL을 만들지 못했습니다.');
   const { uploadUrl, publicUrl } = await res.json();
@@ -855,6 +857,7 @@ export default function LetterViewPage() {
   const [phase, setPhase] = useState('envelope');
 
   if (!letter) { navigate('/login', { replace: true }); return null; }
+  if (letter.locked) { navigate(returnTo || '/letters', { replace: true }); return null; }
 
   // call 타입이면 envelope 대신 바로 수신 화면으로
   const isCall = letter.type === 'call';

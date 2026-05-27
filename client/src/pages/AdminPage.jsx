@@ -5,6 +5,9 @@ import PasswordField from '../components/PasswordField.jsx';
 import { fetchJson } from '../utils/api.js';
 
 const ease = [0.22, 1, 0.36, 1];
+const PASSWORD_MAX_LENGTH = 128;
+const TEACHER_TITLE_MAX_LENGTH = 120;
+const TEACHER_CONTENT_MAX_LENGTH = 10000;
 
 const panelStyle = {
   width: '100%',
@@ -213,6 +216,10 @@ export default function AdminPage() {
       setMessage('비밀번호는 6자 이상으로 입력해주세요.');
       return;
     }
+    if (nextPassword.length > PASSWORD_MAX_LENGTH) {
+      setMessage(`비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`);
+      return;
+    }
     if (!window.confirm(`${user.name}(${user.userid}) 계정의 비밀번호를 변경할까요?`)) return;
 
     setBusyId(`password-${user.id}`);
@@ -305,12 +312,14 @@ export default function AdminPage() {
                 value={form.teacherName}
                 onChange={e => setForm(prev => ({ ...prev, teacherName: e.target.value }))}
                 placeholder="선생님 이름"
+                maxLength={10}
               />
               <input
                 style={inputStyle}
                 value={form.title}
                 onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="제목"
+                maxLength={TEACHER_TITLE_MAX_LENGTH}
               />
             </div>
             <textarea
@@ -318,6 +327,7 @@ export default function AdminPage() {
               value={form.content}
               onChange={e => setForm(prev => ({ ...prev, content: e.target.value }))}
               placeholder="선생님 편지 내용"
+              maxLength={TEACHER_CONTENT_MAX_LENGTH}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
               <button style={buttonStyle} disabled={saving}>{saving ? '저장 중...' : '편지 저장'}</button>
@@ -387,7 +397,7 @@ export default function AdminPage() {
                 className="admin-password-input"
                 inputStyle={{ ...inputStyle, paddingRight: 52 }}
                 placeholder="새 비밀번호"
-                maxLength={20}
+                maxLength={PASSWORD_MAX_LENGTH}
                 value={passwordDrafts[user.id] || ''}
                 onChange={e => setPasswordDrafts(prev => ({ ...prev, [user.id]: e.target.value }))}
               />

@@ -7,6 +7,7 @@ import PinkStars from '../components/PinkStars.jsx';
 const ease = [0.22, 1, 0.36, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.16 } } };
 const item = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } };
+const PASSWORD_MAX_LENGTH = 128;
 
 export default function PinkLoginPage() {
   const navigate = useNavigate();
@@ -14,12 +15,13 @@ export default function PinkLoginPage() {
   const [password, setPassword] = useState('');
 
   async function handleLogin() {
-    if (!userid || !password) return alert('아이디와 비밀번호를 입력해주세요.');
+    const nextUserid = userid.trim();
+    if (!nextUserid || !password) return alert('아이디와 비밀번호를 입력해주세요.');
     try {
       const res = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userid, password }),
+        body: JSON.stringify({ userid: nextUserid, password }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) navigate('/pink-letters');
@@ -76,7 +78,7 @@ export default function PinkLoginPage() {
             wrapperClassName="password-field password-field-pink"
             className="pink-password-input"
             placeholder="비밀번호를 입력하세요"
-            maxLength={20}
+            maxLength={PASSWORD_MAX_LENGTH}
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}

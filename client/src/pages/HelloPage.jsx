@@ -12,6 +12,7 @@ const item = {
   hidden: { opacity: 0, y: 40 },
   show: { opacity: 1, y: 0, transition: { duration: 1.2, ease } },
 };
+const PASSWORD_MAX_LENGTH = 128;
 
 const questions = [
   '내년의 나에게 꼭 지키고 싶은 약속 하나는?',
@@ -102,7 +103,7 @@ export default function HelloPage() {
   async function handlePasswordSave() {
     if (!currentPassword || !nextPassword) { setPasswordMsg('현재 비밀번호와 새 비밀번호를 입력해주세요.'); return; }
     if (nextPassword.length < 6) { setPasswordMsg('새 비밀번호는 6자 이상으로 입력해주세요.'); return; }
-    if (nextPassword.length > 20) { setPasswordMsg('새 비밀번호는 20자를 넘을 수 없습니다.'); return; }
+    if (nextPassword.length > PASSWORD_MAX_LENGTH) { setPasswordMsg(`새 비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`); return; }
 
     setPasswordSaving(true);
     setPasswordMsg('');
@@ -305,7 +306,7 @@ export default function HelloPage() {
                 className="modal-password-input"
                 placeholder="현재 비밀번호"
                 value={currentPassword}
-                maxLength={20}
+                maxLength={PASSWORD_MAX_LENGTH}
                 onChange={e => { setCurrentPassword(e.target.value); setPasswordMsg(''); }}
                 autoFocus
                 inputStyle={{ ...modalInputStyle, paddingRight: 52 }}
@@ -313,9 +314,9 @@ export default function HelloPage() {
               <PasswordField
                 wrapperClassName="password-field password-field-modal"
                 className="modal-password-input"
-                placeholder="새 비밀번호 (6~20자)"
+                placeholder="새 비밀번호 (6자 이상)"
                 value={nextPassword}
-                maxLength={20}
+                maxLength={PASSWORD_MAX_LENGTH}
                 onChange={e => { setNextPassword(e.target.value); setPasswordMsg(''); }}
                 onKeyDown={e => { if (e.key === 'Enter') handlePasswordSave(); }}
                 inputStyle={{ ...modalInputStyle, paddingRight: 52 }}

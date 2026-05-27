@@ -6,6 +6,7 @@ import PasswordField from '../components/PasswordField.jsx';
 const ease = [0.22, 1, 0.36, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.14 } } };
 const item = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } };
+const PASSWORD_MAX_LENGTH = 128;
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -17,12 +18,13 @@ export default function SignupPage() {
   const [idChecked, setIdChecked] = useState(false);
 
   async function checkUsername() {
-    if (!userid) return alert('아이디를 입력해주세요.');
+    const nextUserid = userid.trim();
+    if (!nextUserid) return alert('아이디를 입력해주세요.');
     try {
       const res = await fetch('/check-username', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userid }),
+        body: JSON.stringify({ userid: nextUserid }),
       });
       const data = await res.json();
       setIdMsg({ text: data.message || '', ok: Boolean(data.available) });
@@ -34,13 +36,18 @@ export default function SignupPage() {
   }
 
   async function handleRegister() {
-    if (!name || !userid || !password || !email) return alert('모든 정보를 입력해주세요.');
+    const nextName = name.trim();
+    const nextUserid = userid.trim();
+    const nextEmail = email.trim();
+    if (!nextName || !nextUserid || !password || !nextEmail) return alert('모든 정보를 입력해주세요.');
     if (!idChecked) return alert('아이디 중복 확인을 해주세요.');
+    if (password.length < 6) return alert('비밀번호는 6자 이상으로 입력해주세요.');
+    if (password.length > PASSWORD_MAX_LENGTH) return alert(`비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`);
     try {
       const res = await fetch('/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, userid, password, email }),
+        body: JSON.stringify({ name: nextName, userid: nextUserid, password, email: nextEmail }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -118,8 +125,8 @@ export default function SignupPage() {
 
         <PasswordField
           variants={item}
-          placeholder="비밀번호 (최대 20자)"
-          maxLength={20}
+          placeholder="비밀번호 (6자 이상)"
+          maxLength={PASSWORD_MAX_LENGTH}
           value={password}
           onChange={e => setPassword(e.target.value)}
         />

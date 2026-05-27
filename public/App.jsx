@@ -1,15 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-
-const s3 = new S3Client({
-  region: "auto",
-  endpoint: import.meta.env.VITE_R2_ENDPOINT,
-  forcePathStyle: true,
-  credentials: {
-    accessKeyId: import.meta.env.VITE_R2_ACCESS_KEY_ID,
-    secretAccessKey: import.meta.env.VITE_R2_SECRET_ACCESS_KEY,
-  },
-});
 
 function App() {
   const [stage, setStage] = useState("idle");
@@ -82,19 +71,17 @@ function App() {
 
   const handleUpload = async (blob) => {
     setUploading(true);
-    const fileName = `video_${Date.now()}.webm`;
     try {
-      const arrayBuffer = await blob.arrayBuffer();
-      await s3.send(new PutObjectCommand({
-        Bucket: import.meta.env.VITE_R2_BUCKET_NAME,
-        Key: fileName,
-        Body: new Uint8Array(arrayBuffer),
-        ContentType: "video/webm",
-      }));
-      
-      // 🔥 캐시 방지를 위해 URL 끝에 랜덤 숫자를 붙입니다 (매우 중요)
-      const finalUrl = `${import.meta.env.VITE_R2_PUBLIC_URL}/${fileName}?t=${Date.now()}`;
-      setVideoUrl(finalUrl);
+      const res = await fetch("/get-upload-url");
+      if (!res.ok) throw new Error();
+      const { uploadUrl, publicUrl } = await res.json();
+      const put = await fetch(uploadUrl, {
+        method: "PUT",
+        body: blob,
+        headers: { "Content-Type": "video/webm" },
+      });
+      if (!put.ok) throw new Error();
+      setVideoUrl(publicUrl);
       setStage("uploaded");
     } catch (err) {
       alert("업로드 실패");

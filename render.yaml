@@ -23,17 +23,17 @@ services:
         sync: false
       - key: EMAIL_REPLY_TO
         sync: false
-      - key: VITE_R2_BUCKET_NAME
+      - key: ENABLE_SCHEDULED_EMAILS
+        value: true
+      - key: R2_BUCKET_NAME
         sync: false
-      - key: VITE_R2_PUBLIC_URL
+      - key: R2_PUBLIC_URL
         sync: false
-      - key: VITE_R2_ENDPOINT
+      - key: R2_ENDPOINT
         sync: false
-      - key: VITE_R2_ACCESS_KEY_ID
+      - key: R2_ACCESS_KEY_ID
         sync: false
-      - key: VITE_R2_SECRET_ACCESS_KEY
+      - key: R2_SECRET_ACCESS_KEY
         sync: false
       - key: ADMIN_USERIDS
-        sync: false
-      - key: LETTER_PIN
         sync: false
