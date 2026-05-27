@@ -858,10 +858,8 @@ export default function LetterViewPage() {
 
   if (!letter) { navigate('/login', { replace: true }); return null; }
   if (letter.locked) { navigate(returnTo || '/letters', { replace: true }); return null; }
+  if (letter.type === 'call') { navigate(returnTo || '/letters', { replace: true }); return null; }
 
-  // call 타입이면 envelope 대신 바로 수신 화면으로
-  const isCall = letter.type === 'call';
-  const hasSavedCallReply = isCall && Boolean(letter.callReplyVideoUrl);
   const isPink = true;
   const d = daysSince(letter.openDate);
   const dChars = ['D', '+', ...String(d).split('')];
@@ -914,38 +912,8 @@ export default function LetterViewPage() {
     >
       <AnimatePresence mode="sync">
 
-        {/* ── call: 수신 화면 ── */}
-        {hasSavedCallReply && phase === 'envelope' && (
-          <SavedCallView
-            key="saved-call"
-            letter={letter}
-            name={name}
-            returnTo={returnTo}
-          />
-        )}
-
-        {isCall && !hasSavedCallReply && phase === 'envelope' && (
-          <CallIncoming
-            key="call-incoming"
-            name={name}
-            openDate={letter.openDate}
-            onAnswer={() => setPhase('content')}
-            onDecline={() => navigate(returnTo || -1)}
-          />
-        )}
-
-        {/* ── call: 통화 화면 ── */}
-        {isCall && phase === 'content' && (
-          <CallActive
-            key="call-active"
-            letter={letter}
-            name={name}
-            onHangup={() => setPhase('done')}
-          />
-        )}
-
-        {/* ── 일반: 봉투 화면 ── */}
-        {!isCall && phase === 'envelope' && (
+        {/* ── 봉투 화면 ── */}
+        {phase === 'envelope' && (
           <motion.div key="envelope" style={{ position: 'absolute', inset: 0 }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}>
@@ -1042,7 +1010,7 @@ export default function LetterViewPage() {
         )}
 
         {/* ── 일반: 내용 화면 ── */}
-        {!isCall && phase === 'content' && (
+        {phase === 'content' && (
           <motion.div key="content" style={{ position: 'absolute', inset: 0 }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.5 }}>
@@ -1142,7 +1110,7 @@ export default function LetterViewPage() {
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, ease }}
                 style={{ fontSize: 28, fontWeight: 300, color: textMain }}>
-                {isCall ? '통화가 종료됐어요.' : '다음은 어떻게 할까요?'}
+                다음은 어떻게 할까요?
               </motion.div>
 
               <motion.div

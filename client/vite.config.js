@@ -59,7 +59,6 @@ export default defineConfig({
       '/my-letters': apiProxy(),
       '/delete-letter': apiProxy(),
       '/trigger-send': apiProxy(),
-      '/send-call-reply': apiProxy(),
       '/teacher-letters': apiProxy(),
       '/my-teacher-letter': apiProxy(),
       '/admin/users': apiProxy(),

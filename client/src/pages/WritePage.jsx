@@ -11,19 +11,6 @@ const LETTER_CONTENT_MAX_LENGTH = 5000;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
-const CALL_PROMPTS = [
-  '요즘 가장 많이 생각하는 건 뭐야?',
-  '지금 제일 소중한 사람은 누구야?',
-  '그때의 약속은 아직 지키고 있어?',
-  '요즘 행복하다고 느끼는 순간은 언제야?',
-  '나한테 꼭 물어보고 싶은 게 있어?',
-  '지금 가장 바라는 미래는 뭐야?',
-  '힘들 때 어떻게 버티고 있어?',
-  '요즘의 나는 어떤 어른이 됐어?',
-  '아직도 좋아하는 게 그대로 남아 있어?',
-  '나에게 해주고 싶은 말이 있어?',
-];
-const CALL_STARTER_PROMPTS = CALL_PROMPTS.slice(0, 4);
 
 function defaultOpenDate() {
   const d = new Date();
@@ -289,16 +276,13 @@ const sigBtnStyle = {
 export default function WritePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const initialMode = ['text', 'video', 'draw', 'call'].includes(location.state?.mode)
+  const initialMode = ['text', 'video', 'draw'].includes(location.state?.mode)
     ? location.state.mode
     : 'text';
   const [mode, setMode] = useState(initialMode);
   const [text, setText] = useState('');
 
-  // 영상통화 프롬프트
-  const [callPrompts, setCallPrompts] = useState([]);
-
-  // 영상 상태 (video & call 공용)
+  // 영상 상태
   const [stage, setStage] = useState('idle');
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -347,29 +331,6 @@ export default function WritePage() {
   }, []);
 
   useEffect(() => { return () => { streamRef.current?.getTracks().forEach(t => t.stop()); }; }, []);
-
-  // call 모드 녹화 중에만 프롬프트 표시
-  useEffect(() => {
-    if (mode !== 'call' || stage !== 'recording') { setCallPrompts([]); return; }
-    const PROMPTS = [
-      '요즘 어떻게 지내?', '뭐가 가장 많이 달라졌어?', '지금 행복해?',
-      '그때 약속 지켰어?', '힘든 일 있어?', '꿈은 아직도 같아?',
-      '지금 뭐가 제일 소중해?', '후회하는 거 있어?', '하고 싶은 말 있어?',
-      '지금 어디에 있어?', '사랑하는 사람 생겼어?',
-    ];
-    const shuffled = [...CALL_PROMPTS].sort(() => Math.random() - 0.5);
-    let idx = 0; const timers = [];
-    function show() {
-      const id = Date.now() + Math.random();
-      const text = shuffled[idx % shuffled.length]; idx++;
-      setCallPrompts(p => [...p, { id, text, x: 8 + Math.random() * 55 }]);
-      const t = setTimeout(() => setCallPrompts(p => p.filter(q => q.id !== id)), 4200);
-      timers.push(t);
-    }
-    show();
-    const interval = setInterval(show, 5000);
-    return () => { clearInterval(interval); timers.forEach(clearTimeout); setCallPrompts([]); };
-  }, [mode, stage]);
 
   useEffect(() => {
     if (stage !== 'counting') return;
@@ -528,7 +489,7 @@ export default function WritePage() {
 
   async function handleFromMe() {
     if (mode === 'text' && !text.trim()) return alert('내용을 작성해주세요!');
-    if ((mode === 'video' || mode === 'call') && !videoUrl) return alert('먼저 영상을 촬영해주세요!');
+    if (mode === 'video' && !videoUrl) return alert('먼저 영상을 촬영해주세요!');
     if (mode === 'draw' && !drawHasDrawn) return alert('그림을 그려주세요!');
     setShowModal(true);
   }
@@ -562,7 +523,7 @@ export default function WritePage() {
       const body = {
         type: mode,
         content: mode === 'text' ? text : undefined,
-        videoUrl: (mode === 'video' || mode === 'call') ? videoUrl : undefined,
+        videoUrl: mode === 'video' ? videoUrl : undefined,
         imageUrl: mode === 'text' ? (imageUrl || undefined) : mode === 'draw' ? drawImageUrl : undefined,
         signatureData: mode === 'text' ? (finalSignature || undefined) : undefined,
         openDate,
@@ -586,7 +547,7 @@ export default function WritePage() {
     finally { setSaving(false); }
   }
 
-  // ── 카메라 UI (video / call 공용) ──
+  // ── 카메라 UI ──
   const cameraUI = (
     <motion.div key="camera"
       className="write-stage write-camera-stage"
@@ -594,30 +555,10 @@ export default function WritePage() {
       transition={{ duration: 0.35, ease }}
       style={{ width: 'min(1120px, calc(100vw - 48px))', marginBottom: 24 }}
     >
-      {/* call 모드 안내 문구 */}
-      {mode === 'call' && (
-        <div style={{ textAlign: 'center', marginBottom: 12, color: 'rgba(255,252,223,0.45)', fontSize: 14, letterSpacing: 1 }}>
-          미래의 나에게 영상통화를 남겨보세요
-        </div>
-      )}
-      {mode === 'call' && (
-        <div style={{ margin: '0 auto 18px', maxWidth: 860, padding: '16px 18px', borderRadius: 18, background: 'rgba(8,18,14,0.55)', border: '1px solid rgba(197,163,116,0.22)', boxShadow: '0 14px 36px rgba(0,0,0,0.18)', backdropFilter: 'blur(18px)' }}>
-          <div style={{ color: 'rgba(255,252,223,0.72)', fontSize: 14, marginBottom: 12, textAlign: 'center' }}>
-            처음엔 이런 질문으로 시작해봐
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8 }}>
-            {CALL_STARTER_PROMPTS.map(prompt => (
-              <span key={prompt} style={{ padding: '8px 12px', borderRadius: 12, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,252,223,0.86)', fontSize: 13, lineHeight: 1.35 }}>
-                {prompt}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
       <div className="write-video-frame" style={{
-        width: '100%', height: mode === 'call' ? 'min(56vh, 580px)' : 'min(64vh, 640px)', minHeight: mode === 'call' ? 'min(340px, 44vh)' : 'min(380px, 52vh)', background: mode === 'call' ? '#0a1a0a' : '#0a0a0a',
+        width: '100%', height: 'min(64vh, 640px)', minHeight: 'min(380px, 52vh)', background: '#0a0a0a',
         borderRadius: 28, overflow: 'hidden', position: 'relative',
-        border: mode === 'call' ? '1px solid rgba(0,220,100,0.15)' : 'none',
+        border: 'none',
       }}>
         {stage === 'done' ? (
           <motion.video key={videoUrl} src={videoUrl} controls playsInline
@@ -630,19 +571,6 @@ export default function WritePage() {
           />
         )}
 
-        {/* call 모드: 상단 상태바 */}
-        {mode === 'call' && stage === 'recording' && (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#00dc64', boxShadow: '0 0 6px #00dc64' }} />
-              <span style={{ color: '#fff', fontSize: 13 }}>통화 중</span>
-            </div>
-            <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
-              {String(Math.floor((30 - timeLeft) / 60)).padStart(2, '0')}:{String((30 - timeLeft) % 60).padStart(2, '0')}
-            </span>
-          </div>
-        )}
-
         {/* 뷰파인더 코너 */}
         {stage !== 'done' && ['tl','tr','bl','br'].map(pos => (
           <div key={pos} style={{
@@ -652,15 +580,15 @@ export default function WritePage() {
             bottom: pos.startsWith('b') ? 20 : 'auto',
             left: pos.endsWith('l') ? 20 : 'auto',
             right: pos.endsWith('r') ? 20 : 'auto',
-            borderTop: pos.startsWith('t') ? `2px solid ${mode === 'call' ? 'rgba(0,220,100,0.5)' : 'rgba(255,255,255,0.5)'}` : 'none',
-            borderBottom: pos.startsWith('b') ? `2px solid ${mode === 'call' ? 'rgba(0,220,100,0.5)' : 'rgba(255,255,255,0.5)'}` : 'none',
-            borderLeft: pos.endsWith('l') ? `2px solid ${mode === 'call' ? 'rgba(0,220,100,0.5)' : 'rgba(255,255,255,0.5)'}` : 'none',
-            borderRight: pos.endsWith('r') ? `2px solid ${mode === 'call' ? 'rgba(0,220,100,0.5)' : 'rgba(255,255,255,0.5)'}` : 'none',
+            borderTop: pos.startsWith('t') ? '2px solid rgba(255,255,255,0.5)' : 'none',
+            borderBottom: pos.startsWith('b') ? '2px solid rgba(255,255,255,0.5)' : 'none',
+            borderLeft: pos.endsWith('l') ? '2px solid rgba(255,255,255,0.5)' : 'none',
+            borderRight: pos.endsWith('r') ? '2px solid rgba(255,255,255,0.5)' : 'none',
           }} />
         ))}
 
-        {/* REC 표시 (video 모드) */}
-        {mode === 'video' && stage === 'recording' && (
+        {/* REC 표시 */}
+        {stage === 'recording' && (
           <div style={{ position: 'absolute', top: 20, left: 52, display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(0,0,0,0.55)', padding: '5px 12px', borderRadius: 6 }}>
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff3333', animation: 'recPulse 1.2s infinite' }} />
             <span style={{ color: '#ff3333', fontSize: 13, fontWeight: 700, letterSpacing: 2 }}>REC</span>
@@ -670,32 +598,13 @@ export default function WritePage() {
           </div>
         )}
 
-        {/* call 모드 프롬프트 버블 */}
-        <AnimatePresence>
-          {callPrompts.map(p => (
-            <motion.div key={p.id}
-              style={{ position: 'absolute', left: `${p.x}%`, bottom: '30%', zIndex: 10,
-                background: 'rgba(10,10,10,0.55)', backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(205,154,99,0.28)', borderRadius: 20,
-                padding: '8px 18px', fontSize: 13, color: 'rgba(255,220,160,0.88)',
-                whiteSpace: 'nowrap', pointerEvents: 'none' }}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: -40 }}
-              exit={{ opacity: 0, y: -80, transition: { duration: 0.6 } }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-            >
-              {p.text}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-
         {/* 카운트다운 */}
         {stage === 'counting' && (
           <AnimatePresence mode="wait">
             <motion.div key={countdown}
               initial={{ scale: 1.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.6, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 140, fontWeight: 700, color: mode === 'call' ? '#00dc64' : 'white', textShadow: `0 0 40px ${mode === 'call' ? 'rgba(0,220,100,0.4)' : 'rgba(255,255,255,0.4)'}` }}
+              style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 140, fontWeight: 700, color: 'white', textShadow: '0 0 40px rgba(255,255,255,0.4)' }}
             >
               {countdown}
             </motion.div>
@@ -713,10 +622,10 @@ export default function WritePage() {
         {/* 셔터 버튼 */}
         {stage === 'idle' && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-            <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, letterSpacing: 2 }}>{mode === 'call' ? 'CALL' : 'CAMERA'}</span>
+            <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: 14, letterSpacing: 2 }}>CAMERA</span>
             <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} onClick={prepareCamera}
-              style={{ width: 76, height: 76, borderRadius: '50%', border: `3px solid ${mode === 'call' ? 'rgba(0,220,100,0.75)' : 'rgba(255,255,255,0.75)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              <div style={{ width: 58, height: 58, borderRadius: '50%', background: mode === 'call' ? 'rgba(0,220,100,0.88)' : 'rgba(255,255,255,0.88)' }} />
+              style={{ width: 76, height: 76, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <div style={{ width: 58, height: 58, borderRadius: '50%', background: 'rgba(255,255,255,0.88)' }} />
             </motion.div>
           </div>
         )}
@@ -725,11 +634,8 @@ export default function WritePage() {
         {stage === 'recording' && (
           <div style={{ position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)' }}>
             <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.94 }} onClick={stopRecording}
-              style={{ width: 76, height: 76, borderRadius: '50%', border: `3px solid ${mode === 'call' ? 'rgba(255,80,80,0.8)' : 'rgba(255,80,80,0.8)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-              {mode === 'call'
-                ? <span style={{ fontSize: 28 }}>📵</span>
-                : <div style={{ width: 28, height: 28, borderRadius: 6, background: '#ff3333' }} />
-              }
+              style={{ width: 76, height: 76, borderRadius: '50%', border: '3px solid rgba(255,80,80,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <div style={{ width: 28, height: 28, borderRadius: 6, background: '#ff3333' }} />
             </motion.div>
           </div>
         )}
@@ -806,7 +712,6 @@ export default function WritePage() {
             {[
               { key: 'text', label: '✉ 텍스트' },
               { key: 'video', label: '🎥 영상' },
-              { key: 'call', label: '📱 영상통화' },
               { key: 'draw', label: '🎨 그림' },
             ].map(({ key, label }) => (
               <button key={key} onClick={() => handleModeSwitch(key)} style={{

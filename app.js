@@ -27,7 +27,7 @@ const LETTER_CONTENT_MAX_LENGTH = 5000;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
 const URL_MAX_LENGTH = 2048;
-const ALLOWED_LETTER_TYPES = new Set(["text", "video", "draw", "call"]);
+const ALLOWED_LETTER_TYPES = new Set(["text", "video", "draw"]);
 const IMAGE_CONTENT_TYPES = {
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
@@ -198,6 +198,7 @@ async function sendDueLetters({ authorId } = {}) {
     const letters = await prisma.letter.findMany({
       where: {
         ...(authorId ? { authorId } : {}),
+        type: { not: "call" },
         sentAt: null,
         openDate: { lte: now },
       },
@@ -215,11 +216,11 @@ async function sendDueLetters({ authorId } = {}) {
       const recipientName = letter.recipientName || letter.author.name;
       const senderName = letter.author.name;
       const isToOther = !!letter.recipientEmail;
-      const isVideo = letter.type === "video" || letter.type === "call";
+      const isVideo = letter.type === "video";
       const isDraw = letter.type === "draw";
 
       const html = isVideo
-        ? buildVideoEmail(recipientName, senderName, letter.videoUrl, letter.openDate, isToOther, letter.type === "call")
+        ? buildVideoEmail(recipientName, senderName, letter.videoUrl, letter.openDate, isToOther)
         : isDraw
           ? buildDrawEmail(recipientName, senderName, letter.imageUrl, letter.openDate, isToOther)
           : buildTextEmail(recipientName, senderName, letter.content, letter.openDate, isToOther, letter.imageUrl, letter.signatureData);
@@ -346,13 +347,13 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
   </div>`;
 }
 
-function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOther, isCall) {
+function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOther) {
   const safeRecipientName = escapeHtml(recipientName);
   const safeSenderName = escapeHtml(senderName);
   const safeVideoUrl = normalizePublicAssetUrl(videoUrl);
   const headerMsg = isToOther
-    ? `<strong>${safeSenderName}</strong>이(가) 보낸 ${isCall ? '영상통화' : '영상 편지'}야.`
-    : `과거의 네가 보낸 ${isCall ? '영상통화' : '영상 편지'}야.`;
+    ? `<strong>${safeSenderName}</strong>이(가) 보낸 영상 편지야.`
+    : `과거의 네가 보낸 영상 편지야.`;
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
@@ -361,7 +362,7 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
     </div>
     <div style="padding:40px;text-align:center">
       <p style="font-size:18px;color:#e9dcc6;margin-bottom:28px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
-      ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">${isCall ? '영상통화 보기' : '영상 보기'}</a>
+      ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>
       <p style="margin-top:20px;color:rgba(255,252,223,0.4);font-size:12px">버튼이 작동하지 않으면: ${escapeHtml(safeVideoUrl)}</p>` : `<p style="color:rgba(255,252,223,0.55)">영상 URL을 확인할 수 없습니다.</p>`}
     </div>
     <div style="padding:20px 40px 40px;text-align:center;color:rgba(255,252,223,0.4);font-size:12px">Dear Me; Dear You</div>
@@ -959,7 +960,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   if (type === "text" && !content.trim()) return res.status(400).json({ message: "내용을 입력해주세요." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
 
-  const cleanVideoUrl = (type === "video" || type === "call") ? normalizePublicAssetUrl(req.body.videoUrl) : null;
+  const cleanVideoUrl = type === "video" ? normalizePublicAssetUrl(req.body.videoUrl) : null;
   const cleanImageUrl = type === "draw" || (type === "text" && req.body.imageUrl)
     ? normalizePublicAssetUrl(req.body.imageUrl)
     : null;
@@ -967,7 +968,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
     ? normalizePublicAssetUrl(req.body.signatureData)
     : null;
 
-  if ((type === "video" || type === "call") && !cleanVideoUrl) return res.status(400).json({ message: "업로드된 영상 URL을 확인할 수 없습니다." });
+  if (type === "video" && !cleanVideoUrl) return res.status(400).json({ message: "업로드된 영상 URL을 확인할 수 없습니다." });
   if (type === "draw" && !cleanImageUrl) return res.status(400).json({ message: "업로드된 그림 URL을 확인할 수 없습니다." });
   if (type === "text" && req.body.imageUrl && !cleanImageUrl) return res.status(400).json({ message: "첨부 이미지 URL을 확인할 수 없습니다." });
   if (type === "text" && req.body.signatureData && !cleanSignatureUrl) return res.status(400).json({ message: "서명 이미지 URL을 확인할 수 없습니다." });
@@ -1072,7 +1073,6 @@ app.post("/trigger-send", async (req, res) => {
   res.json({ message: "발송 완료", ...result });
 });
 
-// 영상통화 현재 영상 업로드 후 이메일 발송
 app.post("/teacher-letters", requireAdmin, async (req, res) => {
   const title = String(req.body.title || "").trim();
   const teacherName = String(req.body.teacherName || "").trim();
@@ -1279,110 +1279,6 @@ app.get("/my-teacher-letter", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-app.post("/send-call-reply", writeLimiter, async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
-  const { letterId, presentVideoUrl, compositeVideoUrl, email } = req.body;
-  const parsedLetterId = Number(letterId);
-  if (!Number.isInteger(parsedLetterId)) return res.status(400).json({ message: "Invalid letter id" });
-  if (!email?.trim()) return res.status(400).json({ message: "이메일을 입력해주세요" });
-  if (!isValidEmail(String(email).trim().toLowerCase()))
-    return res.status(400).json({ message: "이메일 형식을 확인해주세요" });
-  const cleanPresentVideoUrl = normalizePublicAssetUrl(presentVideoUrl);
-  const cleanCompositeVideoUrl = compositeVideoUrl ? normalizePublicAssetUrl(compositeVideoUrl) : null;
-  if (!cleanPresentVideoUrl) return res.status(400).json({ message: "저장할 현재 영상 URL을 확인할 수 없습니다." });
-  if (compositeVideoUrl && !cleanCompositeVideoUrl) return res.status(400).json({ message: "통화 기록 영상 URL을 확인할 수 없습니다." });
-  try {
-    const letter = await prisma.letter.findFirst({
-      where: {
-        id: parsedLetterId,
-        authorId: req.session.user.id,
-        type: "call",
-      },
-      select: {
-        id: true,
-        videoUrl: true,
-        openDate: true,
-        callReplySentAt: true,
-      },
-    });
-
-    if (!letter) return res.status(404).json({ message: "영상통화 편지를 찾을 수 없습니다." });
-    if (new Date(letter.openDate) > new Date()) return res.status(403).json({ message: "아직 개봉할 수 없는 편지입니다." });
-    if (letter.callReplySentAt) return res.status(409).json({ message: "이미 저장된 영상통화입니다." });
-
-    const name = req.session.user.name;
-    const savedAt = new Date();
-    const cleanEmail = String(email).trim().toLowerCase();
-    await mailer.sendMail({
-      from: emailFromHeader,
-      replyTo: emailReplyTo,
-      to: cleanEmail,
-      subject: mailHeader(`${name}님의 시간 여행 통화 기록`),
-      html: buildCallReplyEmail(name, letter.openDate, letter.videoUrl, cleanPresentVideoUrl, cleanCompositeVideoUrl),
-    });
-    await prisma.letter.update({
-      where: { id: letter.id },
-      data: {
-        callReplyVideoUrl: cleanPresentVideoUrl,
-        callCompositeVideoUrl: cleanCompositeVideoUrl,
-        callReplyEmail: cleanEmail,
-        callReplySentAt: savedAt,
-      },
-    });
-
-    res.json({
-      ok: true,
-      callReplyVideoUrl: cleanPresentVideoUrl,
-      callCompositeVideoUrl: cleanCompositeVideoUrl,
-      callReplyEmail: cleanEmail,
-      callReplySentAt: savedAt,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "이메일 발송 실패" });
-  }
-});
-
-function buildCallReplyEmail(name, openDate, pastVideoUrl, presentVideoUrl, compositeVideoUrl) {
-  const dateStr = new Date(openDate).toLocaleDateString("ko-KR");
-  const safeName = escapeHtml(name);
-  const safePastVideoUrl = normalizePublicAssetUrl(pastVideoUrl);
-  const safePresentVideoUrl = normalizePublicAssetUrl(presentVideoUrl);
-  const safeCompositeVideoUrl = normalizePublicAssetUrl(compositeVideoUrl);
-  return `
-  <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
-    <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
-      <div style="font-size:28px;font-weight:300;color:#cd9a63">Dear Me<span style="color:#fff;margin:0 8px">;</span><span style="color:#f0ebe0">Dear You</span></div>
-      <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${dateStr} 개봉 · 시간 여행 통화 기록</div>
-    </div>
-    <div style="padding:40px">
-      <p style="font-size:17px;color:#e9dcc6;text-align:center;line-height:1.8;margin-bottom:36px">
-        안녕, <strong>${safeName}</strong>.<br>
-        과거의 너와 현재의 네가 만난 특별한 통화야.<br>
-        <span style="color:rgba(255,252,223,0.45);font-size:14px">두 영상을 함께 간직해줘.</span>
-      </p>
-      ${safeCompositeVideoUrl ? `
-      <div style="background:rgba(255,255,255,0.06);border:1px solid rgba(231,207,161,0.24);border-radius:14px;padding:30px;text-align:center;margin-bottom:16px">
-        <div style="color:#e7cfa1;font-size:12px;letter-spacing:3px;margin-bottom:14px">통화 기록</div>
-        <a href="${escapeHtml(safeCompositeVideoUrl)}" style="display:inline-block;padding:14px 34px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">남겨진 통화 보기</a>
-        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${escapeHtml(safeCompositeVideoUrl)}</p>
-      </div>` : ''}
-      ${!safeCompositeVideoUrl ? `
-      <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:28px;text-align:center;margin-bottom:16px">
-        <div style="color:rgba(255,252,223,0.4);font-size:11px;letter-spacing:3px;margin-bottom:14px">PAST · 과거의 나</div>
-        ${safePastVideoUrl ? `<a href="${escapeHtml(safePastVideoUrl)}" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">과거 영상 보기</a>
-        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${escapeHtml(safePastVideoUrl)}</p>` : `<p style="color:rgba(255,252,223,0.55)">과거 영상 URL을 확인할 수 없습니다.</p>`}
-      </div>
-      <div style="background:rgba(255,255,255,0.04);border-radius:14px;padding:28px;text-align:center">
-        <div style="color:rgba(255,252,223,0.4);font-size:11px;letter-spacing:3px;margin-bottom:14px">PRESENT · 현재의 나</div>
-        ${safePresentVideoUrl ? `<a href="${escapeHtml(safePresentVideoUrl)}" style="display:inline-block;padding:13px 32px;background:linear-gradient(135deg,#a8d8ea,#7bc3d8);color:#1a2a35;border-radius:50px;text-decoration:none;font-size:16px;font-weight:600">현재 영상 보기</a>
-        <p style="margin-top:10px;color:rgba(255,252,223,0.25);font-size:11px;word-break:break-all">${escapeHtml(safePresentVideoUrl)}</p>` : `<p style="color:rgba(255,252,223,0.55)">현재 영상 URL을 확인할 수 없습니다.</p>`}
-      </div>` : ''}
-    </div>
-    <div style="padding:20px 40px 40px;text-align:center;color:rgba(255,252,223,0.3);font-size:12px">Dear Me; Dear You</div>
-  </div>`;
-}
 
 // SPA 라우팅
 app.get("/{*splat}", (req, res) => {
