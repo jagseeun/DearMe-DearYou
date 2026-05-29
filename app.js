@@ -190,13 +190,14 @@ async function verifyMailerConfig() {
 verifyMailerConfig();
 
 // 개봉일이 된 편지 이메일 발송
-async function sendDueLetters({ authorId } = {}) {
+async function sendDueLetters({ authorId, letterId } = {}) {
   const now = new Date();
-  const stats = { sent: 0, failed: 0, skippedNoEmail: 0 };
+  const stats = { checked: 0, sent: 0, failed: 0, skippedNoEmail: 0 };
 
   try {
     const letters = await prisma.letter.findMany({
       where: {
+        ...(letterId ? { id: letterId } : {}),
         ...(authorId ? { authorId } : {}),
         type: { not: "call" },
         sentAt: null,
@@ -204,6 +205,7 @@ async function sendDueLetters({ authorId } = {}) {
       },
       include: { author: true },
     });
+    stats.checked = letters.length;
 
     for (const letter of letters) {
       // 타인에게 보내는 편지면 recipientEmail, 아니면 author.email
@@ -1240,6 +1242,42 @@ app.patch("/admin/letters/:id/open-date", adminLimiter, requireAdmin, async (req
   } catch (err) {
     console.error("admin letter date update error:", err);
     res.status(500).json({ message: "편지 날짜 수정에 실패했습니다." });
+  }
+});
+
+app.post("/admin/letters/send-due", adminLimiter, requireAdmin, async (req, res) => {
+  try {
+    const result = await sendDueLetters();
+    res.json({ message: "개봉일이 지난 편지 발송을 실행했습니다.", ...result });
+  } catch (err) {
+    console.error("admin due letter send error:", err);
+    res.status(500).json({ message: "편지 발송에 실패했습니다." });
+  }
+});
+
+app.post("/admin/letters/:id/send", adminLimiter, requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 편지입니다." });
+
+  try {
+    const letter = await prisma.letter.findUnique({
+      where: { id },
+      select: { id: true, type: true, openDate: true, sentAt: true },
+    });
+    if (!letter) return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
+    if (letter.type === "call") return res.status(400).json({ message: "통화 편지는 메일 발송 대상이 아닙니다." });
+    if (letter.sentAt) return res.status(400).json({ message: "이미 발송된 편지입니다." });
+    if (letter.openDate > new Date()) return res.status(400).json({ message: "아직 개봉일이 되지 않은 편지입니다." });
+
+    const result = await sendDueLetters({ letterId: id });
+    if (result.sent > 0) {
+      return res.json({ message: "편지를 발송했습니다.", ...result });
+    }
+    const status = result.failed > 0 ? 500 : 400;
+    res.status(status).json({ message: "발송할 수 있는 편지가 없거나 이메일이 없습니다.", ...result });
+  } catch (err) {
+    console.error("admin single letter send error:", err);
+    res.status(500).json({ message: "편지 발송에 실패했습니다." });
   }
 });
 

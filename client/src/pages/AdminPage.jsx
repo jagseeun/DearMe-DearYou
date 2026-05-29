@@ -63,6 +63,13 @@ function toDateInputValue(value) {
   return local.toISOString().slice(0, 16);
 }
 
+function getLetterSendStatus(letter) {
+  if (letter.sentAt) return { key: 'sent', label: `\uC644\uB8CC ${formatDate(letter.sentAt)}`, color: '#8fd19e' };
+  if (letter.type === 'call') return { key: 'excluded', label: '\uD1B5\uD654 \uD3B8\uC9C0', color: 'rgba(255,252,223,0.42)' };
+  if (new Date(letter.openDate) <= new Date()) return { key: 'due', label: '\uBC1C\uC1A1 \uB300\uAE30', color: '#ffd38a' };
+  return { key: 'scheduled', label: '\uC608\uC57D', color: 'rgba(255,252,223,0.48)' };
+}
+
 export default function AdminPage() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
@@ -78,6 +85,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [resending, setResending] = useState(false);
+  const [letterSending, setLetterSending] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [sendResult, setSendResult] = useState(null);
 
@@ -263,6 +271,41 @@ export default function AdminPage() {
     }
   }
 
+  async function sendDueAdminLetters() {
+    if (!window.confirm('개봉일이 지난 미발송 편지를 지금 발송할까요?')) return;
+
+    setLetterSending(true);
+    setMessage('');
+    setSendResult(null);
+    try {
+      const data = await fetchJson('/admin/letters/send-due', { method: 'POST' });
+      setSendResult(data);
+      setMessage(data.message || `편지 발송을 실행했습니다. 성공 ${data.sent}, 실패 ${data.failed}`);
+      await loadAdminLetters();
+    } catch (err) {
+      setMessage(err.message || '편지 발송 실패');
+    } finally {
+      setLetterSending(false);
+    }
+  }
+
+  async function sendAdminLetter(letter) {
+    if (!window.confirm(`${letter.author?.name || '\uC0AC\uC6A9\uC790'}\uB2D8\uC758 \uD3B8\uC9C0\uB97C \uC9C0\uAE08 \uBC1C\uC1A1\uD560\uAE4C\uC694?`)) return;
+    setBusyId(`send-letter-${letter.id}`);
+    setMessage('');
+    setSendResult(null);
+    try {
+      const data = await fetchJson(`/admin/letters/${letter.id}/send`, { method: 'POST' });
+      setSendResult(data);
+      setMessage(data.message || '편지를 발송했습니다.');
+      await loadAdminLetters();
+    } catch (err) {
+      setMessage(err.message || '편지 발송 실패');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
   if (checking || redirecting) {
     return <div style={{ position: 'relative', zIndex: 1, padding: 48, color: '#fffcdf' }}>확인 중...</div>;
   }
@@ -344,6 +387,7 @@ export default function AdminPage() {
 
         {sendResult && (
           <div style={{ ...panelStyle, padding: 18, display: 'flex', gap: 18, flexWrap: 'wrap', color: 'rgba(255,252,223,0.82)' }}>
+            {sendResult.checked !== undefined && <span>대상 {sendResult.checked}</span>}
             {sendResult.created !== undefined && <span>신규 배정 {sendResult.created}</span>}
             {sendResult.retried !== undefined && <span>재시도 {sendResult.retried}</span>}
             {sendResult.resent !== undefined && <span>재발송 대상 {sendResult.resent}</span>}
@@ -354,7 +398,7 @@ export default function AdminPage() {
         )}
 
         <section style={{ ...panelStyle, overflow: 'hidden' }}>
-          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <span>등록된 선생님 편지</span>
             <span style={{ color: 'rgba(255,252,223,0.48)' }}>{teacherLetters.length}개</span>
           </div>
@@ -377,7 +421,7 @@ export default function AdminPage() {
         </section>
 
         <section style={{ ...panelStyle, overflow: 'hidden' }}>
-          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <span>사용자 계정 관리</span>
             <span style={{ color: 'rgba(255,252,223,0.48)' }}>{users.length}명</span>
           </div>
@@ -422,22 +466,32 @@ export default function AdminPage() {
 
         <section style={{ ...panelStyle, overflow: 'hidden' }}>
           <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-            <span>편지 날짜 수정</span>
+            <span>편지 날짜/발송 관리</span>
             <span style={{ color: 'rgba(255,252,223,0.48)' }}>{letters.length}개</span>
+          </div>
+          <div style={{ padding: '12px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
+            <button type="button" style={buttonStyle} onClick={sendDueAdminLetters} disabled={letterSending}>
+              {letterSending ? '발송 중...' : '개봉일 지난 편지 발송'}
+            </button>
           </div>
           {letters.length === 0 ? (
             <div style={{ padding: 28, color: 'rgba(255,252,223,0.45)' }}>작성된 편지가 없습니다.</div>
           ) : (
-            letters.map(letter => (
-              <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(220px, 280px) auto', gap: 12, alignItems: 'center' }}>
+            letters.map(letter => {
+              const status = getLetterSendStatus(letter);
+              const canSend = status.key === 'due';
+              const sendingThisLetter = busyId === `send-letter-${letter.id}`;
+              return (
+              <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(220px, 280px) auto auto', gap: 12, alignItems: 'center' }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
                     <strong style={{ fontWeight: 500 }}>{letter.author?.name || '알 수 없음'}</strong>
                     <span style={{ color: 'rgba(255,252,223,0.56)' }}>@{letter.author?.userid}</span>
                     <span style={{ color: '#ffe8c4', fontSize: 12 }}>{letter.type}</span>
+                    <span style={{ color: status.color, fontSize: 12 }}>{status.label}</span>
                   </div>
                   <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>
-                    받는 사람 {letter.recipientName || '미지정'} · 현재 개봉일 {formatDate(letter.openDate)} · 발송 {letter.sentAt ? formatDate(letter.sentAt) : '대기'}
+                    받는 사람 {letter.recipientName || letter.recipientEmail || '미지정'} · 개봉일 {formatDate(letter.openDate)} · <span style={{ color: status.color }}>발송 {status.label}</span>
                   </div>
                 </div>
                 <input
@@ -448,13 +502,21 @@ export default function AdminPage() {
                 />
                 <button
                   style={buttonStyle}
-                  disabled={busyId === `letter-${letter.id}`}
+                  disabled={busyId === `letter-${letter.id}` || sendingThisLetter}
                   onClick={() => updateLetterDate(letter)}
                 >
                   {busyId === `letter-${letter.id}` ? '수정 중...' : '날짜 저장'}
                 </button>
+                <button
+                  style={{ ...buttonStyle, opacity: canSend ? 1 : 0.45 }}
+                  disabled={!canSend || sendingThisLetter || busyId === `letter-${letter.id}`}
+                  onClick={() => sendAdminLetter(letter)}
+                >
+                  {sendingThisLetter ? '발송 중...' : status.label}
+                </button>
               </div>
-            ))
+              );
+            })
           )}
         </section>
       </div>
