@@ -8835,3 +8835,44 @@ canvas {
     font-size: 12px !important;
   }
 }
+@media (max-width: 760px) {
+  .profile-modal-backdrop {
+    align-items: center !important;
+    padding: calc(16px + env(safe-area-inset-top)) 16px calc(16px + env(safe-area-inset-bottom)) !important;
+    overflow-y: auto !important;
+  }
+
+  .profile-modal-panel {
+    width: min(100%, 360px) !important;
+    max-width: 360px !important;
+    max-height: none !important;
+    margin: auto !important;
+    padding: 24px 18px 18px !important;
+    gap: 13px !important;
+    overflow: visible !important;
+    border-radius: 18px !important;
+  }
+
+  .profile-modal-panel input {
+    min-height: 46px !important;
+    height: 46px !important;
+    padding: 11px 13px !important;
+    font-size: 16px !important;
+  }
+
+  .profile-modal-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .profile-modal-button {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 44px !important;
+    height: 44px !important;
+    border-radius: 999px !important;
+    font-size: 15px !important;
+    line-height: 1.2 !important;
+  }
+}

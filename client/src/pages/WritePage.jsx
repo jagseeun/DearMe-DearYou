@@ -308,6 +308,7 @@ export default function WritePage() {
   // 모달 상태
   const [showModal, setShowModal] = useState(false);
   const [openDate, setOpenDate] = useState(defaultOpenDate());
+  const [sendNow, setSendNow] = useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -499,6 +500,9 @@ export default function WritePage() {
     const cleanEmail = email.trim().toLowerCase();
     const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
     const cleanRecipientName = recipientName.trim();
+    const effectiveOpenDate = sendNow ? new Date().toISOString() : openDate;
+    const isImmediateDelivery = sendNow || new Date(effectiveOpenDate) <= new Date();
+    if (isImmediateDelivery && !toOther && !cleanEmail) return alert('바로 보내려면 발송 이메일을 입력해주세요.');
     if (text.length > LETTER_CONTENT_MAX_LENGTH) return alert(`내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
     if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return alert('이메일 형식이 올바르지 않습니다.');
     if (toOther) {
@@ -526,7 +530,7 @@ export default function WritePage() {
         videoUrl: mode === 'video' ? videoUrl : undefined,
         imageUrl: mode === 'text' ? (imageUrl || undefined) : mode === 'draw' ? drawImageUrl : undefined,
         signatureData: mode === 'text' ? (finalSignature || undefined) : undefined,
-        openDate,
+        openDate: effectiveOpenDate,
         email: cleanEmail,
         recipientEmail: toOther ? cleanRecipientEmail : undefined,
         recipientName: toOther ? cleanRecipientName : undefined,
@@ -538,7 +542,19 @@ export default function WritePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        navigate('/done', { state: { openDate, name } });
+        if (isImmediateDelivery && data.delivery && data.delivery.sent === 0) {
+          alert('편지는 저장됐지만 이메일 발송은 실패했습니다. 관리자에서 다시 발송해주세요.');
+        }
+        navigate('/done', {
+          state: {
+            openDate: effectiveOpenDate,
+            name,
+            recipientName: toOther ? (cleanRecipientName || cleanRecipientEmail) : name,
+            recipientEmail: toOther ? cleanRecipientEmail : '',
+            sentNow: isImmediateDelivery,
+            delivery: data.delivery,
+          },
+        });
       } else {
         alert(data.message || '오류가 발생했습니다.');
         if (res.status === 401) navigate('/login');
@@ -859,7 +875,23 @@ export default function WritePage() {
               {/* 개봉일 */}
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label style={labelStyle}>📅 개봉일</label>
-                <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <button type="button" onClick={() => setSendNow(false)}
+                    style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: !sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: !sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: !sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
+                    예약 발송
+                  </button>
+                  <button type="button" onClick={() => setSendNow(true)}
+                    style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
+                    바로 보내기
+                  </button>
+                </div>
+                {sendNow ? (
+                  <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', color: 'rgba(255,252,223,0.72)' }}>
+                    저장하면 바로 이메일을 발송합니다
+                  </div>
+                ) : (
+                  <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
+                )}
               </div>
 
               {/* 수신인 토글 */}

@@ -70,6 +70,19 @@ function getLetterSendStatus(letter) {
   return { key: 'scheduled', label: '\uC608\uC57D', color: 'rgba(255,252,223,0.48)' };
 }
 
+async function fetchJsonWithTimeout(url, options = {}, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetchJson(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err.name === 'AbortError') throw new Error('요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.');
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export default function AdminPage() {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
@@ -278,7 +291,7 @@ export default function AdminPage() {
     setMessage('');
     setSendResult(null);
     try {
-      const data = await fetchJson('/admin/letters/send-due', { method: 'POST' });
+      const data = await fetchJsonWithTimeout('/admin/letters/send-due', { method: 'POST' }, 90000);
       setSendResult(data);
       setMessage(data.message || `편지 발송을 실행했습니다. 성공 ${data.sent}, 실패 ${data.failed}`);
       await loadAdminLetters();
@@ -295,7 +308,7 @@ export default function AdminPage() {
     setMessage('');
     setSendResult(null);
     try {
-      const data = await fetchJson(`/admin/letters/${letter.id}/send`, { method: 'POST' });
+      const data = await fetchJsonWithTimeout(`/admin/letters/${letter.id}/send`, { method: 'POST' }, 45000);
       setSendResult(data);
       setMessage(data.message || '편지를 발송했습니다.');
       await loadAdminLetters();
@@ -479,7 +492,7 @@ export default function AdminPage() {
           ) : (
             letters.map(letter => {
               const status = getLetterSendStatus(letter);
-              const canSend = status.key === 'due';
+              const canSend = status.key === 'due' || status.key === 'scheduled';
               const sendingThisLetter = busyId === `send-letter-${letter.id}`;
               return (
               <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(220px, 280px) auto auto', gap: 12, alignItems: 'center' }}>
@@ -512,7 +525,7 @@ export default function AdminPage() {
                   disabled={!canSend || sendingThisLetter || busyId === `letter-${letter.id}`}
                   onClick={() => sendAdminLetter(letter)}
                 >
-                  {sendingThisLetter ? '발송 중...' : status.label}
+                  {sendingThisLetter ? '발송 중...' : (status.key === 'scheduled' ? '바로 발송' : status.label)}
                 </button>
               </div>
               );

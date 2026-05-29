@@ -27,6 +27,7 @@ const LETTER_CONTENT_MAX_LENGTH = 5000;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
 const URL_MAX_LENGTH = 2048;
+const MAIL_SEND_TIMEOUT_MS = Number(process.env.MAIL_SEND_TIMEOUT_MS || 20000);
 const ALLOWED_LETTER_TYPES = new Set(["text", "video", "draw"]);
 const IMAGE_CONTENT_TYPES = {
   jpg: "image/jpeg",
@@ -70,6 +71,9 @@ const s3 = new S3Client({
 // 이메일 전송 설정 (Gmail SMTP)
 const mailer = nodemailer.createTransport({
   service: "gmail",
+  connectionTimeout: MAIL_SEND_TIMEOUT_MS,
+  greetingTimeout: MAIL_SEND_TIMEOUT_MS,
+  socketTimeout: MAIL_SEND_TIMEOUT_MS,
   auth: {
     user: process.env.GMAIL_USER,
     pass: process.env.GMAIL_APP_PASSWORD,
@@ -103,6 +107,24 @@ function isValidEmail(value) {
 
 function mailHeader(value, maxLength = 180) {
   return String(value || "").replace(/[\r\n]+/g, " ").slice(0, maxLength);
+}
+
+function withTimeout(promise, ms, message) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([
+    promise.finally(() => clearTimeout(timer)),
+    timeout,
+  ]);
+}
+
+async function sendMail(options) {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error("mail config missing");
+  }
+  return withTimeout(mailer.sendMail(options), MAIL_SEND_TIMEOUT_MS, "mail send timeout");
 }
 
 function validatePassword(value) {
@@ -235,7 +257,7 @@ async function sendDueLetters({ authorId, letterId } = {}) {
 
       try {
         // 수신자에게 발송
-        await mailer.sendMail({
+        await sendMail({
           from: emailFromHeader,
           replyTo: emailReplyTo,
           to: email,
@@ -249,7 +271,7 @@ async function sendDueLetters({ authorId, letterId } = {}) {
         // 타인에게 보내는 편지라면 발신자에게도 발송 알림
         if (isToOther && isValidEmail(letter.author.email)) {
           const senderHtml = buildSenderNotifyEmail(senderName, recipientName, letter.openDate);
-          await mailer.sendMail({
+          await sendMail({
             from: emailFromHeader,
             replyTo: emailReplyTo,
             to: letter.author.email,
@@ -411,7 +433,7 @@ async function sendTeacherDelivery(delivery) {
 
   try {
     const teacherIntro = `${member.name}님을 응원하는 ${teacherLetter.teacherName}께서 편지를 보냈습니다!`;
-    await mailer.sendMail({
+    await sendMail({
       from: emailFromHeader,
       replyTo: emailReplyTo,
       to: member.email,
@@ -992,7 +1014,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
       req.session.user.email = email;
     }
 
-    await prisma.letter.create({
+    const letter = await prisma.letter.create({
       data: {
         type,
         content: type === "text" ? content : null,
@@ -1007,11 +1029,11 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
     });
 
     // 이미 개봉 가능한 날짜라면 현재 사용자의 편지만 즉시 발송한다.
+    let delivery = null;
     if (parsedOpenDate <= new Date()) {
-      sendDueLetters({ authorId });
+      delivery = await sendDueLetters({ letterId: letter.id });
     }
-
-    res.status(201).json({ message: "편지 저장 성공!" });
+    res.status(201).json({ message: "편지 저장 성공!", delivery });
   } catch (err) {
     console.error("편지 저장 에러:", err);
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
@@ -1267,7 +1289,13 @@ app.post("/admin/letters/:id/send", adminLimiter, requireAdmin, async (req, res)
     if (!letter) return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
     if (letter.type === "call") return res.status(400).json({ message: "통화 편지는 메일 발송 대상이 아닙니다." });
     if (letter.sentAt) return res.status(400).json({ message: "이미 발송된 편지입니다." });
-    if (letter.openDate > new Date()) return res.status(400).json({ message: "아직 개봉일이 되지 않은 편지입니다." });
+    const sendAt = new Date();
+    if (letter.openDate > sendAt) {
+      await prisma.letter.update({
+        where: { id },
+        data: { openDate: sendAt },
+      });
+    }
 
     const result = await sendDueLetters({ letterId: id });
     if (result.sent > 0) {

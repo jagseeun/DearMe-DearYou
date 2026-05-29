@@ -7,8 +7,8 @@ const ease = [0.22, 1, 0.36, 1];
 
 export default function DonePage() {
   const navigate = useNavigate();
-  const { openDate, name } = useLocation().state || {};
-  const [phase, setPhase] = useState('seal');
+  const { openDate, name, recipientName, recipientEmail, sentNow } = useLocation().state || {};
+  const [phase, setPhase] = useState(sentNow ? 'envelope' : 'seal');
 
   useEffect(() => {
     if (!openDate) navigate('/login', { replace: true });
@@ -22,7 +22,9 @@ export default function DonePage() {
 
   if (!openDate) return null;
 
-  const d = daysUntil(openDate);
+  const d = sentNow ? 0 : Math.max(0, daysUntil(openDate));
+  const senderName = name || '나';
+  const recipientDisplayName = recipientName || recipientEmail || senderName;
   const dChars = ['D', '-', ...String(d).split('')];
   const openDateLabel = new Date(openDate).toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -108,7 +110,7 @@ export default function DonePage() {
                 <div className="done-envelope-label">보내는 사람</div>
                 <div className="done-envelope-value">
                   <span>{formatDate(new Date())}의</span>
-                  <span>{name || '나'}</span>
+                  <span>{senderName}</span>
                 </div>
               </motion.div>
 
@@ -123,7 +125,7 @@ export default function DonePage() {
                 <div className="done-envelope-label">받는 사람</div>
                 <div className="done-envelope-value">
                   <span>{formatDate(openDate)}의</span>
-                  <span>{name || '나'}에게</span>
+                  <span>{recipientDisplayName}에게</span>
                 </div>
               </motion.div>
 

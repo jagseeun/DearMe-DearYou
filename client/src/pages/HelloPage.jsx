@@ -233,13 +233,13 @@ export default function HelloPage() {
         {showProfileModal && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="modal-backdrop"
+            className="modal-backdrop profile-modal-backdrop"
             onClick={e => { if (e.target === e.currentTarget) setShowProfileModal(false); }}
           >
             <motion.div
               initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }}
               transition={{ duration: 0.35, ease }}
-              className="modal-panel"
+              className="modal-panel profile-modal-panel"
             >
               <div style={{ fontSize: 28, fontWeight: 400, color: '#e9dcc6' }}>이름/이메일 변경</div>
               <div style={{ color: 'rgba(255,252,223,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 1.7 }}>
@@ -252,7 +252,6 @@ export default function HelloPage() {
                 maxLength={10}
                 onChange={e => { setDraftName(e.target.value); setProfileMsg(''); }}
                 onKeyDown={e => { if (e.key === 'Enter') handleProfileSave(); }}
-                autoFocus
                 style={modalInputStyle}
               />
               <input
@@ -268,13 +267,13 @@ export default function HelloPage() {
                   {profileMsg}
                 </div>
               )}
-              <div className="modal-actions" style={{ marginTop: 4 }}>
-                <motion.button whileHover={{ background: 'rgba(255,255,255,0.12)' }}
+              <div className="modal-actions profile-modal-actions" style={{ marginTop: 4 }}>
+                <motion.button className="profile-modal-button" whileHover={{ background: 'rgba(255,255,255,0.12)' }}
                   onClick={() => setShowProfileModal(false)}
                   style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', transition: 'all 0.25s' }}>
                   취소
                 </motion.button>
-                <motion.button whileHover={{ translateY: -2 }}
+                <motion.button className="profile-modal-button" whileHover={{ translateY: -2 }}
                   onClick={handleProfileSave} disabled={profileSaving}
                   style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.25s', opacity: profileSaving ? 0.6 : 1 }}>
                   {profileSaving ? '저장 중...' : '저장'}
