@@ -68,7 +68,7 @@ export default function LettersPage() {
 
   return (
     <motion.div
-      className="letter-list-page pink-letter-list-page"
+      className="letter-list-page pink-letter-list-page letters-main-page"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
@@ -85,7 +85,7 @@ export default function LettersPage() {
         <span style={{ color: '#e0a4b0', filter: 'drop-shadow(0 0 14px rgba(160,93,122,0.32)) drop-shadow(0 2px 8px rgba(24,13,28,0.38))' }}>Dear You</span>
       </motion.div>
 
-      <div className="letter-list-shell">
+      <div className="letter-list-shell letters-main-shell">
         <motion.header
           className="letter-list-header"
           initial={{ opacity: 0, y: 16 }}
@@ -194,14 +194,14 @@ export default function LettersPage() {
 
       <motion.button
         type="button"
-        className="letter-back-floating"
+        className="letter-back-floating pink-letter-exit letters-main-exit"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
         onClick={() => navigate('/hello')}
         whileHover={{ translateY: -1, boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
       >
-        ← 돌아가기
+        나가기
       </motion.button>
 
       <AnimatePresence>
@@ -210,28 +210,25 @@ export default function LettersPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="modal-backdrop"
-            style={{ background: 'rgba(120,70,70,0.24)' }}
+            className="modal-backdrop letter-delete-modal-backdrop"
           >
             <motion.div
               initial={{ opacity: 0, y: 24, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 16, scale: 0.96 }}
               transition={{ duration: 0.35, ease }}
-              className="modal-panel"
-              style={{ background: 'rgba(255,248,246,0.94)', color: '#4c2929' }}
+              className="modal-panel letter-delete-modal"
             >
-              <div style={{ fontSize: 25, fontWeight: 300, textAlign: 'center' }}>편지를 삭제할까요?</div>
-              <div style={{ color: 'rgba(110,60,60,0.62)', fontSize: 14, textAlign: 'center', lineHeight: 1.7 }}>
+              <div className="letter-delete-modal-title">편지를 삭제할까요?</div>
+              <div className="letter-delete-modal-message">
                 아직 개봉하지 않은 편지만 삭제할 수 있어요.
               </div>
-              <div className="modal-actions">
-                <button type="button" className="soft-button" onClick={() => setDeleteConfirm(null)}>취소</button>
+              <div className="modal-actions letter-delete-modal-actions">
+                <button type="button" className="letter-delete-modal-button" onClick={() => setDeleteConfirm(null)}>취소</button>
                 <button
                   type="button"
-                  className="soft-button"
+                  className="letter-delete-modal-button danger"
                   onClick={() => deleteLetter(deleteConfirm)}
-                  style={{ background: 'linear-gradient(135deg,#b95555,#8a3030)', color: '#fff', border: 'none' }}
                 >
                   삭제
                 </button>

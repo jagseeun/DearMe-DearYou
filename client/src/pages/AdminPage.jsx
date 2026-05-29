@@ -280,6 +280,7 @@ export default function AdminPage() {
 
   return (
     <motion.div
+      className="admin-page"
       style={{ position: 'relative', zIndex: 1, minHeight: '100vh', padding: '92px 24px 48px', color: '#fffcdf' }}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}

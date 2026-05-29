@@ -556,8 +556,12 @@ export default function WritePage() {
       style={{ width: 'min(1120px, calc(100vw - 48px))', marginBottom: 24 }}
     >
       <div className="write-video-frame" style={{
-        width: '100%', height: 'min(64vh, 640px)', minHeight: 'min(380px, 52vh)', background: '#0a0a0a',
-        borderRadius: 28, overflow: 'hidden', position: 'relative',
+        width: '100%',
+        height: 'var(--write-video-frame-height, min(64vh, 640px))',
+        minHeight: 'var(--write-video-frame-min-height, min(380px, 52vh))',
+        background: '#0a0a0a',
+        borderRadius: 'var(--write-video-frame-radius, 28px)',
+        overflow: 'hidden', position: 'relative',
         border: 'none',
       }}>
         {stage === 'done' ? (
@@ -734,7 +738,7 @@ export default function WritePage() {
             <motion.div key="text"
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35, ease }}
-              className="write-stage"
+              className="write-stage write-stage-text"
               style={{ marginBottom: 20 }}
             >
               {/* 텍스트 입력 */}
@@ -780,7 +784,7 @@ export default function WritePage() {
             <motion.div key="draw"
               initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35, ease }}
-              className="write-stage"
+              className="write-stage write-stage-draw"
               style={{ marginBottom: 20 }}
             >
               <DrawCanvas onHasDrawn={setDrawHasDrawn} onCanvasReady={setDrawCanvasEl} />
@@ -802,9 +806,10 @@ export default function WritePage() {
         {showCamera && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="photo-capture-overlay"
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 110, gap: 24 }}
           >
-            <div style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', width: 480, aspectRatio: '4/3', background: '#000' }}>
+            <div className="photo-capture-frame" style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', width: 480, aspectRatio: '4/3', background: '#000' }}>
               <video ref={photoVideoRef} autoPlay playsInline muted
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               {/* 뷰파인더 코너 */}
@@ -820,7 +825,7 @@ export default function WritePage() {
                 }} />
               ))}
             </div>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+            <div className="photo-capture-actions" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
               <button onClick={closePhotoCamera}
                 style={{ padding: '10px 26px', borderRadius: 50, fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.6)' }}>
                 취소

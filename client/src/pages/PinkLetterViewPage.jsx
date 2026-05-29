@@ -21,6 +21,16 @@ function recipientText(letter) {
   return '';
 }
 
+function PinkLetterLogo({ className = '' }) {
+  return (
+    <div className={`letter-list-logo ${className}`.trim()}>
+      <span style={{ color: '#fff1e8', filter: 'drop-shadow(0 0 18px rgba(218,157,176,0.34)) drop-shadow(0 2px 8px rgba(24,13,28,0.42))' }}>Dear Me</span>
+      <span style={{ color: 'rgba(241,205,213,0.62)', margin: '0 10px' }}>;</span>
+      <span style={{ color: '#e0a4b0', filter: 'drop-shadow(0 0 14px rgba(160,93,122,0.32)) drop-shadow(0 2px 8px rgba(24,13,28,0.38))' }}>Dear You</span>
+    </div>
+  );
+}
+
 export default function PinkLetterViewPage() {
   const navigate = useNavigate();
   const [letters, setLetters] = useState([]);
@@ -70,27 +80,18 @@ export default function PinkLetterViewPage() {
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
       transition={{ duration: 0.6, ease }}
     >
-      {loading ? (
-        <div className="letter-empty" style={{ minHeight: '100dvh' }}>불러오는 중...</div>
-      ) : letters.length === 0 ? (
-        <div className="letter-empty" style={{ minHeight: '100dvh' }}>
-          <strong>아직 개봉할 편지가 없어요.</strong>
-          <span>개봉일이 지나면 이곳에서 읽을 수 있어요.</span>
-          <button type="button" className="soft-button" onClick={() => navigate(-1)}>나가기</button>
-        </div>
-      ) : (
-        <div className="letter-list-shell compact">
-          <motion.div
-            className="letter-list-logo"
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, ease }}
-          >
-            <span style={{ color: '#fff1e8', filter: 'drop-shadow(0 0 18px rgba(218,157,176,0.34)) drop-shadow(0 2px 8px rgba(24,13,28,0.42))' }}>Dear Me</span>
-            <span style={{ color: 'rgba(241,205,213,0.62)', margin: '0 10px' }}>;</span>
-            <span style={{ color: '#e0a4b0', filter: 'drop-shadow(0 0 14px rgba(160,93,122,0.32)) drop-shadow(0 2px 8px rgba(24,13,28,0.38))' }}>Dear You</span>
-          </motion.div>
+      <PinkLetterLogo className="pink-letter-fixed-logo" />
 
+      <div className="letter-list-shell compact">
+        {loading ? (
+          <div className="letter-empty">불러오는 중...</div>
+        ) : letters.length === 0 ? (
+          <div className="letter-empty">
+            <strong>아직 개봉할 편지가 없어요.</strong>
+            <span>개봉일이 지나면 이곳에서 읽을 수 있어요.</span>
+          </div>
+        ) : (
+          <>
           <motion.div
             className="letter-list-action-row"
             initial={{ opacity: 0 }}
@@ -168,19 +169,9 @@ export default function PinkLetterViewPage() {
               );
             })}
           </div>
-
-          <motion.button
-            type="button"
-            className="letter-back-floating"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            onClick={() => navigate(-1)}
-          >
-            ← 나가기
-          </motion.button>
-        </div>
-      )}
+          </>
+        )}
+      </div>
 
       {!loading && (
         <motion.button
@@ -191,7 +182,7 @@ export default function PinkLetterViewPage() {
           transition={{ delay: 0.5 }}
           onClick={() => navigate('/')}
         >
-          나가기
+          ← 나가기
         </motion.button>
       )}
     </motion.div>

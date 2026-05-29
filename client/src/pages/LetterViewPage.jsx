@@ -944,7 +944,7 @@ export default function LetterViewPage() {
             <div className="letter-envelope-stage">
 
               <motion.div
-                className="letter-envelope-info"
+                className="letter-envelope-info letter-from"
                 initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.15, ease }}
                 style={{ position: 'absolute', top: 130, left: 140 }}>
@@ -958,7 +958,7 @@ export default function LetterViewPage() {
               <div className="letter-envelope-divider" style={{ position: 'absolute', top: '50%', left: 140, right: 140, height: 1, background: dividerBg }} />
 
               <motion.div
-                className="letter-envelope-info"
+                className="letter-envelope-info letter-to"
                 initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.25, ease }}
                 style={{ position: 'absolute', bottom: 120, right: 170, textAlign: 'right' }}>
