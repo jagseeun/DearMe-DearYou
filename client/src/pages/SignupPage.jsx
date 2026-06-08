@@ -13,6 +13,7 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [email, setEmail] = useState('');
   const [idMsg, setIdMsg] = useState({ text: '', ok: false });
   const [idChecked, setIdChecked] = useState(false);
@@ -39,10 +40,12 @@ export default function SignupPage() {
     const nextName = name.trim();
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
-    if (!nextName || !nextUserid || !password || !nextEmail) return alert('모든 정보를 입력해주세요.');
+    if (!nextName || !nextUserid || !password || !passwordConfirm || !nextEmail) return alert('모든 정보를 입력해주세요.');
     if (!idChecked) return alert('아이디 중복 확인을 해주세요.');
     if (password.length < 6) return alert('비밀번호는 6자 이상으로 입력해주세요.');
     if (password.length > PASSWORD_MAX_LENGTH) return alert(`비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`);
+    if (password !== passwordConfirm) return alert('비밀번호가 서로 일치하지 않습니다. 다시 확인해주세요.');
+    if (!window.confirm('비밀번호는 로그인에 꼭 필요합니다. 잊지 않도록 안전한 곳에 기록해두셨나요?')) return;
     try {
       const res = await fetch('/register', {
         method: 'POST',
@@ -129,6 +132,14 @@ export default function SignupPage() {
           maxLength={PASSWORD_MAX_LENGTH}
           value={password}
           onChange={e => setPassword(e.target.value)}
+        />
+
+        <PasswordField
+          variants={item}
+          placeholder="비밀번호 한 번 더 입력"
+          maxLength={PASSWORD_MAX_LENGTH}
+          value={passwordConfirm}
+          onChange={e => setPasswordConfirm(e.target.value)}
         />
 
         <motion.input
