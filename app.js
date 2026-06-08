@@ -26,10 +26,18 @@ const RECIPIENT_NAME_MAX_LENGTH = 50;
 const LETTER_CONTENT_MAX_LENGTH = 5000;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
+const PUBLIC_LETTER_CONTENT_MAX_LENGTH = 100;
+const PUBLIC_LETTER_NICKNAME_MAX_LENGTH = 12;
+const PUBLIC_LETTER_PAGE_SIZE = 12;
 const URL_MAX_LENGTH = 2048;
 const MAIL_SEND_TIMEOUT_MS = Number(process.env.MAIL_SEND_TIMEOUT_MS || 20000);
 const ALLOWED_LETTER_TYPES = new Set(["text", "video", "draw"]);
+const ALLOWED_PUBLIC_LETTER_TYPES = new Set(["text", "draw", "photo"]);
 const ALLOWED_EMAIL_THEMES = new Set(["dark", "pink"]);
+const PUBLIC_LETTER_BLOCKED_WORDS = [
+  "씨발", "시발", "ㅅㅂ", "병신", "ㅂㅅ", "좆", "지랄", "꺼져", "죽어",
+  "sex", "porn", "fuck",
+];
 const IMAGE_CONTENT_TYPES = {
   jpg: "image/jpeg",
   jpeg: "image/jpeg",
@@ -106,6 +114,32 @@ function escapeHtml(value = "") {
 
 function isValidEmail(value) {
   return typeof value === "string" && value.length <= 254 && EMAIL_REGEX.test(value);
+}
+
+function normalizePublicText(value = "") {
+  return String(value)
+    .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function hasContactOrLink(value = "") {
+  const text = String(value);
+  return /https?:\/\/|www\.|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|(?:\d[\s-]?){8,}/i.test(text);
+}
+
+function hasBlockedPublicLetterText(value = "") {
+  const normalized = String(value).toLowerCase().replace(/\s+/g, "");
+  return PUBLIC_LETTER_BLOCKED_WORDS.some(word => normalized.includes(word));
+}
+
+function validatePublicLetterText({ nickname, content }) {
+  const combined = `${nickname}\n${content}`;
+  if (hasContactOrLink(combined)) return "링크, 이메일, 전화번호는 열린 편지함에 남길 수 없습니다.";
+  if (hasBlockedPublicLetterText(combined)) return "조금 더 다정한 말로 남겨주세요.";
+  return null;
 }
 
 function normalizeEmailTheme(value) {
@@ -1073,6 +1107,22 @@ const writeLimiter = rateLimit({
   message: { message: "저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
 });
 
+const publicLetterLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "열린 편지는 잠시 후 다시 남겨주세요." },
+});
+
+const publicUploadLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  limit: 24,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { message: "이미지 업로드 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+});
+
 app.use(express.json({ limit: "1mb" }));
 app.use((req, res, next) => {
   if (req.path === "/" || req.path.endsWith(".html")) {
@@ -1329,6 +1379,101 @@ app.get("/get-image-upload-url", uploadLimiter, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: "URL 발급 실패" }); }
 });
 
+app.post("/public-image-upload-url", publicUploadLimiter, async (req, res) => {
+  if (!r2BucketName || !r2PublicBaseUrl || !r2Endpoint || !r2AccessKeyId || !r2SecretAccessKey) {
+    return res.status(500).json({ message: "업로드 설정이 완료되지 않았습니다." });
+  }
+  const ext = String(req.body.ext || req.query.ext || "jpg").toLowerCase();
+  const contentType = IMAGE_CONTENT_TYPES[ext];
+  if (!contentType) return res.status(400).json({ message: "지원하지 않는 이미지 형식입니다." });
+  const fileName = makeObjectKey("public-letters", "open", ext);
+  const command = new PutObjectCommand({ Bucket: r2BucketName, Key: fileName, ContentType: contentType });
+  try {
+    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
+    res.json({ uploadUrl, publicUrl: publicAssetUrl(fileName) });
+  } catch (err) {
+    console.error("public image upload url error:", err);
+    res.status(500).json({ message: "URL 발급 실패" });
+  }
+});
+
+app.get("/public-letters", async (req, res) => {
+  const page = Math.max(0, Number.parseInt(String(req.query.page || "0"), 10) || 0);
+  try {
+    const [total, letters] = await prisma.$transaction([
+      prisma.publicLetter.count({ where: { visible: true } }),
+      prisma.publicLetter.findMany({
+        where: { visible: true },
+        orderBy: { createdAt: "desc" },
+        skip: page * PUBLIC_LETTER_PAGE_SIZE,
+        take: PUBLIC_LETTER_PAGE_SIZE,
+        select: {
+          id: true,
+          nickname: true,
+          type: true,
+          content: true,
+          imageUrl: true,
+          createdAt: true,
+        },
+      }),
+    ]);
+    res.json({ letters, total, page, pageSize: PUBLIC_LETTER_PAGE_SIZE });
+  } catch (err) {
+    console.error("public letter list error:", err);
+    res.status(500).json({ message: "열린 편지를 불러오지 못했습니다." });
+  }
+});
+
+app.post("/public-letters", publicLetterLimiter, async (req, res) => {
+  const nickname = normalizePublicText(req.body.nickname || "");
+  const type = String(req.body.type || "text").trim().toLowerCase();
+  const content = normalizePublicText(req.body.content || "");
+
+  if (!nickname || nickname.length > PUBLIC_LETTER_NICKNAME_MAX_LENGTH) {
+    return res.status(400).json({ message: `닉네임은 1-${PUBLIC_LETTER_NICKNAME_MAX_LENGTH}자로 입력해주세요.` });
+  }
+  if (!ALLOWED_PUBLIC_LETTER_TYPES.has(type)) {
+    return res.status(400).json({ message: "지원하지 않는 열린 편지 형식입니다." });
+  }
+  if (content.length > PUBLIC_LETTER_CONTENT_MAX_LENGTH) {
+    return res.status(400).json({ message: `내용은 ${PUBLIC_LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  }
+  if (type === "text" && !content) {
+    return res.status(400).json({ message: "내용을 입력해주세요." });
+  }
+
+  const moderationError = validatePublicLetterText({ nickname, content });
+  if (moderationError) return res.status(400).json({ message: moderationError });
+
+  const imageUrl = type === "draw" || type === "photo" ? normalizePublicAssetUrl(req.body.imageUrl) : null;
+  if ((type === "draw" || type === "photo") && !imageUrl) {
+    return res.status(400).json({ message: "업로드된 이미지를 확인할 수 없습니다." });
+  }
+
+  try {
+    const letter = await prisma.publicLetter.create({
+      data: {
+        nickname,
+        type,
+        content: content || null,
+        imageUrl,
+      },
+      select: {
+        id: true,
+        nickname: true,
+        type: true,
+        content: true,
+        imageUrl: true,
+        createdAt: true,
+      },
+    });
+    res.status(201).json(letter);
+  } catch (err) {
+    console.error("public letter create error:", err);
+    res.status(500).json({ message: "열린 편지를 저장하지 못했습니다." });
+  }
+});
+
 // 9. 편지 저장
 app.post("/write-letter", writeLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
@@ -1553,6 +1698,69 @@ app.get("/admin/users", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("admin user list error:", err);
     res.status(500).json({ message: "사용자 목록을 불러오지 못했습니다." });
+  }
+});
+
+app.get("/admin/public-letters", requireAdmin, async (req, res) => {
+  try {
+    const letters = await prisma.publicLetter.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 120,
+      select: {
+        id: true,
+        nickname: true,
+        type: true,
+        content: true,
+        imageUrl: true,
+        createdAt: true,
+        visible: true,
+      },
+    });
+    res.json(letters);
+  } catch (err) {
+    console.error("admin public letter list error:", err);
+    res.status(500).json({ message: "열린 편지함 목록을 불러오지 못했습니다." });
+  }
+});
+
+app.patch("/admin/public-letters/:id/visible", adminLimiter, requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  const visible = Boolean(req.body.visible);
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 열린 편지입니다." });
+
+  try {
+    const letter = await prisma.publicLetter.update({
+      where: { id },
+      data: { visible },
+      select: {
+        id: true,
+        nickname: true,
+        type: true,
+        content: true,
+        imageUrl: true,
+        createdAt: true,
+        visible: true,
+      },
+    });
+    res.json(letter);
+  } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ message: "열린 편지를 찾을 수 없습니다." });
+    console.error("admin public letter visible error:", err);
+    res.status(500).json({ message: "열린 편지 상태를 바꾸지 못했습니다." });
+  }
+});
+
+app.delete("/admin/public-letters/:id", adminLimiter, requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 열린 편지입니다." });
+
+  try {
+    await prisma.publicLetter.delete({ where: { id } });
+    res.json({ message: "열린 편지를 삭제했습니다." });
+  } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ message: "열린 편지를 찾을 수 없습니다." });
+    console.error("admin public letter delete error:", err);
+    res.status(500).json({ message: "열린 편지를 삭제하지 못했습니다." });
   }
 });
 

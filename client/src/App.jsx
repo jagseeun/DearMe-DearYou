@@ -13,6 +13,7 @@ import PinkLoginPage from './pages/PinkLoginPage.jsx';
 import PinkLetterViewPage from './pages/PinkLetterViewPage.jsx';
 import LetterViewPage from './pages/LetterViewPage.jsx';
 import AdminPage from './pages/AdminPage.jsx';
+import OpenMailboxPage from './pages/OpenMailboxPage.jsx';
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -29,6 +30,7 @@ function AnimatedRoutes() {
         <Route path="/letter-login" element={<PinkLoginPage />} />
         <Route path="/pink-letters" element={<PinkLetterViewPage />} />
         <Route path="/view-letter" element={<LetterViewPage />} />
+        <Route path="/open-mailbox" element={<OpenMailboxPage />} />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

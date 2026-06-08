@@ -94,6 +94,7 @@ export default function AdminPage() {
   const [redirecting, setRedirecting] = useState(false);
   const [authorized, setAuthorized] = useState(false);
   const [teacherLetters, setTeacherLetters] = useState([]);
+  const [publicLetters, setPublicLetters] = useState([]);
   const [users, setUsers] = useState([]);
   const [letters, setLetters] = useState([]);
   const [form, setForm] = useState(emptyTeacherForm);
@@ -136,7 +137,7 @@ export default function AdminPage() {
   }, []);
 
   async function loadAll() {
-    const results = await Promise.allSettled([loadTeacherLetters(), loadUsers(), loadAdminLetters()]);
+    const results = await Promise.allSettled([loadTeacherLetters(), loadPublicLetters(), loadUsers(), loadAdminLetters()]);
     const failed = results.find(result => result.status === 'rejected');
     if (failed) {
       setMessage(failed.reason?.message || '일부 관리자 데이터를 불러오지 못했습니다.');
@@ -145,6 +146,10 @@ export default function AdminPage() {
 
   async function loadTeacherLetters() {
     setTeacherLetters(await fetchJson('/teacher-letters'));
+  }
+
+  async function loadPublicLetters() {
+    setPublicLetters(await fetchJson('/admin/public-letters'));
   }
 
   async function loadUsers() {
@@ -234,6 +239,39 @@ export default function AdminPage() {
       setMessage(err.message || '재발송 실패');
     } finally {
       setResending(false);
+    }
+  }
+
+  async function togglePublicLetterVisible(letter) {
+    setBusyId(`public-letter-${letter.id}`);
+    setMessage('');
+    try {
+      await fetchJson(`/admin/public-letters/${letter.id}/visible`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visible: !letter.visible }),
+      });
+      setMessage(!letter.visible ? '열린 편지를 다시 공개했습니다.' : '열린 편지를 숨겼습니다.');
+      await loadPublicLetters();
+    } catch (err) {
+      setMessage(err.message || '열린 편지 상태 변경 실패');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function deletePublicLetter(letter) {
+    if (!window.confirm(`${letter.nickname}님의 열린 편지를 삭제할까요?`)) return;
+    setBusyId(`delete-public-letter-${letter.id}`);
+    setMessage('');
+    try {
+      await fetchJson(`/admin/public-letters/${letter.id}`, { method: 'DELETE' });
+      setMessage('열린 편지를 삭제했습니다.');
+      await loadPublicLetters();
+    } catch (err) {
+      setMessage(err.message || '열린 편지 삭제 실패');
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -462,6 +500,53 @@ export default function AdminPage() {
             <span>이메일 없음 {sendResult.skippedNoEmail}</span>
           </div>
         )}
+
+        <section style={{ ...panelStyle, overflow: 'hidden' }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span>열린 편지함 관리</span>
+            <span style={{ color: 'rgba(255,252,223,0.48)' }}>{publicLetters.length}개</span>
+          </div>
+          {publicLetters.length === 0 ? (
+            <div style={{ padding: 28, color: 'rgba(255,252,223,0.45)' }}>아직 열린 편지가 없습니다.</div>
+          ) : (
+            <div style={{ display: 'grid' }}>
+              {publicLetters.map(letter => (
+                <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', gap: 12, alignItems: 'center' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 7 }}>
+                      <strong style={{ fontWeight: 500 }}>{letter.nickname}</strong>
+                      <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>{letter.type}</span>
+                      <span style={{ color: letter.visible ? '#8fd19e' : '#ff9b9b', fontSize: 12 }}>{letter.visible ? '공개' : '숨김'}</span>
+                      <span style={{ color: 'rgba(255,252,223,0.38)', fontSize: 12 }}>{formatDate(letter.createdAt)}</span>
+                    </div>
+                    {letter.imageUrl && (
+                      <img src={letter.imageUrl} alt="" style={{ width: 72, height: 54, objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)', marginBottom: 8 }} />
+                    )}
+                    <div style={{ color: 'rgba(255,252,223,0.72)', whiteSpace: 'pre-wrap', lineHeight: 1.55, overflowWrap: 'anywhere' }}>
+                      {letter.content || (letter.type === 'draw' ? '그림 편지' : '사진 편지')}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    style={buttonStyle}
+                    disabled={busyId === `public-letter-${letter.id}` || busyId === `delete-public-letter-${letter.id}`}
+                    onClick={() => togglePublicLetterVisible(letter)}
+                  >
+                    {letter.visible ? '숨김' : '복구'}
+                  </button>
+                  <button
+                    type="button"
+                    style={dangerButtonStyle}
+                    disabled={busyId === `public-letter-${letter.id}` || busyId === `delete-public-letter-${letter.id}`}
+                    onClick={() => deletePublicLetter(letter)}
+                  >
+                    삭제
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         <section style={{ ...panelStyle, overflow: 'hidden' }}>
           <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>

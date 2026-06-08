@@ -46,6 +46,17 @@ export default function IndexPage() {
           편지 읽기
         </button>
       </motion.div>
+
+      <motion.button
+        type="button"
+        className="open-mailbox-floating-button"
+        onClick={() => navigate('/open-mailbox')}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1, duration: 0.5, ease }}
+      >
+        열린 편지함
+      </motion.button>
     </motion.div>
   );
 }
