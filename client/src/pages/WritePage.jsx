@@ -18,6 +18,19 @@ function defaultOpenDate() {
   return d.toISOString().split('T')[0];
 }
 
+function dataUrlToBlob(dataUrl) {
+  const [header, data] = String(dataUrl || '').split(',');
+  const mime = header?.match(/^data:([^;]+);base64$/)?.[1];
+  if (!mime || !data) throw new Error('서명 이미지 형식이 올바르지 않습니다.');
+
+  const binary = atob(data);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new Blob([bytes], { type: mime });
+}
+
 function LetterTextarea({ value, onChange, placeholder }) {
   return (
     <textarea
@@ -463,7 +476,7 @@ export default function WritePage() {
       const res = await fetch('/get-image-upload-url?ext=png');
       if (!res.ok) throw new Error('서명 업로드 URL 발급에 실패했습니다.');
       const { uploadUrl, publicUrl } = await res.json();
-      const blob = await (await fetch(dataUrl)).blob();
+      const blob = dataUrlToBlob(dataUrl);
       if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('서명 이미지가 너무 큽니다.');
       const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/png' } });
       if (!put.ok) throw new Error('서명 업로드에 실패했습니다.');
