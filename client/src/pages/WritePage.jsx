@@ -437,13 +437,17 @@ export default function WritePage() {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
       photoStreamRef.current = stream;
       setShowCamera(true);
-      setTimeout(() => {
-        if (photoVideoRef.current) photoVideoRef.current.srcObject = stream;
-      }, 50);
+      requestAnimationFrame(() => {
+        if (photoVideoRef.current && photoStreamRef.current === stream) {
+          photoVideoRef.current.srcObject = stream;
+          photoVideoRef.current.play?.().catch(() => {});
+        }
+      });
     } catch { alert('카메라 권한을 허용해주세요.'); }
   }
 
   function closePhotoCamera() {
+    if (photoVideoRef.current) photoVideoRef.current.srcObject = null;
     photoStreamRef.current?.getTracks().forEach(t => t.stop());
     photoStreamRef.current = null;
     setShowCamera(false);
@@ -837,12 +841,14 @@ export default function WritePage() {
         {showCamera && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
             className="photo-capture-overlay"
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 110, gap: 24 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(3,3,3,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 110, gap: 24, transform: 'translateZ(0)', backfaceVisibility: 'hidden', willChange: 'opacity', isolation: 'isolate' }}
           >
-            <div className="photo-capture-frame" style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', width: 480, aspectRatio: '4/3', background: '#000' }}>
+            <div className="photo-capture-frame" style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', width: 480, aspectRatio: '4/3', background: '#000', transform: 'translateZ(0)', backfaceVisibility: 'hidden', contain: 'paint' }}>
               <video ref={photoVideoRef} autoPlay playsInline muted
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                onLoadedMetadata={(event) => event.currentTarget.play?.().catch(() => {})}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }} />
               {/* 뷰파인더 코너 */}
               {['tl','tr','bl','br'].map(pos => (
                 <div key={pos} style={{
