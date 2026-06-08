@@ -20,6 +20,16 @@ function formatDate(value) {
   });
 }
 
+function OpenMailboxLogo() {
+  return (
+    <div className="open-mailbox-logo" aria-label="Dear Me; Dear You">
+      <span className="to">Dear Me</span>
+      <span className="semicolon">;</span>
+      <span className="from">Dear You</span>
+    </div>
+  );
+}
+
 function OpenDrawCanvas({ canvasRef, onDrawn }) {
   const drawingRef = useRef(false);
 
@@ -106,6 +116,7 @@ export default function OpenMailboxPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [showComposer, setShowComposer] = useState(false);
   const [mode, setMode] = useState('text');
   const [nickname, setNickname] = useState('');
   const [content, setContent] = useState('');
@@ -221,6 +232,11 @@ export default function OpenMailboxPage() {
     setDrawn(false);
   }
 
+  function closeComposer() {
+    setShowComposer(false);
+    setMessage('');
+  }
+
   async function submitLetter(event) {
     event.preventDefault();
     const cleanNickname = nickname.trim();
@@ -247,7 +263,8 @@ export default function OpenMailboxPage() {
         }),
       });
       resetForm();
-      setMessage('열린 편지를 남겼습니다.');
+      setShowComposer(false);
+      setMessage('');
       await loadLetters(0);
     } catch (err) {
       setMessage(err.message || '열린 편지를 저장하지 못했습니다.');
@@ -261,6 +278,13 @@ export default function OpenMailboxPage() {
     loadLetters(nextPage);
   }
 
+  function chooseMode(nextMode) {
+    setMode(nextMode);
+    setMessage('');
+    if (nextMode !== 'photo') setPhotoUrl('');
+    if (nextMode !== 'draw') setDrawn(false);
+  }
+
   return (
     <motion.div
       className="open-mailbox-page"
@@ -271,119 +295,25 @@ export default function OpenMailboxPage() {
     >
       <button type="button" className="open-mailbox-back" onClick={() => navigate('/')}>돌아가기</button>
 
+      <OpenMailboxLogo />
+
       <main className="open-mailbox-shell">
-        <section className="open-compose-panel">
-          <div className="open-compose-heading">
-            <span>OPEN LETTERS</span>
-            <h1>열린 편지함</h1>
-          </div>
-
-          <form className="open-compose-form" onSubmit={submitLetter}>
-            <input
-              className="open-compose-input"
-              value={nickname}
-              onChange={event => setNickname(event.target.value)}
-              maxLength={12}
-              placeholder="닉네임"
-            />
-
-            <div className="open-mode-tabs" aria-label="작성 형식">
-              {modes.map(item => (
-                <button
-                  key={item.key}
-                  type="button"
-                  className={mode === item.key ? 'active' : ''}
-                  onClick={() => {
-                    setMode(item.key);
-                    setMessage('');
-                    if (item.key !== 'photo') setPhotoUrl('');
-                    if (item.key !== 'draw') setDrawn(false);
-                  }}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-
-            <AnimatePresence mode="wait">
-              {mode === 'text' && (
-                <motion.textarea
-                  key="text"
-                  className="open-compose-textarea"
-                  value={content}
-                  onChange={event => setContent(event.target.value)}
-                  maxLength={CONTENT_MAX_LENGTH}
-                  placeholder="모두에게 남길 편지"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                />
-              )}
-
-              {mode === 'draw' && (
-                <motion.div
-                  key="draw"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  className="open-compose-media"
-                >
-                  <OpenDrawCanvas canvasRef={canvasRef} onDrawn={setDrawn} />
-                </motion.div>
-              )}
-
-              {mode === 'photo' && (
-                <motion.div
-                  key="photo"
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  className="open-photo-tool"
-                >
-                  {photoUrl ? (
-                    <div className="open-photo-preview">
-                      <img src={photoUrl} alt="" />
-                      <button type="button" onClick={() => setPhotoUrl('')}>다시 촬영</button>
-                    </div>
-                  ) : (
-                    <button type="button" className="open-photo-button" onClick={openPhotoCamera} disabled={photoUploading}>
-                      {photoUploading ? '업로드 중...' : '사진 촬영'}
-                    </button>
-                  )}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {mode !== 'text' && (
-              <textarea
-                className="open-compose-textarea compact"
-                value={content}
-                onChange={event => setContent(event.target.value)}
-                maxLength={CONTENT_MAX_LENGTH}
-                placeholder="짧은 말"
-              />
-            )}
-
-            <div className="open-compose-footer">
-              <span>{content.length}/{CONTENT_MAX_LENGTH}</span>
-              <button type="submit" disabled={saving || photoUploading}>
-                {saving ? '저장 중...' : '남기기'}
-              </button>
-            </div>
-          </form>
-          {message && <div className="open-message">{message}</div>}
-        </section>
-
         <section className="open-board-panel">
           <div className="open-board-header">
-            <div>
+            <div className="open-board-title-row">
               <span>{total} letters</span>
-              <h2>모두의 편지</h2>
+              <h1>열린 편지함</h1>
+              <p>모두에게 남기는 100자의 작은 편지</p>
             </div>
-            <div className="open-page-arrows">
-              <button type="button" onClick={() => changePage(page - 1)} disabled={page <= 0}>‹</button>
-              <span>{page + 1}/{totalPages}</span>
-              <button type="button" onClick={() => changePage(page + 1)} disabled={page + 1 >= totalPages}>›</button>
+            <div className="open-board-controls">
+              <button type="button" className="open-compose-open-button" onClick={() => setShowComposer(true)}>
+                작성하기
+              </button>
+              <div className="open-page-arrows">
+                <button type="button" onClick={() => changePage(page - 1)} disabled={page <= 0}>‹</button>
+                <span>{page + 1}/{totalPages}</span>
+                <button type="button" onClick={() => changePage(page + 1)} disabled={page + 1 >= totalPages}>›</button>
+              </div>
             </div>
           </div>
 
@@ -393,6 +323,9 @@ export default function OpenMailboxPage() {
             <div className="open-empty-letter">
               <strong>첫 편지를 기다리는 중</strong>
               <span>아무도 안 하면 우리가 첫 장을 열면 됩니다.</span>
+              <button type="button" className="open-compose-open-button" onClick={() => setShowComposer(true)}>
+                첫 편지 남기기
+              </button>
             </div>
           ) : (
             <div className="open-letter-grid">
@@ -418,6 +351,122 @@ export default function OpenMailboxPage() {
           )}
         </section>
       </main>
+
+      <AnimatePresence>
+        {showComposer && (
+          <motion.div
+            className="open-compose-modal-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeComposer}
+          >
+            <motion.section
+              className="open-compose-panel open-compose-modal"
+              initial={{ opacity: 0, y: 18, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              onClick={event => event.stopPropagation()}
+            >
+              <button type="button" className="open-compose-close" onClick={closeComposer}>닫기</button>
+              <div className="open-compose-heading">
+                <span>WRITE</span>
+                <h2>열린 편지 남기기</h2>
+              </div>
+
+              <form className="open-compose-form" onSubmit={submitLetter}>
+                <input
+                  className="open-compose-input"
+                  value={nickname}
+                  onChange={event => setNickname(event.target.value)}
+                  maxLength={12}
+                  placeholder="닉네임"
+                />
+
+                <div className="open-mode-tabs" aria-label="작성 형식">
+                  {modes.map(item => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      className={mode === item.key ? 'active' : ''}
+                      onClick={() => chooseMode(item.key)}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+
+                <AnimatePresence mode="wait">
+                  {mode === 'text' && (
+                    <motion.textarea
+                      key="text"
+                      className="open-compose-textarea"
+                      value={content}
+                      onChange={event => setContent(event.target.value)}
+                      maxLength={CONTENT_MAX_LENGTH}
+                      placeholder="모두에게 남길 편지"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                    />
+                  )}
+
+                  {mode === 'draw' && (
+                    <motion.div
+                      key="draw"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      className="open-compose-media"
+                    >
+                      <OpenDrawCanvas canvasRef={canvasRef} onDrawn={setDrawn} />
+                    </motion.div>
+                  )}
+
+                  {mode === 'photo' && (
+                    <motion.div
+                      key="photo"
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      className="open-photo-tool"
+                    >
+                      {photoUrl ? (
+                        <div className="open-photo-preview">
+                          <img src={photoUrl} alt="" />
+                          <button type="button" onClick={() => setPhotoUrl('')}>다시 촬영</button>
+                        </div>
+                      ) : (
+                        <button type="button" className="open-photo-button" onClick={openPhotoCamera} disabled={photoUploading}>
+                          {photoUploading ? '업로드 중...' : '사진 촬영'}
+                        </button>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {mode !== 'text' && (
+                  <textarea
+                    className="open-compose-textarea compact"
+                    value={content}
+                    onChange={event => setContent(event.target.value)}
+                    maxLength={CONTENT_MAX_LENGTH}
+                    placeholder="짧은 말"
+                  />
+                )}
+
+                <div className="open-compose-footer">
+                  <span>{content.length}/{CONTENT_MAX_LENGTH}</span>
+                  <button type="submit" disabled={saving || photoUploading}>
+                    {saving ? '저장 중...' : '남기기'}
+                  </button>
+                </div>
+              </form>
+              {message && <div className="open-message">{message}</div>}
+            </motion.section>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {selected && (
