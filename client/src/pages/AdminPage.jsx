@@ -8,6 +8,7 @@ const ease = [0.22, 1, 0.36, 1];
 const PASSWORD_MAX_LENGTH = 128;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
+const emptyTeacherForm = { teacherName: '', title: '', content: '' };
 
 const panelStyle = {
   width: '100%',
@@ -95,7 +96,8 @@ export default function AdminPage() {
   const [teacherLetters, setTeacherLetters] = useState([]);
   const [users, setUsers] = useState([]);
   const [letters, setLetters] = useState([]);
-  const [form, setForm] = useState({ teacherName: '', title: '', content: '' });
+  const [form, setForm] = useState(emptyTeacherForm);
+  const [editingTeacherId, setEditingTeacherId] = useState(null);
   const [dateDrafts, setDateDrafts] = useState({});
   const [deliveryEmailDrafts, setDeliveryEmailDrafts] = useState({});
   const [passwordDrafts, setPasswordDrafts] = useState({});
@@ -156,7 +158,7 @@ export default function AdminPage() {
     setDeliveryEmailDrafts(Object.fromEntries(nextLetters.map(letter => [letter.id, getLetterDeliveryEmail(letter)])));
   }
 
-  async function createLetter(e) {
+  async function saveTeacherLetter(e) {
     e.preventDefault();
     if (!form.content.trim()) {
       setMessage('편지 내용을 입력해주세요.');
@@ -166,19 +168,37 @@ export default function AdminPage() {
     setSaving(true);
     setMessage('');
     try {
-      await fetchJson('/teacher-letters', {
-        method: 'POST',
+      await fetchJson(editingTeacherId ? `/teacher-letters/${editingTeacherId}` : '/teacher-letters', {
+        method: editingTeacherId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
-      setForm({ teacherName: '', title: '', content: '' });
-      setMessage('선생님 편지를 저장했습니다.');
+      setForm(emptyTeacherForm);
+      setMessage(editingTeacherId ? '선생님 편지를 수정했습니다.' : '선생님 편지를 저장했습니다.');
+      setEditingTeacherId(null);
       await loadTeacherLetters();
     } catch (err) {
-      setMessage(err.message || '저장 실패');
+      setMessage(err.message || (editingTeacherId ? '수정 실패' : '저장 실패'));
     } finally {
       setSaving(false);
     }
+  }
+
+  function startEditTeacherLetter(letter) {
+    setEditingTeacherId(letter.id);
+    setForm({
+      teacherName: letter.teacherName || '',
+      title: letter.title || '',
+      content: letter.content || '',
+    });
+    setMessage('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function cancelTeacherEdit() {
+    setEditingTeacherId(null);
+    setForm(emptyTeacherForm);
+    setMessage('');
   }
 
   async function sendRandom() {
@@ -384,11 +404,11 @@ export default function AdminPage() {
 
         <section style={{ ...panelStyle, padding: 24, display: 'grid', gap: 14 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 300 }}>선생님 편지 작성</h2>
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 300 }}>{editingTeacherId ? '선생님 편지 수정' : '선생님 편지 작성'}</h2>
             <p style={{ margin: '8px 0 0', color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>작성 후 랜덤 발송 또는 기존 대상 재발송을 실행할 수 있습니다.</p>
           </div>
 
-          <form onSubmit={createLetter} style={{ display: 'grid', gap: 12 }}>
+          <form onSubmit={saveTeacherLetter} style={{ display: 'grid', gap: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
               <input
                 style={inputStyle}
@@ -413,7 +433,14 @@ export default function AdminPage() {
               maxLength={TEACHER_CONTENT_MAX_LENGTH}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
-              <button style={buttonStyle} disabled={saving}>{saving ? '저장 중...' : '편지 저장'}</button>
+              {editingTeacherId && (
+                <button type="button" style={buttonStyle} onClick={cancelTeacherEdit} disabled={saving}>
+                  수정 취소
+                </button>
+              )}
+              <button style={buttonStyle} disabled={saving}>
+                {editingTeacherId ? (saving ? '수정 중...' : '수정 저장') : (saving ? '저장 중...' : '편지 저장')}
+              </button>
               <button type="button" style={buttonStyle} onClick={resendAll} disabled={resending || sending}>
                 {resending ? '재발송 중...' : '기존 대상 재발송'}
               </button>
@@ -449,7 +476,17 @@ export default function AdminPage() {
                 <div key={letter.id} style={{ padding: 22, borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16, marginBottom: 8 }}>
                     <strong style={{ fontWeight: 500 }}>{letter.title || '제목 없음'}</strong>
-                    <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 13 }}>배정 {letter._count?.deliveries || 0}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 13 }}>배정 {letter._count?.deliveries || 0}</span>
+                      <button
+                        type="button"
+                        style={{ ...buttonStyle, minHeight: 34, padding: '0 12px', fontSize: 12 }}
+                        onClick={() => startEditTeacherLetter(letter)}
+                        disabled={saving && editingTeacherId === letter.id}
+                      >
+                        수정
+                      </button>
+                    </div>
                   </div>
                   <div style={{ color: 'rgba(255,252,223,0.58)', fontSize: 13, marginBottom: 10 }}>{letter.teacherName}</div>
                   <div style={{ color: 'rgba(255,252,223,0.72)', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>{letter.content}</div>
