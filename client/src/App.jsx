@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import BackgroundLayers from './components/BackgroundLayers.jsx';
+import BackgroundLayers, { PINK_ROUTES } from './components/BackgroundLayers.jsx';
 import IndexPage from './pages/IndexPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
 import SignupPage from './pages/SignupPage.jsx';
@@ -35,9 +36,32 @@ function AnimatedRoutes() {
   );
 }
 
+function FaviconSwitcher() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const isPink = PINK_ROUTES.some(route => location.pathname.startsWith(route));
+    const href = isPink ? '/pink.png' : '/blue.png';
+    let favicon = document.querySelector('#app-favicon') || document.querySelector('link[rel="icon"]');
+
+    if (!favicon) {
+      favicon = document.createElement('link');
+      favicon.id = 'app-favicon';
+      favicon.rel = 'icon';
+      document.head.appendChild(favicon);
+    }
+
+    favicon.type = 'image/png';
+    favicon.href = href;
+  }, [location.pathname]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <FaviconSwitcher />
       <BackgroundLayers />
       <AnimatedRoutes />
     </BrowserRouter>

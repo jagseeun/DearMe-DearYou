@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import Stars from './Stars.jsx';
 import PinkStars from './PinkStars.jsx';
 
-const PINK_ROUTES = ['/letters', '/view-letter', '/pink-letters', '/letter-login'];
+export const PINK_ROUTES = ['/letters', '/view-letter', '/pink-letters', '/letter-login'];
 const ease = [0.22, 1, 0.36, 1];
 
 const DARK_GRADIENT = `linear-gradient(to bottom,
