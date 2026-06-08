@@ -11,7 +11,6 @@ const modes = [
   { key: 'draw', label: '그림' },
   { key: 'photo', label: '사진' },
 ];
-const typeLabels = { text: '텍스트', draw: '그림', photo: '사진' };
 
 function formatDate(value) {
   return new Date(value).toLocaleDateString('ko-KR', {
@@ -112,7 +111,7 @@ export default function OpenMailboxPage() {
   const navigate = useNavigate();
   const [letters, setLetters] = useState([]);
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(12);
+  const [pageSize, setPageSize] = useState(8);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -139,7 +138,7 @@ export default function OpenMailboxPage() {
       setLetters(data.letters || []);
       setTotal(data.total || 0);
       setPage(data.page || 0);
-      setPageSize(data.pageSize || 12);
+      setPageSize(data.pageSize || 8);
     } catch (err) {
       setMessage(err.message || '열린 편지를 불러오지 못했습니다.');
     } finally {
@@ -303,7 +302,7 @@ export default function OpenMailboxPage() {
             <div className="open-board-title-row">
               <span>{total} letters</span>
               <h1>열린 편지함</h1>
-              <p>모두에게 남기는 100자의 작은 편지</p>
+              <p>잠깐 머물다 가는 말들</p>
             </div>
             <div className="open-board-controls">
               <button type="button" className="open-compose-open-button" onClick={() => setShowComposer(true)}>
@@ -333,14 +332,13 @@ export default function OpenMailboxPage() {
                 <button
                   type="button"
                   key={letter.id}
-                  className={`open-letter-card ${letter.type}`}
+                  className={`open-letter-card ${letter.type} ${letter.content ? '' : 'has-no-copy'}`.trim()}
                   onClick={() => setSelected(letter)}
                 >
-                  <span className="open-letter-type">{typeLabels[letter.type] || '편지'}</span>
                   {(letter.type === 'draw' || letter.type === 'photo') && letter.imageUrl && (
                     <img src={letter.imageUrl} alt="" />
                   )}
-                  <p>{letter.content || (letter.type === 'draw' ? '그림 편지' : '사진 편지')}</p>
+                  {letter.content && <p>{letter.content}</p>}
                   <footer>
                     <span>{letter.nickname}</span>
                     <time>{formatDate(letter.createdAt)}</time>
@@ -485,11 +483,11 @@ export default function OpenMailboxPage() {
               onClick={event => event.stopPropagation()}
             >
               <button type="button" onClick={() => setSelected(null)}>닫기</button>
-              <span>{typeLabels[selected.type] || '편지'} · {formatDate(selected.createdAt)}</span>
+              <span>{formatDate(selected.createdAt)}</span>
               {(selected.type === 'draw' || selected.type === 'photo') && selected.imageUrl && (
                 <img src={selected.imageUrl} alt="" />
               )}
-              <p>{selected.content || (selected.type === 'draw' ? '그림 편지' : '사진 편지')}</p>
+              {selected.content && <p>{selected.content}</p>}
               <footer>from. {selected.nickname}</footer>
             </motion.article>
           </motion.div>
