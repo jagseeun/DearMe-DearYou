@@ -27,6 +27,9 @@ model Letter {
   videoUrl              String?
   imageUrl              String?
   signatureData         String?
+  deliveryEmail         String?
+  sentToEmail           String?
+  emailTheme            String    @default("dark")
   recipientEmail        String?
   recipientName         String?
   callReplyVideoUrl     String?

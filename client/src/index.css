@@ -1654,6 +1654,18 @@ canvas {
   width: min(480px, calc(100vw - 32px));
 }
 
+.write-modal-actions {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.write-modal-actions button {
+  flex: 0 0 auto;
+}
+
 .admin-shell {
   position: relative;
   z-index: 1;
@@ -4149,8 +4161,8 @@ canvas {
     width: 100% !important;
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-    margin-top: 4px !important;
+    gap: 14px !important;
+    margin-top: 10px !important;
   }
 
   .write-modal-actions button {
@@ -4879,7 +4891,7 @@ canvas {
     width: 100% !important;
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
+    gap: 14px !important;
   }
 
   .modal-actions button,
@@ -5971,7 +5983,7 @@ canvas {
 
   .modal-actions,
   .write-modal-actions {
-    gap: 8px !important;
+    gap: 12px !important;
   }
 
   .modal-actions button,
