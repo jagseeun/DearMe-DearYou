@@ -68,3 +68,13 @@ model TeacherLetterDelivery {
   member        Member        @relation(fields: [memberId], references: [id])
   teacherLetter TeacherLetter @relation(fields: [teacherLetterId], references: [id])
 }
+
+model PublicLetter {
+  id        Int      @id @default(autoincrement())
+  nickname  String
+  type      String   @default("text")
+  content   String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  visible   Boolean  @default(true)
+}
