@@ -545,7 +545,7 @@ export default function WritePage() {
       const data = await res.json();
       if (res.ok) {
         if (isImmediateDelivery && data.delivery && data.delivery.sent === 0) {
-          alert('편지는 저장됐지만 이메일 발송은 실패했습니다. 관리자에서 다시 발송해주세요.');
+          alert(data.delivery.message || '편지는 저장됐지만 이메일 발송은 실패했습니다. 관리자에서 다시 발송해주세요.');
         }
         navigate('/done', {
           state: {
