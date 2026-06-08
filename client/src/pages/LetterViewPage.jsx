@@ -853,7 +853,7 @@ function SavedCallView({ letter, returnTo }) {
 
 export default function LetterViewPage() {
   const navigate = useNavigate();
-  const { letter, name, returnTo } = useLocation().state || {};
+  const { letter, returnTo } = useLocation().state || {};
   const [phase, setPhase] = useState('envelope');
 
   if (!letter) { navigate('/login', { replace: true }); return null; }
@@ -948,32 +948,13 @@ export default function LetterViewPage() {
                 initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.15, ease }}
                 style={{ position: 'absolute', top: 130, left: 140 }}>
-                <div className="letter-envelope-label" style={{ color: textHint }}>보내는 사람</div>
+                <div className="letter-envelope-label" style={{ color: textHint }}>개봉일</div>
                 <div className="letter-envelope-value">
-                  <span>{formatDate(letter.createdAt)}의</span>
-                  <span>{name}</span>
+                  <span>{formatDate(letter.openDate)}</span>
                 </div>
               </motion.div>
 
               <div className="letter-envelope-divider" style={{ position: 'absolute', top: '50%', left: 140, right: 140, height: 1, background: dividerBg }} />
-
-              <motion.div
-                className="letter-envelope-info letter-to"
-                initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.25, ease }}
-                style={{ position: 'absolute', bottom: 120, right: 170, textAlign: 'right' }}>
-                <div className="letter-envelope-label" style={{ color: textHint }}>받는 사람</div>
-                <div className="letter-envelope-value">
-                  {letter.recipientName ? (
-                    <span>{letter.recipientName} 귀하</span>
-                  ) : (
-                    <>
-                      <span>{formatDate(letter.openDate)}의</span>
-                      <span>{name} 귀하</span>
-                    </>
-                  )}
-                </div>
-              </motion.div>
 
               {/* D+0 사이드바 */}
               <motion.div

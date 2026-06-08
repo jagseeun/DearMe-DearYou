@@ -15,12 +15,6 @@ function getType(letter) {
   return typeStyles[letter.type] || typeStyles.text;
 }
 
-function recipientText(letter) {
-  if (letter.recipientName) return letter.recipientName;
-  if (letter.recipientEmail) return letter.recipientEmail;
-  return '';
-}
-
 function PinkLetterLogo({ className = '' }) {
   return (
     <div className={`letter-list-logo ${className}`.trim()}>
@@ -108,7 +102,6 @@ export default function PinkLetterViewPage() {
             {letters.map((letter, i) => {
               const unlocked = new Date(letter.openDate) <= now;
               const type = getType(letter);
-              const recipient = recipientText(letter);
 
               return (
                 <motion.article
@@ -134,7 +127,9 @@ export default function PinkLetterViewPage() {
                       }}
                     >
                       <div className="letter-card-title-line">
-                        <span className="letter-card-title">{formatDate(letter.createdAt)} 작성</span>
+                        <span className="letter-card-title">
+                          {unlocked ? `${formatDate(letter.openDate)} 개봉` : `${formatDate(letter.openDate)} 개봉 예정`}
+                        </span>
                       </div>
                       <div className="letter-card-info-line">
                         <span
@@ -142,10 +137,6 @@ export default function PinkLetterViewPage() {
                           style={{ background: type.bg, color: type.color, borderColor: type.border }}
                         >
                           {type.label}
-                        </span>
-                        {recipient && <span className="letter-recipient">→ {recipient}</span>}
-                        <span className="letter-date-line">
-                          {unlocked ? `✓ ${formatDate(letter.openDate)} 개봉` : `${formatDate(letter.openDate)} 개봉 예정`}
                         </span>
                       </div>
                     </div>
