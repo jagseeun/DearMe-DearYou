@@ -218,9 +218,9 @@ async function verifyMailerConfig() {
 verifyMailerConfig();
 
 // 개봉일이 된 편지 이메일 발송
-async function sendDueLetters({ authorId, letterId } = {}) {
+async function sendDueLetters({ authorId, letterId, force = false } = {}) {
   const now = new Date();
-  const stats = { checked: 0, sent: 0, failed: 0, skippedNoEmail: 0 };
+  const stats = { checked: 0, sent: 0, failed: 0, skippedNoEmail: 0, errors: [] };
 
   try {
     const letters = await prisma.letter.findMany({
@@ -229,7 +229,7 @@ async function sendDueLetters({ authorId, letterId } = {}) {
         ...(authorId ? { authorId } : {}),
         type: { not: "call" },
         sentAt: null,
-        openDate: { lte: now },
+        ...(!force ? { openDate: { lte: now } } : {}),
       },
       include: { author: true },
     });
@@ -240,6 +240,11 @@ async function sendDueLetters({ authorId, letterId } = {}) {
       const email = letter.deliveryEmail || letter.recipientEmail || letter.author.email;
       if (!isValidEmail(email)) {
         stats.skippedNoEmail += 1;
+        stats.errors.push({
+          letterId: letter.id,
+          reason: "missing_or_invalid_email",
+          message: "발송할 이메일 주소가 없거나 형식이 올바르지 않습니다.",
+        });
         continue;
       }
 
@@ -309,15 +314,60 @@ async function sendDueLetters({ authorId, letterId } = {}) {
         console.log(`✉ 발송 완료: ${email} (편지 #${letter.id})`);
       } catch (err) {
         stats.failed += 1;
+        stats.errors.push({
+          letterId: letter.id,
+          reason: classifyMailError(err),
+          code: err?.code || null,
+          responseCode: err?.responseCode || null,
+          message: publicMailErrorMessage(err),
+        });
         console.error(`✉ 발송 실패: ${email}`, err.message);
       }
     }
   } catch (err) {
     console.error("sendDueLetters 오류:", err);
     stats.failed += 1;
+    stats.errors.push({
+      reason: "delivery_query_failed",
+      message: "편지 발송 처리 중 서버 오류가 발생했습니다. 관리자에서 다시 발송해주세요.",
+    });
   }
 
   return stats;
+}
+
+function classifyMailError(err) {
+  if (err?.message === "mail config missing") return "mail_config_missing";
+  if (err?.message === "mail send timeout") return "mail_timeout";
+  if (err?.code === "EAUTH" || err?.responseCode === 534 || err?.responseCode === 535) return "mail_auth_failed";
+  if (["ECONNECTION", "ETIMEDOUT", "ESOCKET"].includes(err?.code)) return "mail_connection_failed";
+  return "mail_send_failed";
+}
+
+function publicMailErrorMessage(err) {
+  const reason = classifyMailError(err);
+  if (reason === "mail_config_missing") {
+    return "배포 서버에 GMAIL_USER 또는 GMAIL_APP_PASSWORD 환경변수가 설정되지 않았습니다.";
+  }
+  if (reason === "mail_auth_failed") {
+    return "Gmail 인증에 실패했습니다. Render 환경변수의 Gmail 계정과 앱 비밀번호를 확인해주세요.";
+  }
+  if (reason === "mail_timeout") {
+    return "Gmail SMTP 응답 시간이 초과됐습니다. 잠시 후 관리자에서 다시 발송해주세요.";
+  }
+  if (reason === "mail_connection_failed") {
+    return "배포 서버에서 Gmail SMTP에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.";
+  }
+  return "Gmail SMTP 발송이 거절되었거나 일시 오류가 발생했습니다.";
+}
+
+function deliveryResultMessage(delivery) {
+  if (!delivery) return "";
+  if (delivery.sent > 0) return "이메일 발송이 완료되었습니다.";
+  if (delivery.checked === 0) return "발송 대상 편지를 찾지 못했습니다. 관리자에서 편지 상태를 확인해주세요.";
+  if (delivery.skippedNoEmail > 0) return "발송할 이메일 주소가 없거나 형식이 올바르지 않습니다.";
+  if (delivery.errors?.[0]?.message) return delivery.errors[0].message;
+  return "편지는 저장됐지만 이메일 발송은 실패했습니다. 관리자에서 다시 발송해주세요.";
 }
 
 function buildLegacySenderNotifyEmail(senderName, recipientName, openDate) {
@@ -1248,7 +1298,8 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
     // 이미 개봉 가능한 날짜라면 현재 사용자의 편지만 즉시 발송한다.
     let delivery = null;
     if (parsedOpenDate <= new Date()) {
-      delivery = await sendDueLetters({ letterId: letter.id });
+      delivery = await sendDueLetters({ letterId: letter.id, force: true });
+      delivery.message = deliveryResultMessage(delivery);
     }
     res.status(201).json({ message: "편지 저장 성공!", delivery });
   } catch (err) {
