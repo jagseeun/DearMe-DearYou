@@ -130,6 +130,7 @@ export default function OpenMailboxPage() {
   const photoStreamRef = useRef(null);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const emptySlots = Math.max(0, pageSize - letters.length);
 
   async function loadLetters(nextPage = page) {
     setLoading(true);
@@ -257,7 +258,7 @@ export default function OpenMailboxPage() {
         body: JSON.stringify({
           nickname: cleanNickname,
           type: mode,
-          content: cleanContent,
+          content: mode === 'draw' ? '' : cleanContent,
           imageUrl,
         }),
       });
@@ -282,6 +283,7 @@ export default function OpenMailboxPage() {
     setMessage('');
     if (nextMode !== 'photo') setPhotoUrl('');
     if (nextMode !== 'draw') setDrawn(false);
+    if (nextMode === 'draw') setContent('');
   }
 
   return (
@@ -344,6 +346,9 @@ export default function OpenMailboxPage() {
                     <time>{formatDate(letter.createdAt)}</time>
                   </footer>
                 </button>
+              ))}
+              {Array.from({ length: emptySlots }).map((_, index) => (
+                <div key={`empty-${page}-${index}`} className="open-letter-card placeholder" aria-hidden="true" />
               ))}
             </div>
           )}
@@ -443,7 +448,7 @@ export default function OpenMailboxPage() {
                   )}
                 </AnimatePresence>
 
-                {mode !== 'text' && (
+                {mode === 'photo' && (
                   <textarea
                     className="open-compose-textarea compact"
                     value={content}
@@ -504,7 +509,7 @@ export default function OpenMailboxPage() {
             transition={{ duration: 0.16, ease: 'easeOut' }}
             style={{ position: 'fixed', inset: 0, background: 'rgba(3,3,3,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 120, gap: 24, transform: 'translateZ(0)', backfaceVisibility: 'hidden', willChange: 'opacity', isolation: 'isolate' }}
           >
-            <div className="photo-capture-frame" style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', width: 480, aspectRatio: '4/3', background: '#000', transform: 'translateZ(0)', backfaceVisibility: 'hidden', contain: 'paint' }}>
+            <div className="photo-capture-frame" style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', width: 'min(680px, calc(100vw - 32px))', aspectRatio: '4/3', background: '#000', transform: 'translateZ(0)', backfaceVisibility: 'hidden', contain: 'paint' }}>
               <video
                 ref={photoVideoRef}
                 autoPlay

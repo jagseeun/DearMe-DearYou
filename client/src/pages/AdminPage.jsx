@@ -95,6 +95,7 @@ export default function AdminPage() {
   const [authorized, setAuthorized] = useState(false);
   const [teacherLetters, setTeacherLetters] = useState([]);
   const [publicLetters, setPublicLetters] = useState([]);
+  const [selectedPublicLetter, setSelectedPublicLetter] = useState(null);
   const [users, setUsers] = useState([]);
   const [letters, setLetters] = useState([]);
   const [form, setForm] = useState(emptyTeacherForm);
@@ -246,11 +247,12 @@ export default function AdminPage() {
     setBusyId(`public-letter-${letter.id}`);
     setMessage('');
     try {
-      await fetchJson(`/admin/public-letters/${letter.id}/visible`, {
+      const updatedLetter = await fetchJson(`/admin/public-letters/${letter.id}/visible`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ visible: !letter.visible }),
       });
+      setSelectedPublicLetter(prev => (prev?.id === updatedLetter.id ? updatedLetter : prev));
       setMessage(!letter.visible ? '열린 편지를 다시 공개했습니다.' : '열린 편지를 숨겼습니다.');
       await loadPublicLetters();
     } catch (err) {
@@ -266,6 +268,7 @@ export default function AdminPage() {
     setMessage('');
     try {
       await fetchJson(`/admin/public-letters/${letter.id}`, { method: 'DELETE' });
+      setSelectedPublicLetter(prev => (prev?.id === letter.id ? null : prev));
       setMessage('열린 편지를 삭제했습니다.');
       await loadPublicLetters();
     } catch (err) {
@@ -511,24 +514,31 @@ export default function AdminPage() {
           ) : (
             <div style={{ display: 'grid' }}>
               {publicLetters.map(letter => (
-                <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto auto', gap: 12, alignItems: 'center' }}>
+                <div key={letter.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 10, alignItems: 'center' }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 7 }}>
                       <strong style={{ fontWeight: 500 }}>{letter.nickname}</strong>
-                      <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>{letter.type}</span>
+                      <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>{letter.type === 'draw' ? '그림' : letter.type === 'photo' ? '사진' : '텍스트'}</span>
                       <span style={{ color: letter.visible ? '#8fd19e' : '#ff9b9b', fontSize: 12 }}>{letter.visible ? '공개' : '숨김'}</span>
                       <span style={{ color: 'rgba(255,252,223,0.38)', fontSize: 12 }}>{formatDate(letter.createdAt)}</span>
                     </div>
                     {letter.imageUrl && (
-                      <img src={letter.imageUrl} alt="" style={{ width: 72, height: 54, objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)', marginBottom: 8 }} />
+                      <img src={letter.imageUrl} alt="" style={{ display: 'none', width: 72, height: 54, objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(255,255,255,0.12)', marginBottom: 8 }} />
                     )}
-                    <div style={{ color: 'rgba(255,252,223,0.72)', whiteSpace: 'pre-wrap', lineHeight: 1.55, overflowWrap: 'anywhere' }}>
+                    <div style={{ display: 'none', color: 'rgba(255,252,223,0.72)', whiteSpace: 'pre-wrap', lineHeight: 1.55, overflowWrap: 'anywhere' }}>
                       {letter.content || (letter.type === 'draw' ? '그림 편지' : '사진 편지')}
                     </div>
                   </div>
                   <button
                     type="button"
                     style={buttonStyle}
+                    onClick={() => setSelectedPublicLetter(letter)}
+                  >
+                    자세히 보기
+                  </button>
+                  <button
+                    type="button"
+                    style={{ ...buttonStyle, display: 'none' }}
                     disabled={busyId === `public-letter-${letter.id}` || busyId === `delete-public-letter-${letter.id}`}
                     onClick={() => togglePublicLetterVisible(letter)}
                   >
@@ -536,7 +546,7 @@ export default function AdminPage() {
                   </button>
                   <button
                     type="button"
-                    style={dangerButtonStyle}
+                    style={{ ...dangerButtonStyle, display: 'none' }}
                     disabled={busyId === `public-letter-${letter.id}` || busyId === `delete-public-letter-${letter.id}`}
                     onClick={() => deletePublicLetter(letter)}
                   >
@@ -704,6 +714,96 @@ export default function AdminPage() {
           )}
         </section>
       </div>
+
+      {selectedPublicLetter && (
+        <div
+          className="modal-backdrop"
+          style={{ zIndex: 120, padding: 18 }}
+          onClick={() => setSelectedPublicLetter(null)}
+        >
+          <section
+            className="modal-panel"
+            style={{
+              width: 'min(560px, calc(100vw - 36px))',
+              maxHeight: 'calc(100dvh - 36px)',
+              overflow: 'auto',
+              padding: 24,
+              background: 'rgba(22,22,27,0.96)',
+              color: '#fff3df',
+            }}
+            onClick={event => event.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'flex-start', marginBottom: 18 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 7 }}>
+                  <strong style={{ fontWeight: 500, fontSize: 18 }}>{selectedPublicLetter.nickname}</strong>
+                  <span style={{ color: selectedPublicLetter.visible ? '#8fd19e' : '#ff9b9b', fontSize: 12 }}>
+                    {selectedPublicLetter.visible ? '공개' : '숨김'}
+                  </span>
+                  <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>
+                    {selectedPublicLetter.type === 'draw' ? '그림' : selectedPublicLetter.type === 'photo' ? '사진' : '텍스트'}
+                  </span>
+                </div>
+                <div style={{ color: 'rgba(255,252,223,0.46)', fontSize: 13 }}>
+                  {formatDate(selectedPublicLetter.createdAt)}
+                </div>
+              </div>
+              <button type="button" style={buttonStyle} onClick={() => setSelectedPublicLetter(null)}>
+                닫기
+              </button>
+            </div>
+
+            {selectedPublicLetter.imageUrl && (
+              <img
+                src={selectedPublicLetter.imageUrl}
+                alt=""
+                style={{
+                  width: '100%',
+                  maxHeight: 420,
+                  objectFit: 'contain',
+                  borderRadius: 8,
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(255,255,255,0.04)',
+                  marginBottom: 18,
+                }}
+              />
+            )}
+
+            <div style={{
+              minHeight: 92,
+              padding: 16,
+              borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(255,255,255,0.045)',
+              color: 'rgba(255,252,223,0.82)',
+              whiteSpace: 'pre-wrap',
+              lineHeight: 1.65,
+              overflowWrap: 'anywhere',
+            }}>
+              {selectedPublicLetter.content || (selectedPublicLetter.type === 'draw' ? '그림 편지' : '사진 편지')}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap', marginTop: 18 }}>
+              <button
+                type="button"
+                style={buttonStyle}
+                disabled={busyId === `public-letter-${selectedPublicLetter.id}` || busyId === `delete-public-letter-${selectedPublicLetter.id}`}
+                onClick={() => togglePublicLetterVisible(selectedPublicLetter)}
+              >
+                {selectedPublicLetter.visible ? '숨기기' : '복구'}
+              </button>
+              <button
+                type="button"
+                style={dangerButtonStyle}
+                disabled={busyId === `public-letter-${selectedPublicLetter.id}` || busyId === `delete-public-letter-${selectedPublicLetter.id}`}
+                onClick={() => deletePublicLetter(selectedPublicLetter)}
+              >
+                삭제
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </motion.div>
   );
 }

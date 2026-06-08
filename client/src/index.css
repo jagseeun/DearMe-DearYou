@@ -9706,3 +9706,146 @@ canvas {
     border-radius: 12px 12px 8px 8px;
   }
 }
+
+/* Open mailbox final layout tuning */
+.open-mailbox-shell {
+  width: min(1240px, 100%) !important;
+}
+
+.open-board-panel {
+  min-height: 680px !important;
+  padding: 26px !important;
+}
+
+.open-board-title-row p {
+  display: none !important;
+}
+
+.open-board-controls {
+  flex-direction: column-reverse !important;
+  align-items: flex-end !important;
+  gap: 12px !important;
+}
+
+.open-compose-open-button {
+  min-height: 42px !important;
+  padding: 0 22px !important;
+}
+
+.open-letter-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  grid-template-rows: repeat(2, minmax(244px, 1fr)) !important;
+  grid-auto-rows: minmax(244px, 1fr) !important;
+  min-height: 502px !important;
+  gap: 14px !important;
+}
+
+.open-letter-card {
+  min-height: 244px !important;
+  padding: 15px !important;
+}
+
+.open-letter-card img {
+  height: auto !important;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.open-letter-card.draw img {
+  object-fit: contain;
+}
+
+.open-letter-card.has-no-copy img {
+  margin-bottom: 10px !important;
+}
+
+.open-letter-card p {
+  -webkit-line-clamp: 5;
+}
+
+.open-letter-card.placeholder {
+  pointer-events: none;
+  cursor: default;
+  opacity: 0.34;
+  box-shadow: none;
+}
+
+.open-letter-card.placeholder::after {
+  opacity: 0.55;
+}
+
+.open-compose-modal {
+  width: min(680px, 100%) !important;
+}
+
+.open-compose-media,
+.open-photo-tool {
+  min-height: 320px !important;
+}
+
+.open-draw-canvas {
+  height: 320px !important;
+}
+
+.open-photo-tool {
+  padding: 18px;
+}
+
+.open-photo-preview {
+  height: auto !important;
+  aspect-ratio: 4 / 3;
+}
+
+.open-photo-button {
+  min-width: 170px;
+  min-height: 48px !important;
+}
+
+.photo-capture-frame {
+  max-height: min(72dvh, 520px);
+}
+
+@media (max-width: 980px) {
+  .open-letter-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .open-board-panel {
+    min-height: auto !important;
+  }
+
+  .open-board-controls {
+    width: 100%;
+    align-items: stretch !important;
+  }
+
+  .open-page-arrows {
+    justify-content: center;
+  }
+
+  .open-letter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-rows: repeat(4, minmax(206px, 1fr)) !important;
+    grid-auto-rows: minmax(206px, 1fr) !important;
+    min-height: 854px !important;
+  }
+
+  .open-letter-card {
+    min-height: 206px !important;
+  }
+
+  .open-compose-modal {
+    width: 100% !important;
+  }
+
+  .open-compose-media,
+  .open-photo-tool {
+    min-height: 280px !important;
+  }
+
+  .open-draw-canvas {
+    height: 280px !important;
+  }
+}
