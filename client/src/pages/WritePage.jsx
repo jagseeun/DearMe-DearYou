@@ -309,6 +309,7 @@ export default function WritePage() {
   const [showModal, setShowModal] = useState(false);
   const [openDate, setOpenDate] = useState(defaultOpenDate());
   const [sendNow, setSendNow] = useState(false);
+  const [emailTheme, setEmailTheme] = useState('dark');
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -531,6 +532,7 @@ export default function WritePage() {
         imageUrl: mode === 'text' ? (imageUrl || undefined) : mode === 'draw' ? drawImageUrl : undefined,
         signatureData: mode === 'text' ? (finalSignature || undefined) : undefined,
         openDate: effectiveOpenDate,
+        emailTheme,
         email: cleanEmail,
         recipientEmail: toOther ? cleanRecipientEmail : undefined,
         recipientName: toOther ? cleanRecipientName : undefined,
@@ -868,7 +870,37 @@ export default function WritePage() {
               transition={{ duration: 0.4, ease }}
               style={{ background: 'rgba(30,40,55,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 28, padding: '44px 52px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22, minWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}
             >
-              <div style={{ fontSize: 32, fontWeight: 400, color: '#e9dcc6', textShadow: '0 0 12px rgba(255,252,223,.3)' }}>
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={labelStyle}>메일 테마</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {[
+                    { value: 'dark', label: '다크', border: 'rgba(255,220,160,0.5)', bg: 'rgba(72,56,41,0.75)', color: '#ffeacd' },
+                    { value: 'pink', label: '핑크', border: 'rgba(255,176,204,0.68)', bg: 'rgba(255,180,204,0.22)', color: '#ffd7e5' },
+                  ].map(theme => {
+                    const active = emailTheme === theme.value;
+                    return (
+                      <button
+                        key={theme.value}
+                        type="button"
+                        onClick={() => setEmailTheme(theme.value)}
+                        style={{
+                          padding: '10px 0',
+                          borderRadius: 12,
+                          border: '1px solid',
+                          borderColor: active ? theme.border : 'rgba(255,255,255,0.2)',
+                          background: active ? theme.bg : 'rgba(255,255,255,0.06)',
+                          color: active ? theme.color : 'rgba(255,252,223,0.55)',
+                          fontFamily: 'inherit',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {theme.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div style={{ order: -1, fontSize: 32, fontWeight: 400, color: '#e9dcc6', textShadow: '0 0 12px rgba(255,252,223,.3)' }}>
                 편지를 저장하시겠습니까?
               </div>
 

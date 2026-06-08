@@ -70,6 +70,10 @@ function getLetterSendStatus(letter) {
   return { key: 'scheduled', label: '\uC608\uC57D', color: 'rgba(255,252,223,0.48)' };
 }
 
+function getLetterDeliveryEmail(letter) {
+  return letter.deliveryEmail || letter.recipientEmail || letter.author?.email || '';
+}
+
 async function fetchJsonWithTimeout(url, options = {}, timeoutMs = 30000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -93,6 +97,7 @@ export default function AdminPage() {
   const [letters, setLetters] = useState([]);
   const [form, setForm] = useState({ teacherName: '', title: '', content: '' });
   const [dateDrafts, setDateDrafts] = useState({});
+  const [deliveryEmailDrafts, setDeliveryEmailDrafts] = useState({});
   const [passwordDrafts, setPasswordDrafts] = useState({});
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
@@ -148,6 +153,7 @@ export default function AdminPage() {
     const nextLetters = await fetchJson('/admin/letters');
     setLetters(nextLetters);
     setDateDrafts(Object.fromEntries(nextLetters.map(letter => [letter.id, toDateInputValue(letter.openDate)])));
+    setDeliveryEmailDrafts(Object.fromEntries(nextLetters.map(letter => [letter.id, getLetterDeliveryEmail(letter)])));
   }
 
   async function createLetter(e) {
@@ -279,6 +285,26 @@ export default function AdminPage() {
       await loadAdminLetters();
     } catch (err) {
       setMessage(err.message || '편지 날짜 수정 실패');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function updateLetterDeliveryEmail(letter) {
+    const deliveryEmail = (deliveryEmailDrafts[letter.id] || '').trim();
+
+    setBusyId(`email-letter-${letter.id}`);
+    setMessage('');
+    try {
+      const data = await fetchJson(`/admin/letters/${letter.id}/delivery-email`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deliveryEmail }),
+      });
+      setMessage(data.message || '발송 이메일을 저장했습니다.');
+      await loadAdminLetters();
+    } catch (err) {
+      setMessage(err.message || '발송 이메일 저장 실패');
     } finally {
       setBusyId(null);
     }
@@ -494,6 +520,8 @@ export default function AdminPage() {
               const status = getLetterSendStatus(letter);
               const canSend = status.key === 'due' || status.key === 'scheduled';
               const sendingThisLetter = busyId === `send-letter-${letter.id}`;
+              const savingThisEmail = busyId === `email-letter-${letter.id}`;
+              const deliveryEmail = getLetterDeliveryEmail(letter);
               return (
               <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(220px, 280px) auto auto', gap: 12, alignItems: 'center' }}>
                 <div style={{ minWidth: 0 }}>
@@ -506,6 +534,27 @@ export default function AdminPage() {
                   <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>
                     받는 사람 {letter.recipientName || letter.recipientEmail || '미지정'} · 개봉일 {formatDate(letter.openDate)} · <span style={{ color: status.color }}>발송 {status.label}</span>
                   </div>
+                  <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13, overflowWrap: 'anywhere' }}>
+                    발송 이메일 {deliveryEmail || '-'} · 실제 발송 {letter.sentToEmail || '-'} · 테마 {letter.emailTheme === 'pink' ? '핑크' : '다크'}
+                  </div>
+                  <div style={{ marginTop: 10, display: 'grid', gridTemplateColumns: 'minmax(170px, 1fr) auto', gap: 8, maxWidth: 460 }}>
+                    <input
+                      style={{ ...inputStyle, minHeight: 42, padding: '10px 12px' }}
+                      type="email"
+                      aria-label="발송 이메일"
+                      value={deliveryEmailDrafts[letter.id] || ''}
+                      placeholder={deliveryEmail || '발송 이메일'}
+                      onChange={e => setDeliveryEmailDrafts(prev => ({ ...prev, [letter.id]: e.target.value }))}
+                    />
+                    <button
+                      type="button"
+                      style={{ ...buttonStyle, whiteSpace: 'nowrap' }}
+                      disabled={savingThisEmail || sendingThisLetter}
+                      onClick={() => updateLetterDeliveryEmail(letter)}
+                    >
+                      {savingThisEmail ? '저장 중...' : '이메일 저장'}
+                    </button>
+                  </div>
                 </div>
                 <input
                   style={inputStyle}
@@ -515,14 +564,14 @@ export default function AdminPage() {
                 />
                 <button
                   style={buttonStyle}
-                  disabled={busyId === `letter-${letter.id}` || sendingThisLetter}
+                  disabled={busyId === `letter-${letter.id}` || sendingThisLetter || savingThisEmail}
                   onClick={() => updateLetterDate(letter)}
                 >
                   {busyId === `letter-${letter.id}` ? '수정 중...' : '날짜 저장'}
                 </button>
                 <button
                   style={{ ...buttonStyle, opacity: canSend ? 1 : 0.45 }}
-                  disabled={!canSend || sendingThisLetter || busyId === `letter-${letter.id}`}
+                  disabled={!canSend || sendingThisLetter || busyId === `letter-${letter.id}` || savingThisEmail}
                   onClick={() => sendAdminLetter(letter)}
                 >
                   {sendingThisLetter ? '발송 중...' : (status.key === 'scheduled' ? '바로 발송' : status.label)}
