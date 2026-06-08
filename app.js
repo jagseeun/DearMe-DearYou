@@ -80,8 +80,8 @@ const mailer = nodemailer.createTransport({
     pass: process.env.GMAIL_APP_PASSWORD,
   },
 });
-const emailFromAddress = process.env.EMAIL_FROM || process.env.GMAIL_USER;
-const emailReplyTo = process.env.EMAIL_REPLY_TO || emailFromAddress;
+const emailFromAddress = process.env.GMAIL_USER;
+const emailReplyTo = process.env.GMAIL_USER;
 const emailFromHeader = `"Dear Me; Dear You" <${emailFromAddress}>`;
 
 function serializeMailError(err) {
