@@ -69,7 +69,7 @@ const s3 = new S3Client({
   },
 });
 
-// 이메일 전송 설정 (Gmail SMTP)
+// 이메일 전송 설정: Brevo API가 있으면 HTTPS API를 우선 사용하고, 없으면 Gmail SMTP를 사용한다.
 const mailer = nodemailer.createTransport({
   service: "gmail",
   connectionTimeout: MAIL_SEND_TIMEOUT_MS,
@@ -80,9 +80,11 @@ const mailer = nodemailer.createTransport({
     pass: process.env.GMAIL_APP_PASSWORD,
   },
 });
-const emailFromAddress = process.env.GMAIL_USER;
-const emailReplyTo = process.env.GMAIL_USER;
-const emailFromHeader = `"Dear Me; Dear You" <${emailFromAddress}>`;
+const brevoApiKey = process.env.BREVO_API_KEY;
+const emailSenderName = process.env.EMAIL_SENDER_NAME || "Dear Me; Dear You";
+const emailFromAddress = process.env.BREVO_SENDER_EMAIL || process.env.GMAIL_USER;
+const emailReplyTo = process.env.BREVO_REPLY_TO || process.env.GMAIL_USER || emailFromAddress;
+const emailFromHeader = `"${emailSenderName}" <${emailFromAddress}>`;
 
 function serializeMailError(err) {
   return {
@@ -126,7 +128,71 @@ function withTimeout(promise, ms, message) {
   ]);
 }
 
+function normalizeMailRecipients(value) {
+  const values = Array.isArray(value) ? value : String(value || "").split(",");
+  return values
+    .map(item => String(item || "").trim())
+    .filter(Boolean)
+    .map(item => {
+      const match = item.match(/^(?:"?([^"<]*)"?\s*)?<([^>]+)>$/);
+      const email = (match ? match[2] : item).trim().toLowerCase();
+      const name = match?.[1]?.trim();
+      return name ? { email, name } : { email };
+    })
+    .filter(item => isValidEmail(item.email));
+}
+
+function textToHtml(value = "") {
+  return `<div style="white-space:pre-wrap;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.7">${escapeHtml(value)}</div>`;
+}
+
+async function sendBrevoMail(options) {
+  if (!brevoApiKey || !isValidEmail(emailFromAddress)) {
+    throw new Error("brevo config missing");
+  }
+
+  const recipients = normalizeMailRecipients(options.to);
+  if (recipients.length === 0) {
+    throw new Error("missing recipient email");
+  }
+
+  const payload = {
+    sender: { name: emailSenderName, email: emailFromAddress },
+    to: recipients,
+    subject: options.subject,
+    htmlContent: options.html || textToHtml(options.text || ""),
+  };
+
+  if (isValidEmail(emailReplyTo)) {
+    payload.replyTo = { name: emailSenderName, email: emailReplyTo };
+  }
+
+  const response = await withTimeout(fetch("https://api.brevo.com/v3/smtp/email", {
+    method: "POST",
+    headers: {
+      accept: "application/json",
+      "api-key": brevoApiKey,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  }), MAIL_SEND_TIMEOUT_MS, "mail send timeout");
+
+  const body = await response.text();
+  if (!response.ok) {
+    const err = new Error(body || `Brevo API error ${response.status}`);
+    err.code = "BREVO_API_ERROR";
+    err.responseCode = response.status;
+    throw err;
+  }
+
+  return body ? JSON.parse(body) : {};
+}
+
 async function sendMail(options) {
+  if (brevoApiKey) {
+    return sendBrevoMail(options);
+  }
+
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     throw new Error("mail config missing");
   }
@@ -202,6 +268,15 @@ function makeObjectKey(folder, userId, extension) {
 }
 
 async function verifyMailerConfig() {
+  if (brevoApiKey) {
+    if (!isValidEmail(emailFromAddress)) {
+      console.warn("Brevo mail config missing: BREVO_SENDER_EMAIL or GMAIL_USER is required");
+      return;
+    }
+    console.log("Brevo email API configured");
+    return;
+  }
+
   if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
     console.warn("mail config missing: GMAIL_USER and GMAIL_APP_PASSWORD are required");
     return;
@@ -337,6 +412,9 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
 }
 
 function classifyMailError(err) {
+  if (err?.message === "brevo config missing") return "brevo_config_missing";
+  if (err?.message === "missing recipient email") return "missing_or_invalid_email";
+  if (err?.code === "BREVO_API_ERROR") return "brevo_api_failed";
   if (err?.message === "mail config missing") return "mail_config_missing";
   if (err?.message === "mail send timeout") return "mail_timeout";
   if (err?.code === "EAUTH" || err?.responseCode === 534 || err?.responseCode === 535) return "mail_auth_failed";
@@ -346,6 +424,21 @@ function classifyMailError(err) {
 
 function publicMailErrorMessage(err) {
   const reason = classifyMailError(err);
+  if (reason === "brevo_config_missing") {
+    return "Brevo 발송 설정이 없습니다. BREVO_API_KEY와 BREVO_SENDER_EMAIL을 확인해주세요.";
+  }
+  if (reason === "missing_or_invalid_email") {
+    return "발송할 이메일 주소가 없거나 형식이 올바르지 않습니다.";
+  }
+  if (reason === "brevo_api_failed") {
+    if (err?.responseCode === 401 || err?.responseCode === 403) {
+      return "Brevo API 인증에 실패했습니다. Render의 BREVO_API_KEY를 확인해주세요.";
+    }
+    if (err?.responseCode === 400) {
+      return "Brevo가 메일 요청을 거절했습니다. 발신자 이메일이 Brevo에 등록/인증되어 있는지 확인해주세요.";
+    }
+    return "Brevo 이메일 API 발송에 실패했습니다. Brevo 대시보드의 Transactional logs를 확인해주세요.";
+  }
   if (reason === "mail_config_missing") {
     return "배포 서버에 GMAIL_USER 또는 GMAIL_APP_PASSWORD 환경변수가 설정되지 않았습니다.";
   }
@@ -353,7 +446,9 @@ function publicMailErrorMessage(err) {
     return "Gmail 인증에 실패했습니다. Render 환경변수의 Gmail 계정과 앱 비밀번호를 확인해주세요.";
   }
   if (reason === "mail_timeout") {
-    return "Gmail SMTP 응답 시간이 초과됐습니다. 잠시 후 관리자에서 다시 발송해주세요.";
+    return brevoApiKey
+      ? "Brevo API 응답 시간이 초과됐습니다. 잠시 후 관리자에서 다시 발송해주세요."
+      : "Gmail SMTP 응답 시간이 초과됐습니다. 잠시 후 관리자에서 다시 발송해주세요.";
   }
   if (reason === "mail_connection_failed") {
     return "배포 서버에서 Gmail SMTP에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.";

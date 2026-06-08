@@ -19,6 +19,14 @@ services:
         sync: false
       - key: GMAIL_APP_PASSWORD
         sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_REPLY_TO
+        sync: false
+      - key: EMAIL_SENDER_NAME
+        value: Dear Me; Dear You
       - key: EMAIL_FROM
         sync: false
       - key: EMAIL_REPLY_TO
