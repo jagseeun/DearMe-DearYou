@@ -1503,6 +1503,39 @@ app.get("/teacher-letters", requireAdmin, async (req, res) => {
   }
 });
 
+app.put("/teacher-letters/:id", requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  const title = String(req.body.title || "").trim();
+  const teacherName = String(req.body.teacherName || "").trim();
+  const content = String(req.body.content || "").trim();
+
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "Invalid teacher letter id" });
+  if (!content) return res.status(400).json({ message: "Teacher letter content is required" });
+  if (title.length > TEACHER_TITLE_MAX_LENGTH) return res.status(400).json({ message: `제목은 ${TEACHER_TITLE_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (teacherName.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `선생님 이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (content.length > TEACHER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `편지 내용은 ${TEACHER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
+
+  try {
+    const teacherLetter = await prisma.teacherLetter.update({
+      where: { id },
+      data: {
+        title: title || null,
+        teacherName: teacherName || req.session.user.name,
+        content,
+      },
+      include: {
+        author: { select: { id: true, name: true, userid: true } },
+        _count: { select: { deliveries: true } },
+      },
+    });
+    res.json(teacherLetter);
+  } catch (err) {
+    if (err.code === "P2025") return res.status(404).json({ message: "Teacher letter not found" });
+    console.error("teacher letter update error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 app.get("/admin/users", requireAdmin, async (req, res) => {
   try {
     const users = await prisma.member.findMany({
