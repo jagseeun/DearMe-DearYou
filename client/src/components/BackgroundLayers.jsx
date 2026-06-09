@@ -29,22 +29,30 @@ const layerStyle = {
 export default function BackgroundLayers() {
   const location = useLocation();
   const isPink = PINK_ROUTES.some(route => location.pathname.startsWith(route));
+  const hasDreamCursor = !location.pathname.startsWith('/admin');
 
   useEffect(() => {
-    document.body.classList.toggle('pink-cursor-active', isPink);
-    if (!isPink) return () => document.body.classList.remove('pink-cursor-active');
+    document.body.classList.toggle('dream-cursor-active', hasDreamCursor);
+    document.body.classList.toggle('pink-cursor-active', hasDreamCursor && isPink);
+    document.body.classList.toggle('dark-cursor-active', hasDreamCursor && !isPink);
+
+    if (!hasDreamCursor) {
+      return () => {
+        document.body.classList.remove('dream-cursor-active', 'pink-cursor-active', 'dark-cursor-active');
+      };
+    }
 
     const moveGlow = event => {
-      document.documentElement.style.setProperty('--pink-cursor-x', `${event.clientX}px`);
-      document.documentElement.style.setProperty('--pink-cursor-y', `${event.clientY}px`);
+      document.documentElement.style.setProperty('--dream-cursor-x', `${event.clientX}px`);
+      document.documentElement.style.setProperty('--dream-cursor-y', `${event.clientY}px`);
     };
 
     window.addEventListener('pointermove', moveGlow, { passive: true });
     return () => {
       window.removeEventListener('pointermove', moveGlow);
-      document.body.classList.remove('pink-cursor-active');
+      document.body.classList.remove('dream-cursor-active', 'pink-cursor-active', 'dark-cursor-active');
     };
-  }, [isPink]);
+  }, [hasDreamCursor, isPink]);
 
   return (
     <>
@@ -73,8 +81,8 @@ export default function BackgroundLayers() {
         <PinkStars />
       </motion.div>
       <motion.div
-        className="pink-cursor-glow"
-        animate={{ opacity: isPink ? 1 : 0 }}
+        className={`dream-cursor-glow ${isPink ? 'dream-cursor-glow-pink' : 'dream-cursor-glow-dark'}`}
+        animate={{ opacity: hasDreamCursor ? 1 : 0 }}
         transition={{ duration: 0.5, ease }}
         style={layerStyle}
       />
