@@ -21,7 +21,7 @@ function formatDate(value) {
 
 function OpenMailboxLogo() {
   return (
-    <div className="open-mailbox-logo" aria-label="Dear Me; Dear You">
+    <div className="top-title open-mailbox-logo" aria-label="Dear Me; Dear You">
       <span className="to">Dear Me</span>
       <span className="semicolon">;</span>
       <span className="from">Dear You</span>
@@ -258,14 +258,14 @@ export default function OpenMailboxPage() {
         body: JSON.stringify({
           nickname: cleanNickname,
           type: mode,
-          content: mode === 'draw' ? '' : cleanContent,
+          content: mode === 'text' ? cleanContent : '',
           imageUrl,
         }),
       });
       resetForm();
       setShowComposer(false);
       setMessage('');
-      await loadLetters(0);
+      await loadLetters(Math.max(0, Math.ceil((total + 1) / pageSize) - 1));
     } catch (err) {
       setMessage(err.message || '열린 편지를 저장하지 못했습니다.');
     } finally {
@@ -283,7 +283,7 @@ export default function OpenMailboxPage() {
     setMessage('');
     if (nextMode !== 'photo') setPhotoUrl('');
     if (nextMode !== 'draw') setDrawn(false);
-    if (nextMode === 'draw') setContent('');
+    if (nextMode !== 'text') setContent('');
   }
 
   return (
@@ -448,18 +448,8 @@ export default function OpenMailboxPage() {
                   )}
                 </AnimatePresence>
 
-                {mode === 'photo' && (
-                  <textarea
-                    className="open-compose-textarea compact"
-                    value={content}
-                    onChange={event => setContent(event.target.value)}
-                    maxLength={CONTENT_MAX_LENGTH}
-                    placeholder="짧은 말"
-                  />
-                )}
-
                 <div className="open-compose-footer">
-                  <span>{content.length}/{CONTENT_MAX_LENGTH}</span>
+                  <span>{mode === 'text' ? `${content.length}/${CONTENT_MAX_LENGTH}` : mode === 'photo' ? '사진 1장' : '그림 1장'}</span>
                   <button type="submit" disabled={saving || photoUploading}>
                     {saving ? '저장 중...' : '남기기'}
                   </button>
