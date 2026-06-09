@@ -863,6 +863,8 @@ export default function LetterViewPage() {
   const isPink = letter.emailTheme === 'pink' || returnTo === '/pink-letters';
   const d = daysSince(letter.openDate);
   const dChars = ['D', '+', ...String(d).split('')];
+  const senderName = name || '나';
+  const recipientName = letter.recipientName || name || '나';
 
   // 핑크 테마 색상 시스템
   const textMain        = isPink ? '#fff1e8'                  : '#e9dcc6';
@@ -902,7 +904,7 @@ export default function LetterViewPage() {
 
   return (
     <motion.div
-      className="letter-view-root pink-letter-view"
+      className={`letter-view-root ${isPink ? 'pink-letter-view' : ''}`.trim()}
       style={{
         position: 'fixed', inset: 0, zIndex: 10, width: '100%', height: '100vh',
         background: isPink ? 'linear-gradient(180deg, rgba(255,241,232,0.035), rgba(218,157,176,0.04))' : undefined,
@@ -948,13 +950,26 @@ export default function LetterViewPage() {
                 initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.15, ease }}
                 style={{ position: 'absolute', top: 130, left: 140 }}>
-                <div className="letter-envelope-label" style={{ color: textHint }}>개봉일</div>
+                <div className="letter-envelope-label" style={{ color: textHint }}>보낸 날</div>
                 <div className="letter-envelope-value">
-                  <span>{formatDate(letter.openDate)}</span>
+                  <span>{formatDate(letter.createdAt)}</span>
+                  <small className="letter-envelope-person">보낸 사람 {senderName}</small>
                 </div>
               </motion.div>
 
               <div className="letter-envelope-divider" style={{ position: 'absolute', top: '50%', left: 140, right: 140, height: 1, background: dividerBg }} />
+
+              <motion.div
+                className="letter-envelope-info letter-to"
+                initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.22, ease }}
+                style={{ position: 'absolute', right: 150, bottom: 132, textAlign: 'right' }}>
+                <div className="letter-envelope-label" style={{ color: textHint }}>열린 날</div>
+                <div className="letter-envelope-value">
+                  <span>{formatDate(letter.openDate)}</span>
+                  <small className="letter-envelope-person">받는 사람 {recipientName}</small>
+                </div>
+              </motion.div>
 
               {/* D+0 사이드바 */}
               <motion.div

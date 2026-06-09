@@ -1422,6 +1422,17 @@ canvas {
   overflow-wrap: anywhere;
 }
 
+.letter-envelope-person {
+  display: block;
+  margin-top: 4px;
+  color: rgba(122, 72, 72, 0.62);
+  font-size: clamp(14px, 1.6vw, 17px);
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
 .letter-mobile-day {
   display: none;
 }
@@ -1479,6 +1490,11 @@ canvas {
 .pink-letter-view .letter-envelope-value {
   color: #fff1e8;
   text-shadow: 0 0 18px rgba(218, 157, 176, 0.18), 0 2px 8px rgba(24, 13, 28, 0.34);
+}
+
+.pink-letter-view .letter-envelope-person {
+  color: rgba(241, 205, 213, 0.72);
+  text-shadow: 0 1px 7px rgba(24, 13, 28, 0.24);
 }
 
 .pink-letter-view .letter-mobile-day {
@@ -6397,6 +6413,13 @@ canvas {
     overflow-wrap: anywhere !important;
   }
 
+  .letter-envelope-person {
+    margin-top: 2px !important;
+    color: rgba(95, 67, 38, 0.66) !important;
+    font-size: clamp(12px, 3.6vw, 15px) !important;
+    line-height: 1.35 !important;
+  }
+
   .done-envelope-divider,
   .letter-envelope-divider {
     margin: 2px 0 !important;
@@ -7363,6 +7386,11 @@ canvas {
 
   .pink-letter-view .letter-envelope-value {
     color: #4b3039 !important;
+  }
+
+  .pink-letter-view .letter-envelope-person {
+    color: rgba(126, 58, 80, 0.68) !important;
+    text-shadow: none !important;
   }
 
   .pink-letter-view .letter-mobile-day {
