@@ -32,7 +32,7 @@ export default function BackgroundLayers() {
   const hasDreamCursor = !location.pathname.startsWith('/admin');
 
   useEffect(() => {
-    document.body.classList.toggle('dream-cursor-active', hasDreamCursor);
+    document.body.classList.remove('dream-cursor-active');
     document.body.classList.toggle('pink-cursor-active', hasDreamCursor && isPink);
     document.body.classList.toggle('dark-cursor-active', hasDreamCursor && !isPink);
 
@@ -45,6 +45,7 @@ export default function BackgroundLayers() {
     const moveGlow = event => {
       document.documentElement.style.setProperty('--dream-cursor-x', `${event.clientX}px`);
       document.documentElement.style.setProperty('--dream-cursor-y', `${event.clientY}px`);
+      document.body.classList.add('dream-cursor-active');
     };
 
     window.addEventListener('pointermove', moveGlow, { passive: true });
@@ -86,6 +87,14 @@ export default function BackgroundLayers() {
         transition={{ duration: 0.5, ease }}
         style={layerStyle}
       />
+      <motion.div
+        className={`dream-cursor-heart ${isPink ? 'dream-cursor-heart-pink' : 'dream-cursor-heart-dark'}`}
+        animate={{ opacity: hasDreamCursor ? 1 : 0 }}
+        transition={{ duration: 0.35, ease }}
+      >
+        <span className="cursor-heart cursor-heart-main" />
+        <span className="cursor-heart cursor-heart-small" />
+      </motion.div>
     </>
   );
 }
