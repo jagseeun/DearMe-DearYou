@@ -706,24 +706,24 @@ function buildEmailHomeText(label = "Dear Me; Dear You 열기") {
 function buildEmailHomeCta(themeStyles, {
   label = "편지함 열기",
   note = "Dear Me; Dear You에서 이 마음을 천천히 다시 꺼내볼 수 있어.",
+  showUrl = true,
 } = {}) {
   const safeUrl = escapeHtml(appHomeUrl);
   return `
     <div style="margin-top:26px;padding:20px;background:${themeStyles.metaBg};border:1px solid ${themeStyles.metaBorder};border-radius:16px;text-align:center">
       <div style="color:${themeStyles.muted};font-size:13px;line-height:1.7;margin-bottom:14px">${escapeHtml(note)}</div>
       <a href="${safeUrl}" style="display:inline-block;padding:13px 28px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:999px;text-decoration:none;font-size:15px;font-weight:700">${escapeHtml(label)}</a>
-      <div style="margin-top:12px;color:${themeStyles.footer};font-size:11px;line-height:1.5;word-break:break-all">${safeUrl}</div>
+      ${showUrl ? `<div style="margin-top:12px;color:${themeStyles.footer};font-size:11px;line-height:1.5;word-break:break-all">${safeUrl}</div>` : ""}
     </div>`;
 }
 
-function buildEmailShell({ theme, openDate, subtitle, body }) {
+function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 600 }) {
   const themeStyles = getLetterEmailTheme(theme);
   const headerSubtitle = subtitle || `${formatMailDate(openDate)} 개봉`;
   return `
   <div style="background:${themeStyles.outerBg};padding:24px 12px">
-    <div style="max-width:600px;margin:0 auto;background:${themeStyles.panelBg};color:${themeStyles.text};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;border-radius:20px;overflow:hidden;box-shadow:${themeStyles.shadow}">
+    <div style="max-width:${maxWidth}px;margin:0 auto;background:${themeStyles.panelBg};color:${themeStyles.text};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;border-radius:20px;overflow:hidden;box-shadow:${themeStyles.shadow}">
       <div style="background:${themeStyles.headerBg};padding:42px 32px 38px;text-align:center">
-        <div style="font-size:12px;letter-spacing:3px;color:${themeStyles.muted};margin-bottom:12px">A LETTER HAS ARRIVED</div>
         <div style="font-size:30px;font-weight:300;color:${themeStyles.brandMain};line-height:1.25">Dear Me<span style="color:${themeStyles.semicolon};margin:0 8px">;</span><span style="color:${themeStyles.brandSecond}">Dear You</span></div>
         <div style="margin-top:10px;color:${themeStyles.muted};font-size:14px;line-height:1.6">${escapeHtml(headerSubtitle)}</div>
       </div>
@@ -876,23 +876,20 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
   const teacherName = escapeHtml(rawTeacherName);
   const title = escapeHtml(rawTitle);
   const content = escapeHtml(personalizedTeacherLetter.content);
-  const safeMemberName = escapeHtml(memberName);
 
   return buildEmailShell({
     theme: "dark",
     subtitle: `${rawTeacherName || "선생님"}의 편지가 도착했어요`,
+    maxWidth: 720,
     body: themeStyles => `
-    <div style="padding:40px">
-      <p style="font-size:17px;line-height:1.9;color:${themeStyles.soft};margin:0 0 24px">
-        안녕, <strong>${safeMemberName}</strong>.<br>
-        너를 응원하는 마음이 오늘 Dear Me; Dear You에 도착했어.
-      </p>
+    <div style="padding:42px 48px">
       <div style="margin-bottom:18px;color:${themeStyles.brandMain};font-size:13px;font-weight:700;letter-spacing:2px">${teacherName || "선생님"}</div>
       <div style="margin-bottom:18px;color:${themeStyles.text};font-size:24px;line-height:1.35;font-weight:300">${title}</div>
-      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:30px;font-size:16px;line-height:1.9;color:${themeStyles.cardText};white-space:pre-wrap">${content}</div>
+      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:34px 38px;font-size:16px;line-height:1.95;color:${themeStyles.cardText};white-space:pre-wrap">${content}</div>
       ${buildEmailHomeCta(themeStyles, {
-        label: "Dear Me; Dear You 열기",
-        note: "다른 편지도 남기고 싶을 때 여기로 돌아오면 돼.",
+        label: "Dear Me ; Dear You",
+        note: "오늘의 마음을 너와 나에게 전하는",
+        showUrl: false,
       })}
     </div>`,
   });
