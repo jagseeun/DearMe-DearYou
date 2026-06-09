@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import fixWebmDuration from 'fix-webm-duration';
 import { formatDate, daysSince } from '../utils/dates.js';
+import PinkStars from '../components/PinkStars.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
@@ -912,6 +913,7 @@ export default function LetterViewPage() {
       initial={{ opacity: 0 }} animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
     >
+      {isPink && <PinkStars />}
       <AnimatePresence mode="sync">
 
         {/* ── 봉투 화면 ── */}
