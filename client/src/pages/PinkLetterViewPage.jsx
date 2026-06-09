@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
+import PinkStars from '../components/PinkStars.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -13,6 +14,12 @@ const typeStyles = {
 
 function getType(letter) {
   return typeStyles[letter.type] || typeStyles.text;
+}
+
+function recipientText(letter) {
+  if (letter.recipientName) return `${letter.recipientName}에게`;
+  if (letter.recipientEmail) return `${letter.recipientEmail}에게`;
+  return '나에게';
 }
 
 function PinkLetterLogo({ className = '' }) {
@@ -74,6 +81,7 @@ export default function PinkLetterViewPage() {
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
       transition={{ duration: 0.6, ease }}
     >
+      <PinkStars />
       <PinkLetterLogo className="pink-letter-fixed-logo" />
 
       <div className="letter-list-shell compact">
@@ -102,6 +110,7 @@ export default function PinkLetterViewPage() {
             {letters.map((letter, i) => {
               const unlocked = new Date(letter.openDate) <= now;
               const type = getType(letter);
+              const recipient = recipientText(letter);
 
               return (
                 <motion.article
@@ -138,6 +147,7 @@ export default function PinkLetterViewPage() {
                         >
                           {type.label}
                         </span>
+                        <span className="letter-recipient">{recipient}</span>
                       </div>
                     </div>
 

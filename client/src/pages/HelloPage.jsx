@@ -129,6 +129,11 @@ export default function HelloPage() {
     }
   }
 
+  function handleLogout() {
+    if (!window.confirm('정말 로그아웃할까요?')) return;
+    window.location.href = '/logout';
+  }
+
   return (
     <motion.div
       className="hello-shell"
@@ -177,7 +182,7 @@ export default function HelloPage() {
           비밀번호 변경
         </motion.button>
         <motion.button
-          onClick={() => window.location.href = '/logout'}
+          onClick={handleLogout}
           whileHover={{ background: 'rgba(255,80,80,0.15)', color: 'rgba(255,180,180,0.9)', borderColor: 'rgba(255,80,80,0.3)' }}
           style={navBtnStyle}
         >
