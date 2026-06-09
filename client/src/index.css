@@ -10147,3 +10147,72 @@ canvas {
     min-height: 0 !important;
   }
 }
+
+/* Pink letter view final color lock */
+.pink-letter-view {
+  background:
+    linear-gradient(180deg, #211829 0%, #3d2946 48%, #895368 100%) !important;
+}
+
+@media (min-width: 761px) {
+  .pink-letter-view .letter-envelope-stage {
+    background:
+      linear-gradient(180deg, rgba(255, 241, 232, 0.02), rgba(255, 241, 232, 0.05)) !important;
+  }
+
+  .pink-letter-view .letter-envelope-label {
+    color: rgba(232, 190, 202, 0.76) !important;
+  }
+
+  .pink-letter-view .letter-envelope-value {
+    color: #fff1e8 !important;
+    text-shadow: 0 0 18px rgba(218, 157, 176, 0.18), 0 2px 8px rgba(24, 13, 28, 0.34) !important;
+  }
+
+  .pink-letter-view .letter-envelope-person {
+    color: rgba(241, 205, 213, 0.74) !important;
+    text-shadow: 0 1px 7px rgba(24, 13, 28, 0.24) !important;
+  }
+
+  .pink-letter-view .letter-envelope-divider {
+    background: rgba(232, 190, 202, 0.22) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .pink-letter-view .letter-envelope-stage::before {
+    border-color: rgba(221, 150, 168, 0.36) !important;
+    background:
+      linear-gradient(142deg, transparent 49.4%, rgba(180, 90, 120, 0.17) 49.8%, rgba(180, 90, 120, 0.17) 50.2%, transparent 50.6%),
+      linear-gradient(38deg, transparent 49.3%, rgba(180, 90, 120, 0.13) 49.8%, rgba(180, 90, 120, 0.13) 50.2%, transparent 50.7%),
+      linear-gradient(180deg, rgba(255, 249, 244, 0.99), rgba(255, 238, 232, 0.98) 56%, rgba(247, 217, 218, 0.96)),
+      #fff2ec !important;
+  }
+
+  .pink-letter-view .letter-envelope-stage::after,
+  .pink-letter-view .letter-envelope-divider {
+    background: linear-gradient(90deg, transparent, rgba(168, 82, 111, 0.42), transparent) !important;
+  }
+
+  .pink-letter-view .letter-envelope-label {
+    color: rgba(139, 77, 95, 0.72) !important;
+  }
+
+  .pink-letter-view .letter-envelope-value {
+    color: #4b3039 !important;
+    text-shadow: none !important;
+  }
+
+  .pink-letter-view .letter-envelope-person {
+    color: rgba(126, 58, 80, 0.68) !important;
+    text-shadow: none !important;
+  }
+
+  .pink-letter-view .letter-open-button {
+    border-color: rgba(180, 90, 120, 0.22) !important;
+    background:
+      linear-gradient(180deg, rgba(255, 246, 242, 0.92), rgba(244, 216, 220, 0.86)),
+      rgba(255, 241, 232, 0.86) !important;
+    color: rgba(103, 47, 66, 0.86) !important;
+  }
+}
