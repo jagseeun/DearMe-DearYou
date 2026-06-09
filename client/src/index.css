@@ -11165,24 +11165,24 @@ canvas {
   background:
     radial-gradient(
       circle at var(--dream-cursor-x, 50vw) var(--dream-cursor-y, 50vh),
-      var(--cursor-core, rgba(72, 57, 116, 0.22)) 0%,
-      var(--cursor-mid, rgba(96, 68, 136, 0.16)) 13%,
-      var(--cursor-edge, rgba(34, 45, 90, 0.08)) 28%,
+      var(--cursor-core, rgba(124, 101, 158, 0.18)) 0%,
+      var(--cursor-mid, rgba(119, 94, 145, 0.13)) 14%,
+      var(--cursor-edge, rgba(63, 70, 120, 0.08)) 30%,
       transparent 46%
     );
   mix-blend-mode: normal;
 }
 
 .dream-cursor-glow-pink {
-  --cursor-core: rgba(82, 54, 116, 0.28);
-  --cursor-mid: rgba(128, 76, 154, 0.18);
-  --cursor-edge: rgba(31, 50, 103, 0.09);
+  --cursor-core: rgba(160, 118, 174, 0.2);
+  --cursor-mid: rgba(136, 96, 151, 0.14);
+  --cursor-edge: rgba(73, 78, 132, 0.08);
 }
 
 .dream-cursor-glow-dark {
-  --cursor-core: rgba(35, 50, 104, 0.27);
-  --cursor-mid: rgba(88, 73, 150, 0.17);
-  --cursor-edge: rgba(27, 37, 82, 0.11);
+  --cursor-core: rgba(92, 94, 145, 0.2);
+  --cursor-mid: rgba(101, 87, 145, 0.14);
+  --cursor-edge: rgba(48, 58, 106, 0.09);
 }
 
 .dream-cursor-heart {
@@ -11195,21 +11195,21 @@ canvas {
   pointer-events: none;
   transform: translate(-38%, -42%);
   filter:
-    drop-shadow(0 0 5px var(--cursor-heart-glow, rgba(151, 132, 255, 0.52)))
-    drop-shadow(0 2px 3px rgba(10, 13, 32, 0.38));
+    drop-shadow(0 0 6px var(--cursor-heart-glow, rgba(177, 148, 214, 0.48)))
+    drop-shadow(0 2px 4px rgba(24, 18, 45, 0.34));
   mix-blend-mode: normal;
 }
 
 .dream-cursor-heart-pink {
-  --cursor-heart-main: rgba(92, 41, 144, 0.98);
-  --cursor-heart-sub: rgba(17, 35, 91, 0.98);
-  --cursor-heart-glow: rgba(188, 120, 226, 0.62);
+  --cursor-heart-main: rgba(171, 123, 186, 0.98);
+  --cursor-heart-sub: rgba(85, 93, 146, 0.98);
+  --cursor-heart-glow: rgba(217, 163, 222, 0.56);
 }
 
 .dream-cursor-heart-dark {
-  --cursor-heart-main: rgba(15, 32, 84, 0.98);
-  --cursor-heart-sub: rgba(115, 76, 202, 0.98);
-  --cursor-heart-glow: rgba(115, 108, 230, 0.6);
+  --cursor-heart-main: rgba(93, 104, 154, 0.98);
+  --cursor-heart-sub: rgba(174, 145, 210, 0.98);
+  --cursor-heart-glow: rgba(174, 154, 226, 0.52);
 }
 
 .cursor-heart {
