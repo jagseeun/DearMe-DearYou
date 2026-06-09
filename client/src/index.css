@@ -10756,3 +10756,67 @@ canvas {
   text-overflow: ellipsis !important;
   white-space: nowrap !important;
 }
+
+/* Keep every pink route on the same backdrop, including opened pink letters. */
+.pink-login-page,
+.pink-letter-list-page,
+.pink-letter-view {
+  background:
+    radial-gradient(circle at 18% 16%, rgba(210, 143, 166, 0.22) 0%, rgba(210, 143, 166, 0) 31%),
+    radial-gradient(circle at 82% 24%, rgba(128, 86, 134, 0.24) 0%, rgba(128, 86, 134, 0) 34%),
+    radial-gradient(circle at 52% 84%, rgba(182, 101, 116, 0.18) 0%, rgba(182, 101, 116, 0) 40%),
+    linear-gradient(180deg, #211829 0%, #3d2946 48%, #895368 100%) !important;
+}
+
+.pink-login-page::before,
+.pink-letter-list-page::before,
+.pink-letter-view::before {
+  background:
+    linear-gradient(116deg, transparent 0%, rgba(255, 226, 218, 0.08) 36%, rgba(158, 185, 160, 0.06) 57%, transparent 100%),
+    linear-gradient(180deg, rgba(255, 241, 232, 0.045), rgba(255, 241, 232, 0.01) 44%, rgba(24, 13, 28, 0.22)) !important;
+  mix-blend-mode: screen !important;
+}
+
+.pink-letter-view::before {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.pink-letter-view::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    linear-gradient(180deg, rgba(17, 10, 24, 0.16), rgba(17, 10, 24, 0.2)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.014) 0 1px, transparent 1px 72px) !important;
+}
+
+.pink-letter-view > * {
+  z-index: 1;
+}
+
+.pink-letter-list-page .letter-list-shell,
+.letters-main-page .letters-main-shell,
+.pink-letter-list-page .letter-scroll,
+.letters-main-page .letter-scroll {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.pink-letter-list-page .letter-card,
+.pink-letter-list-page .letter-card.is-locked,
+.letters-main-page .letter-card,
+.letters-main-page .letter-card.is-locked {
+  border-left: 0 !important;
+  border-right: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
