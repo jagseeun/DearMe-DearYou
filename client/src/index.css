@@ -9849,3 +9849,154 @@ canvas {
     height: 280px !important;
   }
 }
+
+/* Open mailbox stability pass */
+.open-mailbox-page {
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.open-mailbox-logo,
+.open-mailbox-shell,
+.open-board-panel,
+.open-letter-grid,
+.open-letter-card,
+.open-empty-letter,
+.open-compose-open-button {
+  box-sizing: border-box !important;
+}
+
+.open-mailbox-logo {
+  margin-bottom: 16px !important;
+}
+
+.open-board-panel {
+  min-height: 620px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 246, 226, 0.065), rgba(168, 200, 181, 0.04)),
+    rgba(22, 24, 29, 0.64) !important;
+}
+
+.open-board-header {
+  min-height: 88px;
+}
+
+.open-board-title-row h1 {
+  font-size: clamp(31px, 3vw, 40px) !important;
+}
+
+.open-board-controls {
+  min-width: 128px;
+}
+
+.open-empty-letter {
+  min-height: 356px !important;
+  background: rgba(12, 14, 18, 0.12);
+}
+
+.open-letter-grid {
+  min-height: 500px !important;
+}
+
+@media (min-width: 721px) {
+  .open-board-panel:has(.open-empty-letter) {
+    min-height: 560px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .open-mailbox-page {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    align-items: stretch !important;
+  }
+
+  .open-mailbox-logo,
+  .open-mailbox-shell {
+    width: calc(100% - 28px) !important;
+    max-width: calc(100% - 28px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .open-mailbox-shell {
+    width: calc(100% - 48px) !important;
+    max-width: calc(100% - 48px) !important;
+  }
+
+  .open-board-panel {
+    width: auto !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    padding: 20px !important;
+    border-color: rgba(255, 236, 205, 0.22) !important;
+    overflow: hidden;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 236, 205, 0.08),
+      0 16px 38px rgba(0, 0, 0, 0.22) !important;
+  }
+
+  .open-board-header {
+    min-height: 0;
+    gap: 18px !important;
+    margin-bottom: 18px !important;
+  }
+
+  .open-board-title-row h1 {
+    font-size: clamp(28px, 8vw, 34px) !important;
+  }
+
+  .open-board-controls {
+    min-width: 0;
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr;
+    gap: 12px !important;
+  }
+
+  .open-page-arrows {
+    justify-content: center !important;
+    order: 1;
+  }
+
+  .open-compose-open-button {
+    width: auto !important;
+    min-height: 42px !important;
+    justify-self: stretch;
+    order: 2;
+  }
+
+  .open-empty-letter {
+    min-height: 300px !important;
+    padding: 24px 18px;
+  }
+
+  .open-empty-letter .open-compose-open-button {
+    width: min(100%, 240px) !important;
+    align-self: center;
+    justify-self: center;
+  }
+
+  .open-letter-grid {
+    width: 100%;
+    min-height: 0 !important;
+    grid-template-rows: repeat(4, minmax(190px, auto)) !important;
+    grid-auto-rows: minmax(190px, auto) !important;
+    gap: 12px !important;
+  }
+
+  .open-letter-card {
+    min-height: 190px !important;
+  }
+}
+
+@media (max-width: 540px) {
+  .open-mailbox-shell {
+    width: min(calc(100% - 48px), 360px) !important;
+    max-width: min(calc(100% - 48px), 360px) !important;
+    margin-left: 24px !important;
+    margin-right: 24px !important;
+  }
+}
