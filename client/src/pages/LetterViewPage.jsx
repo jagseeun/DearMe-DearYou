@@ -853,7 +853,7 @@ function SavedCallView({ letter, returnTo }) {
 
 export default function LetterViewPage() {
   const navigate = useNavigate();
-  const { letter, returnTo } = useLocation().state || {};
+  const { letter, name, returnTo } = useLocation().state || {};
   const [phase, setPhase] = useState('envelope');
 
   if (!letter) { navigate('/login', { replace: true }); return null; }
@@ -904,7 +904,7 @@ export default function LetterViewPage() {
 
   return (
     <motion.div
-      className={`letter-view-root ${isPink ? 'pink-letter-view' : ''}`.trim()}
+      className={`letter-view-root letter-view-${letter.type} letter-view-phase-${phase} ${isPink ? 'pink-letter-view' : ''}`.trim()}
       style={{
         position: 'fixed', inset: 0, zIndex: 10, width: '100%', height: '100vh',
         background: isPink ? 'linear-gradient(180deg, rgba(255,241,232,0.035), rgba(218,157,176,0.04))' : undefined,
@@ -948,8 +948,7 @@ export default function LetterViewPage() {
               <motion.div
                 className="letter-envelope-info letter-from"
                 initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.15, ease }}
-                style={{ position: 'absolute', top: 130, left: 140 }}>
+                transition={{ duration: 0.8, delay: 0.15, ease }}>
                 <div className="letter-envelope-label" style={{ color: textHint }}>보낸 날</div>
                 <div className="letter-envelope-value">
                   <span>{formatDate(letter.createdAt)}</span>
@@ -957,13 +956,12 @@ export default function LetterViewPage() {
                 </div>
               </motion.div>
 
-              <div className="letter-envelope-divider" style={{ position: 'absolute', top: '50%', left: 140, right: 140, height: 1, background: dividerBg }} />
+              <div className="letter-envelope-divider" style={{ background: dividerBg }} />
 
               <motion.div
                 className="letter-envelope-info letter-to"
                 initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.22, ease }}
-                style={{ position: 'absolute', right: 150, bottom: 132, textAlign: 'right' }}>
+                transition={{ duration: 0.8, delay: 0.22, ease }}>
                 <div className="letter-envelope-label" style={{ color: textHint }}>열린 날</div>
                 <div className="letter-envelope-value">
                   <span>{formatDate(letter.openDate)}</span>

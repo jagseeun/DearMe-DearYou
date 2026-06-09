@@ -10373,3 +10373,344 @@ canvas {
     color: rgba(103, 47, 66, 0.86) !important;
   }
 }
+
+/* Final hello/question and letter envelope readability locks. */
+.hello-question-wrap {
+  display: block !important;
+  height: auto !important;
+  min-height: 176px !important;
+  overflow: visible !important;
+}
+
+.hello-question {
+  display: block !important;
+  width: 100% !important;
+  max-width: 760px !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  overflow-wrap: anywhere !important;
+  word-break: keep-all !important;
+  font-size: clamp(20px, 3vw, 34px) !important;
+  line-height: 1.5 !important;
+}
+
+.letter-view-root:not(.pink-letter-view) .letter-envelope-label {
+  color: rgba(255, 252, 223, 0.54) !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.28) !important;
+}
+
+.letter-view-root:not(.pink-letter-view) .letter-envelope-value {
+  color: rgba(255, 247, 234, 0.94) !important;
+  text-shadow: 0 0 18px rgba(232, 194, 138, 0.16), 0 2px 12px rgba(0, 0, 0, 0.32) !important;
+}
+
+.letter-view-root:not(.pink-letter-view) .letter-envelope-person {
+  color: rgba(255, 252, 223, 0.68) !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.26) !important;
+}
+
+.letter-view-root:not(.pink-letter-view) .letter-envelope-divider {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+.letter-view-root:not(.pink-letter-view) .letter-mobile-day {
+  border-color: rgba(232, 194, 138, 0.2) !important;
+  background: rgba(18, 19, 22, 0.36) !important;
+  color: rgba(255, 247, 234, 0.86) !important;
+}
+
+.letter-view-root.letter-view-draw .letter-envelope-stage::before,
+.letter-view-root.letter-view-draw .letter-envelope-stage::after {
+  content: none !important;
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .hello-shell {
+    padding-bottom: calc(138px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .hello-content {
+    justify-content: center !important;
+    gap: 16px !important;
+    max-width: min(100%, 330px) !important;
+  }
+
+  .hello-question-wrap {
+    min-height: clamp(142px, 25vh, 220px) !important;
+  }
+
+  .hello-greeting {
+    max-width: min(100%, 330px) !important;
+  }
+
+  .hello-question {
+    max-width: min(100%, 330px) !important;
+    font-size: clamp(16.5px, 4.8vw, 25px) !important;
+    line-height: 1.58 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .hello-question-wrap {
+    min-height: clamp(152px, 27vh, 230px) !important;
+  }
+
+  .hello-question {
+    font-size: clamp(15.5px, 4.5vw, 22px) !important;
+  }
+}
+
+.letter-view-root.letter-view-phase-envelope .letter-envelope-stage {
+  position: relative !important;
+  width: 100dvw !important;
+  max-width: 100dvw !important;
+  overflow: hidden !important;
+}
+
+.letter-view-root.letter-view-phase-envelope .letter-envelope-info {
+  position: absolute !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.letter-view-root.letter-view-phase-envelope .letter-from {
+  top: 130px !important;
+  left: 140px !important;
+  right: auto !important;
+  bottom: auto !important;
+  text-align: left !important;
+}
+
+.letter-view-root.letter-view-phase-envelope .letter-to {
+  top: auto !important;
+  right: 150px !important;
+  bottom: 132px !important;
+  left: auto !important;
+  text-align: right !important;
+}
+
+.letter-view-root.letter-view-phase-envelope .letter-envelope-divider {
+  position: absolute !important;
+  top: 50% !important;
+  left: 140px !important;
+  right: 140px !important;
+  width: auto !important;
+  height: 1px !important;
+  margin: 0 !important;
+}
+
+.letter-view-root.letter-view-phase-envelope .letter-open-button {
+  position: absolute !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: 40px !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+}
+
+.letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-envelope-info {
+  width: min(390px, calc(100vw - 220px)) !important;
+  max-width: min(390px, calc(100vw - 220px)) !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-from {
+  top: 130px !important;
+  left: 140px !important;
+  right: auto !important;
+  bottom: auto !important;
+  text-align: left !important;
+}
+
+.letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-to {
+  top: auto !important;
+  right: 150px !important;
+  bottom: 132px !important;
+  left: auto !important;
+  text-align: right !important;
+}
+
+.letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-envelope-value {
+  display: grid !important;
+  justify-content: initial !important;
+  align-items: initial !important;
+  gap: 6px !important;
+  background: transparent !important;
+}
+
+.letter-view-root .letter-envelope-info {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+@media (max-width: 760px) {
+  .letter-view-root.letter-view-phase-envelope {
+    width: 100dvw !important;
+    max-width: 100dvw !important;
+    overflow: hidden !important;
+  }
+
+  .hello-greeting {
+    white-space: normal !important;
+    overflow: visible !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+    font-size: clamp(20px, 6.4vw, 34px) !important;
+    line-height: 1.34 !important;
+  }
+
+  .hello-greeting span {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-envelope-stage {
+    display: block !important;
+    width: 100vw !important;
+    max-width: 100dvw !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-envelope-info {
+    position: absolute !important;
+    width: min(300px, calc(100vw - 48px)) !important;
+    max-width: min(300px, calc(100vw - 48px)) !important;
+    margin: 0 !important;
+  }
+
+  .letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-from {
+    top: calc(158px + env(safe-area-inset-top)) !important;
+    left: 24px !important;
+    right: auto !important;
+    bottom: auto !important;
+    text-align: left !important;
+  }
+
+  .letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-to {
+    top: auto !important;
+    right: auto !important;
+    bottom: calc(148px + env(safe-area-inset-bottom)) !important;
+    left: 24px !important;
+    width: min(342px, calc(100dvw - 48px)) !important;
+    max-width: min(342px, calc(100dvw - 48px)) !important;
+    text-align: right !important;
+  }
+
+  .letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-envelope-value {
+    font-size: clamp(25px, 7.2vw, 32px) !important;
+    line-height: 1.18 !important;
+  }
+
+  .letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-envelope-person {
+    font-size: clamp(12px, 3.4vw, 15px) !important;
+  }
+
+  .letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-envelope-divider {
+    position: absolute !important;
+    top: 50% !important;
+    left: 24px !important;
+    right: 24px !important;
+    width: auto !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  .letter-view-root.letter-view-draw.letter-view-phase-envelope .letter-open-button {
+    position: absolute !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: calc(38px + env(safe-area-inset-bottom)) !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+  }
+
+  .letter-view-root .letter-envelope-info {
+    width: min(300px, calc(100vw - 48px)) !important;
+    max-width: min(300px, calc(100vw - 48px)) !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .letter-view-root .letter-from {
+    top: calc(158px + env(safe-area-inset-top)) !important;
+    left: 24px !important;
+    right: auto !important;
+    bottom: auto !important;
+    text-align: left !important;
+  }
+
+  .letter-view-root .letter-to {
+    top: auto !important;
+    right: auto !important;
+    bottom: calc(148px + env(safe-area-inset-bottom)) !important;
+    left: 24px !important;
+    width: min(342px, calc(100dvw - 48px)) !important;
+    max-width: min(342px, calc(100dvw - 48px)) !important;
+    text-align: right !important;
+  }
+
+  .letter-view-root.letter-view-phase-envelope .letter-envelope-info {
+    position: absolute !important;
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .letter-view-root.letter-view-phase-envelope .letter-from {
+    top: calc(158px + env(safe-area-inset-top)) !important;
+    left: 24px !important;
+    right: auto !important;
+    bottom: auto !important;
+    text-align: left !important;
+  }
+
+  .letter-view-root.letter-view-phase-envelope .letter-to {
+    top: auto !important;
+    right: auto !important;
+    bottom: calc(148px + env(safe-area-inset-bottom)) !important;
+    left: 24px !important;
+    width: min(342px, calc(100dvw - 48px)) !important;
+    max-width: min(342px, calc(100dvw - 48px)) !important;
+    text-align: right !important;
+  }
+
+  .letter-view-root.letter-view-phase-envelope .letter-envelope-divider {
+    position: absolute !important;
+    top: 50% !important;
+    left: 24px !important;
+    right: 24px !important;
+    width: auto !important;
+    height: 1px !important;
+    margin: 0 !important;
+  }
+
+  .letter-view-root.letter-view-phase-envelope .letter-open-button {
+    position: absolute !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: calc(38px + env(safe-area-inset-bottom)) !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+  }
+}
+
+@media (max-width: 500px) {
+  .letter-view-root.letter-view-phase-envelope .letter-to {
+    right: auto !important;
+    left: 24px !important;
+    width: min(342px, calc(100dvw - 48px)) !important;
+    max-width: min(342px, calc(100dvw - 48px)) !important;
+  }
+}
