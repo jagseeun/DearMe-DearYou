@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Stars from './Stars.jsx';
@@ -29,6 +30,22 @@ export default function BackgroundLayers() {
   const location = useLocation();
   const isPink = PINK_ROUTES.some(route => location.pathname.startsWith(route));
 
+  useEffect(() => {
+    document.body.classList.toggle('pink-cursor-active', isPink);
+    if (!isPink) return () => document.body.classList.remove('pink-cursor-active');
+
+    const moveGlow = event => {
+      document.documentElement.style.setProperty('--pink-cursor-x', `${event.clientX}px`);
+      document.documentElement.style.setProperty('--pink-cursor-y', `${event.clientY}px`);
+    };
+
+    window.addEventListener('pointermove', moveGlow, { passive: true });
+    return () => {
+      window.removeEventListener('pointermove', moveGlow);
+      document.body.classList.remove('pink-cursor-active');
+    };
+  }, [isPink]);
+
   return (
     <>
       <motion.div
@@ -55,6 +72,12 @@ export default function BackgroundLayers() {
       >
         <PinkStars />
       </motion.div>
+      <motion.div
+        className="pink-cursor-glow"
+        animate={{ opacity: isPink ? 1 : 0 }}
+        transition={{ duration: 0.5, ease }}
+        style={layerStyle}
+      />
     </>
   );
 }

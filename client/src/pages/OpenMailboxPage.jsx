@@ -35,14 +35,15 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-    canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+    const width = Math.max(1, canvas.clientWidth || canvas.getBoundingClientRect().width);
+    const height = Math.max(1, canvas.clientHeight || canvas.getBoundingClientRect().height);
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
     const ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#fffaf0';
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, width, height);
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -50,14 +51,30 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
   }, [canvasRef]);
 
   function point(event) {
-    const rect = canvasRef.current.getBoundingClientRect();
-    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const styles = window.getComputedStyle(canvas);
+    const borderLeft = parseFloat(styles.borderLeftWidth) || 0;
+    const borderTop = parseFloat(styles.borderTopWidth) || 0;
+    const borderRight = parseFloat(styles.borderRightWidth) || 0;
+    const borderBottom = parseFloat(styles.borderBottomWidth) || 0;
+    const contentWidth = Math.max(1, rect.width - borderLeft - borderRight);
+    const contentHeight = Math.max(1, rect.height - borderTop - borderBottom);
+    const drawingWidth = Math.max(1, canvas.clientWidth || contentWidth);
+    const drawingHeight = Math.max(1, canvas.clientHeight || contentHeight);
+    const x = ((event.clientX - rect.left - borderLeft) / contentWidth) * drawingWidth;
+    const y = ((event.clientY - rect.top - borderTop) / contentHeight) * drawingHeight;
+    return {
+      x: Math.min(Math.max(x, 0), drawingWidth),
+      y: Math.min(Math.max(y, 0), drawingHeight),
+    };
   }
 
   function start(event) {
     event.preventDefault();
     const canvas = canvasRef.current;
     if (!canvas) return;
+    canvas.setPointerCapture?.(event.pointerId);
     drawingRef.current = true;
     const ctx = canvas.getContext('2d');
     const p = point(event);
@@ -77,17 +94,21 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
     onDrawn(true);
   }
 
-  function end() {
+  function end(event) {
+    if (event?.pointerId !== undefined && event.currentTarget?.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
     drawingRef.current = false;
   }
 
   function clear() {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(1, canvas.clientWidth || canvas.getBoundingClientRect().width);
+    const height = Math.max(1, canvas.clientHeight || canvas.getBoundingClientRect().height);
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fffaf0';
-    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.fillRect(0, 0, width, height);
     onDrawn(false);
   }
 
