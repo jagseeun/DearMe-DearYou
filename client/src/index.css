@@ -11138,3 +11138,96 @@ canvas {
     bottom: calc(36px + env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* Pink final pass: show stars, remove envelope paper/X overlay, add cursor glow. */
+.pink-login-page,
+.pink-letter-list-page,
+.pink-letter-view {
+  background: transparent !important;
+}
+
+.pink-letter-view::after {
+  content: none !important;
+  display: none !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-stage::before,
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-stage::after {
+  content: none !important;
+  display: none !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-divider {
+  background: linear-gradient(90deg, transparent, rgba(244, 211, 218, 0.24), transparent) !important;
+}
+
+.pink-cursor-glow {
+  background:
+    radial-gradient(
+      circle at var(--pink-cursor-x, 50vw) var(--pink-cursor-y, 50vh),
+      rgba(255, 244, 238, 0.3) 0%,
+      rgba(244, 190, 215, 0.18) 13%,
+      rgba(244, 190, 215, 0.08) 25%,
+      transparent 44%
+    );
+  mix-blend-mode: screen;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  body.pink-cursor-active,
+  body.pink-cursor-active * {
+    cursor: none !important;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .pink-cursor-glow {
+    display: none !important;
+  }
+}
+
+.pink-letter-view .letter-content-box,
+.pink-letter-view .letter-draw-frame {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.pink-letter-view .letter-content-box::before,
+.pink-letter-view .letter-draw-frame::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 11% 18%, rgba(255, 246, 241, 0.7) 0 1.1px, transparent 1.8px),
+    radial-gradient(circle at 78% 16%, rgba(255, 214, 230, 0.58) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 93% 28%, rgba(255, 246, 241, 0.52) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 42% 33%, rgba(255, 246, 241, 0.48) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 63% 39%, rgba(255, 214, 230, 0.56) 0 1.1px, transparent 1.9px),
+    radial-gradient(circle at 88% 54%, rgba(255, 214, 230, 0.52) 0 1.1px, transparent 1.9px),
+    radial-gradient(circle at 34% 58%, rgba(255, 246, 241, 0.5) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 20% 72%, rgba(255, 246, 241, 0.5) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 49% 78%, rgba(255, 246, 241, 0.45) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 62% 83%, rgba(255, 214, 230, 0.48) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 82% 86%, rgba(255, 246, 241, 0.5) 0 1.1px, transparent 1.9px);
+  opacity: 0.86 !important;
+  mix-blend-mode: screen !important;
+}
+
+.pink-letter-view .letter-content-box::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(255, 241, 232, 0.13), transparent 34%),
+    radial-gradient(circle at 86% 88%, rgba(218, 157, 176, 0.11), transparent 38%);
+}
+
+.pink-letter-view .letter-content-box > *,
+.pink-letter-view .letter-draw-frame > * {
+  position: relative !important;
+  z-index: 1 !important;
+}
