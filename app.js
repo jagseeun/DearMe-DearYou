@@ -44,6 +44,16 @@ const IMAGE_CONTENT_TYPES = {
   png: "image/png",
   webp: "image/webp",
 };
+const DEFAULT_TEACHER_LETTER_TITLE = "3214 장세은 개발자가 보낸 편지 💗";
+const DEFAULT_TEACHER_LETTER_TITLE_ALIASES = ["000님의 앞길을 응원합니다", DEFAULT_TEACHER_LETTER_TITLE];
+const DEFAULT_TEACHER_LETTER_TEACHER_NAME = "3214 장세은";
+const DEFAULT_TEACHER_LETTER_CONTENT = `안녕하세요, 000님! Dear Me ; Dear You와 함께해 주셔서 진심으로 감사합니다.
+살아가다 보면 감사함, 미안함, 후회, 위로처럼 참 다양한 감정을 느끼게 되는 것 같아요. 그런 감정들은 타인에게만 향하는 게 아니라, 때로는 자기 자신에게도 향하기도 하죠.
+그 감정을 느끼고 돌아보는 것 자체가 이미 살아가는 과정이라고 생각해요. 그런 경험들을 하나씩 쌓아 가면서 우리는 조금 더 나다운 사람, 나를 존중하고 타인도 배려할 수 있는 사람으로 자라가는 게 아닐까요?
+내가 나에게 작은 힘이 되어 준다면, 다시 앞으로 나아갈 용기도 생기고, 언젠가는 또 다른 누군가에게도 따뜻한 힘을 전할 수 있는 사람이 될 수 있을 거예요.
+힘든 일이 생기더라도 자기 자신을 너무 미워하지 말고, 적어도 나에게는 떳떳한 사람으로 천천히 나아가 봐요. 000님이라면 분명 그렇게 하실 수 있을 거라 믿어요.
+오늘 미림마이스터고등학교에서 좋은 작품 많이 보고 가시고, 앞으로의 삶에 행복한 일이 가득하길 바랍니다.
+000님의 앞길을 응원하며, 감사합니다!`;
 
 function envValue(primary, legacy) {
   return process.env[primary] || (legacy ? process.env[legacy] : undefined);
@@ -843,12 +853,27 @@ async function createBalancedTeacherDelivery(memberId) {
   });
 }
 
+function personalizeTeacherText(value = "", memberName = "") {
+  const safeName = String(memberName || "").trim() || "여러분";
+  return String(value || "").replaceAll("000", safeName);
+}
+
+function personalizeTeacherLetterForMember(teacherLetter, memberName) {
+  if (!teacherLetter) return teacherLetter;
+  return {
+    ...teacherLetter,
+    title: teacherLetter.title ? personalizeTeacherText(teacherLetter.title, memberName) : teacherLetter.title,
+    content: personalizeTeacherText(teacherLetter.content, memberName),
+  };
+}
+
 function buildTeacherLetterEmail(memberName, teacherLetter) {
-  const rawTeacherName = String(teacherLetter.teacherName || "").trim();
-  const rawTitle = teacherLetter.title || `${memberName}님을 응원하는 ${rawTeacherName}께서 편지를 보냈습니다!`;
+  const personalizedTeacherLetter = personalizeTeacherLetterForMember(teacherLetter, memberName);
+  const rawTeacherName = String(personalizedTeacherLetter.teacherName || "").trim();
+  const rawTitle = personalizedTeacherLetter.title || `${memberName}님을 응원하는 ${rawTeacherName}께서 편지를 보냈습니다!`;
   const teacherName = escapeHtml(rawTeacherName);
   const title = escapeHtml(rawTitle);
-  const content = escapeHtml(teacherLetter.content);
+  const content = escapeHtml(personalizedTeacherLetter.content);
   const safeMemberName = escapeHtml(memberName);
 
   return buildEmailShell({
@@ -874,6 +899,7 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
 async function sendTeacherDelivery(delivery) {
   const member = delivery.member;
   const teacherLetter = delivery.teacherLetter;
+  const personalizedTeacherLetter = personalizeTeacherLetterForMember(teacherLetter, member.name);
 
   if (!isValidEmail(member.email)) {
     await prisma.teacherLetterDelivery.update({
@@ -890,8 +916,8 @@ async function sendTeacherDelivery(delivery) {
       replyTo: emailReplyTo,
       to: member.email,
       subject: mailHeader(teacherIntro),
-      text: `${teacherIntro}\n\n${teacherLetter.content}\n\n${buildEmailHomeText()}`,
-      html: buildTeacherLetterEmail(member.name, teacherLetter),
+      text: `${teacherIntro}\n\n${personalizedTeacherLetter.content}\n\n${buildEmailHomeText()}`,
+      html: buildTeacherLetterEmail(member.name, personalizedTeacherLetter),
     });
 
     await prisma.teacherLetterDelivery.update({
@@ -1214,6 +1240,47 @@ function requireAdmin(req, res, next) {
   if (!req.session.user) return res.status(401).json({ message: "Login required" });
   if (!isAdminUser(req.session.user)) return res.status(403).json({ message: "Admin only" });
   next();
+}
+
+async function ensureDefaultTeacherLetter() {
+  const adminUseridList = [...adminUserids];
+  if (adminUseridList.length === 0) return;
+
+  const author = await prisma.member.findFirst({
+    where: { userid: { in: adminUseridList } },
+    orderBy: { id: "asc" },
+  });
+
+  if (!author) {
+    console.warn("default teacher letter skipped: no admin author found");
+    return;
+  }
+
+  const existing = await prisma.teacherLetter.findFirst({
+    where: {
+      authorId: author.id,
+      OR: [
+        { title: { in: DEFAULT_TEACHER_LETTER_TITLE_ALIASES } },
+        { content: { contains: "Dear Me ; Dear You와 함께해 주셔서" } },
+      ],
+    },
+    orderBy: { id: "asc" },
+  });
+
+  const data = {
+    title: DEFAULT_TEACHER_LETTER_TITLE,
+    teacherName: DEFAULT_TEACHER_LETTER_TEACHER_NAME,
+    content: DEFAULT_TEACHER_LETTER_CONTENT,
+    active: true,
+    authorId: author.id,
+  };
+
+  if (existing) {
+    await prisma.teacherLetter.update({ where: { id: existing.id }, data });
+    return;
+  }
+
+  await prisma.teacherLetter.create({ data });
 }
 
 // DB 연결 테스트
@@ -2021,7 +2088,13 @@ app.get("/my-teacher-letter", async (req, res) => {
       where: { memberId: req.session.user.id },
       include: { teacherLetter: true },
     });
-    res.json({ delivery });
+    const personalizedDelivery = delivery
+      ? {
+          ...delivery,
+          teacherLetter: personalizeTeacherLetterForMember(delivery.teacherLetter, req.session.user.name),
+        }
+      : null;
+    res.json({ delivery: personalizedDelivery });
   } catch (err) {
     console.error("my teacher letter error:", err);
     res.status(500).json({ message: "Server error" });
@@ -2034,4 +2107,8 @@ app.get("/{*splat}", (req, res) => {
   res.sendFile(path.resolve("client/dist/index.html"));
 });
 
-app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+ensureDefaultTeacherLetter()
+  .catch(err => console.error("default teacher letter setup failed:", err))
+  .finally(() => {
+    app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+  });
