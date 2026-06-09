@@ -1398,28 +1398,25 @@ app.post("/public-image-upload-url", publicUploadLimiter, async (req, res) => {
 });
 
 app.get("/public-letters", async (req, res) => {
-  const requestedPage = Math.max(0, Number.parseInt(String(req.query.page || "0"), 10) || 0);
+  const page = Math.max(0, Number.parseInt(String(req.query.page || "0"), 10) || 0);
   try {
-    const total = await prisma.publicLetter.count({ where: { visible: true } });
-    const totalPages = Math.max(1, Math.ceil(total / PUBLIC_LETTER_PAGE_SIZE));
-    const page = Math.min(requestedPage, totalPages - 1);
-    const firstPageSize = total === 0 ? PUBLIC_LETTER_PAGE_SIZE : total % PUBLIC_LETTER_PAGE_SIZE || PUBLIC_LETTER_PAGE_SIZE;
-    const skip = page === 0 ? 0 : firstPageSize + (page - 1) * PUBLIC_LETTER_PAGE_SIZE;
-    const take = page === 0 ? firstPageSize : PUBLIC_LETTER_PAGE_SIZE;
-    const letters = await prisma.publicLetter.findMany({
-      where: { visible: true },
-      orderBy: { createdAt: "asc" },
-      skip,
-      take,
-      select: {
-        id: true,
-        nickname: true,
-        type: true,
-        content: true,
-        imageUrl: true,
-        createdAt: true,
-      },
-    });
+    const [total, letters] = await prisma.$transaction([
+      prisma.publicLetter.count({ where: { visible: true } }),
+      prisma.publicLetter.findMany({
+        where: { visible: true },
+        orderBy: { createdAt: "desc" },
+        skip: page * PUBLIC_LETTER_PAGE_SIZE,
+        take: PUBLIC_LETTER_PAGE_SIZE,
+        select: {
+          id: true,
+          nickname: true,
+          type: true,
+          content: true,
+          imageUrl: true,
+          createdAt: true,
+        },
+      }),
+    ]);
     res.json({ letters, total, page, pageSize: PUBLIC_LETTER_PAGE_SIZE });
   } catch (err) {
     console.error("public letter list error:", err);
