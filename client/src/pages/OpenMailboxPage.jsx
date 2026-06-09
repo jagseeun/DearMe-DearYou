@@ -265,7 +265,7 @@ export default function OpenMailboxPage() {
       resetForm();
       setShowComposer(false);
       setMessage('');
-      await loadLetters(Math.max(0, Math.ceil((total + 1) / pageSize) - 1));
+      await loadLetters(0);
     } catch (err) {
       setMessage(err.message || '열린 편지를 저장하지 못했습니다.');
     } finally {
@@ -304,7 +304,7 @@ export default function OpenMailboxPage() {
             <div className="open-board-title-row">
               <span>{total} letters</span>
               <h1 className="open-board-emoji-title" aria-label="열린 편지함">💌</h1>
-              <p>모두에게 전하는 편지</p>
+              <p>모두에게 보내는 편지</p>
             </div>
             <div className="open-board-controls">
               <button type="button" className="open-compose-open-button" onClick={() => setShowComposer(true)}>

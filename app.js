@@ -1449,7 +1449,7 @@ app.get("/public-letters", async (req, res) => {
     const skip = page * PUBLIC_LETTER_PAGE_SIZE;
     const letters = await prisma.publicLetter.findMany({
       where: { visible: true },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
       skip,
       take: PUBLIC_LETTER_PAGE_SIZE,
       select: {
