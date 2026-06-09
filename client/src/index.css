@@ -10395,17 +10395,17 @@ canvas {
 }
 
 .letter-view-root:not(.pink-letter-view) .letter-envelope-label {
-  color: rgba(255, 252, 223, 0.54) !important;
+  color: rgba(218, 211, 246, 0.6) !important;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.28) !important;
 }
 
 .letter-view-root:not(.pink-letter-view) .letter-envelope-value {
-  color: rgba(255, 247, 234, 0.94) !important;
-  text-shadow: 0 0 18px rgba(232, 194, 138, 0.16), 0 2px 12px rgba(0, 0, 0, 0.32) !important;
+  color: rgba(242, 238, 255, 0.94) !important;
+  text-shadow: 0 0 18px rgba(174, 154, 226, 0.18), 0 2px 12px rgba(0, 0, 0, 0.32) !important;
 }
 
 .letter-view-root:not(.pink-letter-view) .letter-envelope-person {
-  color: rgba(255, 252, 223, 0.68) !important;
+  color: rgba(218, 211, 246, 0.7) !important;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.26) !important;
 }
 
@@ -10414,9 +10414,9 @@ canvas {
 }
 
 .letter-view-root:not(.pink-letter-view) .letter-mobile-day {
-  border-color: rgba(232, 194, 138, 0.2) !important;
-  background: rgba(18, 19, 22, 0.36) !important;
-  color: rgba(255, 247, 234, 0.86) !important;
+  border-color: rgba(190, 178, 232, 0.22) !important;
+  background: rgba(18, 24, 52, 0.38) !important;
+  color: rgba(232, 226, 255, 0.86) !important;
 }
 
 .letter-view-root.letter-view-draw .letter-envelope-stage::before,
@@ -10826,7 +10826,7 @@ canvas {
   --dream-line: rgba(255, 232, 226, 0.18);
   --dream-line-soft: rgba(255, 232, 226, 0.11);
   --dream-glow: rgba(218, 157, 176, 0.18);
-  --dream-gold: rgba(231, 199, 143, 0.2);
+  --dream-gold: rgba(174, 154, 226, 0.2);
 }
 
 .glass-btn,
@@ -10839,7 +10839,7 @@ canvas {
 .letter-delete-button,
 .letter-back-floating {
   box-shadow:
-    0 0 24px rgba(232, 194, 138, 0.08),
+    0 0 24px rgba(174, 154, 226, 0.1),
     0 14px 34px rgba(8, 10, 16, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
@@ -10850,7 +10850,7 @@ canvas {
 .admin-card,
 .open-compose-modal {
   box-shadow:
-    0 0 40px rgba(232, 194, 138, 0.08),
+    0 0 40px rgba(174, 154, 226, 0.09),
     0 24px 60px rgba(8, 10, 16, 0.26),
     inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
@@ -11325,4 +11325,29 @@ canvas {
 .pink-letter-view .letter-draw-frame > * {
   position: relative !important;
   z-index: 1 !important;
+}
+
+/* Final view-letter button color lock: remove old brown fallback from non-pink letters. */
+.letter-view-root:not(.pink-letter-view) .letter-view-button {
+  background:
+    linear-gradient(135deg, rgba(58, 66, 112, 0.84), rgba(74, 54, 108, 0.82)),
+    rgba(174, 154, 226, 0.1) !important;
+  border-color: rgba(190, 178, 232, 0.3) !important;
+  color: #f1ecff !important;
+  box-shadow:
+    0 0 24px rgba(174, 154, 226, 0.14),
+    0 16px 38px rgba(8, 12, 28, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+  text-shadow: 0 1px 7px rgba(8, 12, 28, 0.38) !important;
+}
+
+.letter-view-root:not(.pink-letter-view) .letter-view-button:hover {
+  background:
+    linear-gradient(135deg, rgba(72, 80, 132, 0.88), rgba(88, 64, 124, 0.86)),
+    rgba(202, 184, 242, 0.12) !important;
+  border-color: rgba(214, 204, 248, 0.42) !important;
+  box-shadow:
+    0 0 30px rgba(174, 154, 226, 0.18),
+    0 18px 42px rgba(8, 12, 28, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
 }
