@@ -303,8 +303,8 @@ export default function OpenMailboxPage() {
           <div className="open-board-header">
             <div className="open-board-title-row">
               <span>{total} letters</span>
-              <h1>열린 편지함</h1>
-              <p>잠깐 머물다 가는 말들</p>
+              <h1 className="open-board-emoji-title" aria-label="열린 편지함">💌</h1>
+              <p>모두에게 전하는 편지</p>
             </div>
             <div className="open-board-controls">
               <button type="button" className="open-compose-open-button" onClick={() => setShowComposer(true)}>

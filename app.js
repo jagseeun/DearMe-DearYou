@@ -93,6 +93,8 @@ const emailSenderName = process.env.EMAIL_SENDER_NAME || "Dear Me; Dear You";
 const emailFromAddress = process.env.BREVO_SENDER_EMAIL || process.env.GMAIL_USER;
 const emailReplyTo = process.env.BREVO_REPLY_TO || process.env.GMAIL_USER || emailFromAddress;
 const emailFromHeader = `"${emailSenderName}" <${emailFromAddress}>`;
+const appBaseUrl = stripTrailingSlash(process.env.PUBLIC_APP_URL || process.env.APP_URL || "https://dearme-dearyou.onrender.com");
+const appHomeUrl = `${appBaseUrl}/`;
 
 function serializeMailError(err) {
   return {
@@ -387,6 +389,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
         : isDraw
           ? `안녕, ${recipientName}.\n${isToOther ? senderName + '이(가) 보낸' : '과거의 네가 보낸'} 그림 편지야.\n\n${metaText}\n\n그림 보기: ${letter.imageUrl}`
           : `안녕, ${recipientName}.\n${isToOther ? senderName + '이(가) 보낸' : '과거의 네가 보낸'} 편지야.\n\n${metaText}\n\n${letter.content}`;
+      const textWithHomeLink = `${text}\n\n${buildEmailHomeText()}`;
 
       try {
         // 수신자에게 발송
@@ -397,7 +400,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
           subject: mailHeader(isToOther
             ? `${senderName}이(가) 보낸 편지가 도착했어요`
             : "과거의 내가 보낸 편지가 도착했어요"),
-          text,
+          text: textWithHomeLink,
           html,
         });
 
@@ -409,7 +412,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
             replyTo: emailReplyTo,
             to: letter.author.email,
             subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었어요`),
-            text: `안녕, ${senderName}.\n네가 ${recipientName}에게 보낸 편지가 오늘 전달되었어.\n\n${metaText}`,
+            text: `안녕, ${senderName}.\n네가 ${recipientName}에게 보낸 편지가 오늘 전달되었어.\n\n${metaText}\n\n${buildEmailHomeText()}`,
             html: senderHtml,
           });
         }
@@ -608,6 +611,7 @@ function formatMailDate(value) {
 function getLetterEmailTheme(theme) {
   if (normalizeEmailTheme(theme) === "pink") {
     return {
+      outerBg: "#fff3f7",
       panelBg: "#fff7f9",
       text: "#57303c",
       muted: "#9b6678",
@@ -625,10 +629,12 @@ function getLetterEmailTheme(theme) {
       buttonBg: "linear-gradient(135deg,#f6a9c2,#e383a4)",
       buttonText: "#ffffff",
       footer: "#c07b91",
+      shadow: "0 18px 45px rgba(158,66,96,0.16)",
     };
   }
 
   return {
+    outerBg: "#eef1f5",
     panelBg: "#151f2e",
     text: "#f0ebe0",
     muted: "rgba(255,252,223,0.58)",
@@ -646,17 +652,13 @@ function getLetterEmailTheme(theme) {
     buttonBg: "linear-gradient(135deg,#e7cfa1,#cfa874)",
     buttonText: "#2b1e10",
     footer: "rgba(255,252,223,0.4)",
+    shadow: "0 20px 48px rgba(21,31,46,0.22)",
   };
 }
 
 function buildLetterMetaText(meta = {}) {
-  const sender = formatMailPerson(meta.senderName, meta.senderEmail);
-  const recipient = formatMailPerson(meta.recipientName, meta.recipientEmail);
   return [
-    `보낸 사람: ${sender}`,
-    `받는 사람: ${recipient}`,
-    `보낸 날짜: ${formatMailDate(meta.createdAt)}`,
-    `보내진 날짜: ${formatMailDate(meta.deliveredAt)}`,
+    `보낸 날: ${formatMailDate(meta.createdAt)}`,
     `개봉일: ${formatMailDate(meta.openDate)}`,
   ].join("\n");
 }
@@ -670,15 +672,12 @@ function formatMailPerson(name, email) {
 
 function buildLetterMetaHtml(meta = {}, themeStyles) {
   const rows = [
-    ["보낸 사람", formatMailPerson(meta.senderName, meta.senderEmail)],
-    ["받는 사람", formatMailPerson(meta.recipientName, meta.recipientEmail)],
-    ["보낸 날짜", formatMailDate(meta.createdAt)],
-    ["보내진 날짜", formatMailDate(meta.deliveredAt)],
+    ["보낸 날", formatMailDate(meta.createdAt)],
     ["개봉일", formatMailDate(meta.openDate)],
   ];
 
   return `
-    <div style="margin:0 0 24px;background:${themeStyles.metaBg};border:1px solid ${themeStyles.metaBorder};border-radius:12px;overflow:hidden">
+    <div style="margin:0 0 24px;background:${themeStyles.metaBg};border:1px solid ${themeStyles.metaBorder};border-radius:14px;overflow:hidden">
       ${rows.map(([label, value], index) => `
         <div style="display:flex;gap:12px;padding:12px 16px;${index < rows.length - 1 ? `border-bottom:1px solid ${themeStyles.metaBorder};` : ""}font-size:14px;line-height:1.5">
           <div style="min-width:92px;color:${themeStyles.metaLabel};font-weight:600">${escapeHtml(label)}</div>
@@ -688,16 +687,37 @@ function buildLetterMetaHtml(meta = {}, themeStyles) {
     </div>`;
 }
 
-function buildEmailShell({ theme, openDate, body }) {
-  const themeStyles = getLetterEmailTheme(theme);
+function buildEmailHomeText(label = "Dear Me; Dear You 열기") {
+  return `${label}: ${appHomeUrl}`;
+}
+
+function buildEmailHomeCta(themeStyles, {
+  label = "편지함 열기",
+  note = "Dear Me; Dear You에서 이 마음을 천천히 다시 꺼내볼 수 있어.",
+} = {}) {
+  const safeUrl = escapeHtml(appHomeUrl);
   return `
-  <div style="max-width:600px;margin:0 auto;background:${themeStyles.panelBg};color:${themeStyles.text};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;border-radius:16px;overflow:hidden">
-    <div style="background:${themeStyles.headerBg};padding:40px 32px;text-align:center">
-      <div style="font-size:28px;font-weight:300;color:${themeStyles.brandMain}">Dear Me<span style="color:${themeStyles.semicolon};margin:0 8px">;</span><span style="color:${themeStyles.brandSecond}">Dear You</span></div>
-      <div style="margin-top:8px;color:${themeStyles.muted};font-size:14px">${formatMailDate(openDate)} 개봉</div>
+    <div style="margin-top:26px;padding:20px;background:${themeStyles.metaBg};border:1px solid ${themeStyles.metaBorder};border-radius:16px;text-align:center">
+      <div style="color:${themeStyles.muted};font-size:13px;line-height:1.7;margin-bottom:14px">${escapeHtml(note)}</div>
+      <a href="${safeUrl}" style="display:inline-block;padding:13px 28px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:999px;text-decoration:none;font-size:15px;font-weight:700">${escapeHtml(label)}</a>
+      <div style="margin-top:12px;color:${themeStyles.footer};font-size:11px;line-height:1.5;word-break:break-all">${safeUrl}</div>
+    </div>`;
+}
+
+function buildEmailShell({ theme, openDate, subtitle, body }) {
+  const themeStyles = getLetterEmailTheme(theme);
+  const headerSubtitle = subtitle || `${formatMailDate(openDate)} 개봉`;
+  return `
+  <div style="background:${themeStyles.outerBg};padding:24px 12px">
+    <div style="max-width:600px;margin:0 auto;background:${themeStyles.panelBg};color:${themeStyles.text};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;border-radius:20px;overflow:hidden;box-shadow:${themeStyles.shadow}">
+      <div style="background:${themeStyles.headerBg};padding:42px 32px 38px;text-align:center">
+        <div style="font-size:12px;letter-spacing:3px;color:${themeStyles.muted};margin-bottom:12px">A LETTER HAS ARRIVED</div>
+        <div style="font-size:30px;font-weight:300;color:${themeStyles.brandMain};line-height:1.25">Dear Me<span style="color:${themeStyles.semicolon};margin:0 8px">;</span><span style="color:${themeStyles.brandSecond}">Dear You</span></div>
+        <div style="margin-top:10px;color:${themeStyles.muted};font-size:14px;line-height:1.6">${escapeHtml(headerSubtitle)}</div>
+      </div>
+      ${body(themeStyles)}
+      <div style="padding:20px 40px 42px;text-align:center;color:${themeStyles.footer};font-size:12px">Dear Me; Dear You</div>
     </div>
-    ${body(themeStyles)}
-    <div style="padding:20px 40px 40px;text-align:center;color:${themeStyles.footer};font-size:12px">Dear Me; Dear You</div>
   </div>`;
 }
 
@@ -712,9 +732,13 @@ function buildSenderNotifyEmail(senderName, recipientName, openDate, emailTheme 
       <p style="font-size:16px;line-height:1.9;color:${themeStyles.soft};margin:0 0 24px">
         안녕, <strong>${safeSenderName}</strong>.<br><br>
         네가 <strong>${safeRecipientName}</strong>에게 보낸 편지가 오늘 잘 전달되었어.<br>
-        소중한 마음을 놓아두길 바라.
+        소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두어도 괜찮아.
       </p>
       ${buildLetterMetaHtml(meta, themeStyles)}
+      ${buildEmailHomeCta(themeStyles, {
+        label: "Dear Me; Dear You 열기",
+        note: "내가 남긴 편지들을 다시 보고 싶을 때 여기로 돌아오면 돼.",
+      })}
     </div>`,
   });
 }
@@ -734,11 +758,12 @@ function buildTextEmail(recipientName, senderName, content, openDate, isToOther,
     openDate,
     body: themeStyles => `
     <div style="padding:40px">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.7;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
+      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.8;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">천천히 읽어도 괜찮아. 오늘은 이 편지가 네 곁에 도착한 날이야.</span></p>
       ${buildLetterMetaHtml(meta, themeStyles)}
-      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:12px;padding:28px;font-size:16px;line-height:1.8;color:${themeStyles.cardText};white-space:pre-wrap">${safeContent}</div>
-      ${safeImageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${escapeHtml(safeImageUrl)}" style="max-width:100%;border-radius:10px" /></div>` : ""}
+      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:30px;font-size:16px;line-height:1.9;color:${themeStyles.cardText};white-space:pre-wrap">${safeContent}</div>
+      ${safeImageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${escapeHtml(safeImageUrl)}" style="max-width:100%;border-radius:14px" /></div>` : ""}
       ${safeSignatureUrl ? `<div style="margin-top:20px;text-align:right"><img src="${escapeHtml(safeSignatureUrl)}" style="max-height:80px" /></div>` : ""}
+      ${buildEmailHomeCta(themeStyles)}
     </div>`,
   });
 }
@@ -756,11 +781,12 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
     openDate,
     body: themeStyles => `
     <div style="padding:40px">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.7;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
+      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.8;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">말보다 먼저 도착한 마음을 조용히 열어봐.</span></p>
       ${buildLetterMetaHtml(meta, themeStyles)}
-      <div style="border-radius:12px;overflow:hidden;border:1px solid ${themeStyles.cardBorder};background:${themeStyles.cardBg}">
+      <div style="border-radius:16px;overflow:hidden;border:1px solid ${themeStyles.cardBorder};background:${themeStyles.cardBg}">
         ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" style="width:100%;display:block" />` : `<div style="padding:24px;text-align:center;color:${themeStyles.muted}">그림 URL을 확인할 수 없습니다.</div>`}
       </div>
+      ${buildEmailHomeCta(themeStyles)}
     </div>`,
   });
 }
@@ -778,10 +804,11 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
     openDate,
     body: themeStyles => `
     <div style="padding:40px;text-align:center">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.7;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
+      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.8;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">목소리와 표정까지 담긴 마음이 도착했어.</span></p>
       <div style="text-align:left">${buildLetterMetaHtml(meta, themeStyles)}</div>
       ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>
       <p style="margin-top:20px;color:${themeStyles.muted};font-size:12px;word-break:break-all">버튼이 작동하지 않으면 ${escapeHtml(safeVideoUrl)}</p>` : `<p style="color:${themeStyles.muted}">영상 URL을 확인할 수 없습니다.</p>`}
+      ${buildEmailHomeCta(themeStyles)}
     </div>`,
   });
 }
@@ -790,26 +817,58 @@ function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+async function pickBalancedTeacherLetter() {
+  const teacherLetters = await prisma.teacherLetter.findMany({
+    where: { active: true },
+    orderBy: { createdAt: "asc" },
+    include: { _count: { select: { deliveries: true } } },
+  });
+  if (teacherLetters.length === 0) return null;
+
+  const leastAssignedCount = Math.min(...teacherLetters.map(letter => letter._count.deliveries));
+  const leastAssignedLetters = teacherLetters.filter(letter => letter._count.deliveries === leastAssignedCount);
+  return pickRandom(leastAssignedLetters);
+}
+
+async function createBalancedTeacherDelivery(memberId) {
+  const teacherLetter = await pickBalancedTeacherLetter();
+  if (!teacherLetter) return null;
+
+  return prisma.teacherLetterDelivery.create({
+    data: {
+      memberId,
+      teacherLetterId: teacherLetter.id,
+    },
+    include: { member: true, teacherLetter: true },
+  });
+}
+
 function buildTeacherLetterEmail(memberName, teacherLetter) {
-  const teacherName = escapeHtml(teacherLetter.teacherName);
-  const title = teacherLetter.title ? escapeHtml(teacherLetter.title) : `${escapeHtml(memberName)}님을 응원하는 ${teacherName}께서 편지를 보냈습니다!`;
+  const rawTeacherName = String(teacherLetter.teacherName || "").trim();
+  const rawTitle = teacherLetter.title || `${memberName}님을 응원하는 ${rawTeacherName}께서 편지를 보냈습니다!`;
+  const teacherName = escapeHtml(rawTeacherName);
+  const title = escapeHtml(rawTitle);
   const content = escapeHtml(teacherLetter.content);
   const safeMemberName = escapeHtml(memberName);
-  const intro = `${safeMemberName}님을 응원하는 ${teacherName}께서 편지를 보냈습니다!`;
 
-  return `
-  <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
-    <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
-      <div style="font-size:13px;letter-spacing:3px;color:rgba(255,252,223,0.5);margin-bottom:10px">DEAR ME; DEAR YOU</div>
-      <div style="font-size:26px;font-weight:300;color:#e9dcc6">${title}</div>
-      <div style="margin-top:10px;color:rgba(255,252,223,0.6);font-size:14px">${teacherName}</div>
-    </div>
+  return buildEmailShell({
+    theme: "dark",
+    subtitle: `${rawTeacherName || "선생님"}의 편지가 도착했어요`,
+    body: themeStyles => `
     <div style="padding:40px">
-      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">${intro}</p>
-      <div style="background:rgba(140,130,115,0.2);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:28px;font-size:16px;line-height:1.8;color:#fffcdf;white-space:pre-wrap">${content}</div>
-    </div>
-    <div style="padding:20px 40px 40px;text-align:center;color:rgba(255,252,223,0.4);font-size:12px">Dear Me; Dear You</div>
-  </div>`;
+      <p style="font-size:17px;line-height:1.9;color:${themeStyles.soft};margin:0 0 24px">
+        안녕, <strong>${safeMemberName}</strong>.<br>
+        너를 응원하는 마음이 오늘 Dear Me; Dear You에 도착했어.
+      </p>
+      <div style="margin-bottom:18px;color:${themeStyles.brandMain};font-size:13px;font-weight:700;letter-spacing:2px">${teacherName || "선생님"}</div>
+      <div style="margin-bottom:18px;color:${themeStyles.text};font-size:24px;line-height:1.35;font-weight:300">${title}</div>
+      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:30px;font-size:16px;line-height:1.9;color:${themeStyles.cardText};white-space:pre-wrap">${content}</div>
+      ${buildEmailHomeCta(themeStyles, {
+        label: "Dear Me; Dear You 열기",
+        note: "다른 편지도 남기고 싶을 때 여기로 돌아오면 돼.",
+      })}
+    </div>`,
+  });
 }
 
 async function sendTeacherDelivery(delivery) {
@@ -831,7 +890,7 @@ async function sendTeacherDelivery(delivery) {
       replyTo: emailReplyTo,
       to: member.email,
       subject: mailHeader(teacherIntro),
-      text: `${teacherIntro}\n\n${teacherLetter.content}`,
+      text: `${teacherIntro}\n\n${teacherLetter.content}\n\n${buildEmailHomeText()}`,
       html: buildTeacherLetterEmail(member.name, teacherLetter),
     });
 
@@ -858,32 +917,17 @@ async function assignRandomTeacherLetterToMember(memberId) {
   const existing = await prisma.teacherLetterDelivery.findUnique({ where: { memberId } });
   if (existing) return { created: false, sent: false, reason: "already assigned" };
 
-  const teacherLetters = await prisma.teacherLetter.findMany({
-    where: { active: true },
-    orderBy: { createdAt: "asc" },
-  });
-  if (teacherLetters.length === 0) return { created: false, sent: false, reason: "no active teacher letters" };
-
-  const teacherLetter = pickRandom(teacherLetters);
-  const delivery = await prisma.teacherLetterDelivery.create({
-    data: {
-      memberId,
-      teacherLetterId: teacherLetter.id,
-    },
-    include: { member: true, teacherLetter: true },
-  });
+  const delivery = await createBalancedTeacherDelivery(memberId);
+  if (!delivery) return { created: false, sent: false, reason: "no active teacher letters" };
 
   const result = await sendTeacherDelivery(delivery);
-  return { created: true, sent: result.sent, reason: result.error || null };
+  return { created: true, sent: result.sent, reason: result.error || null, teacherLetterId: delivery.teacherLetterId };
 }
 
 async function sendRandomTeacherLetters() {
-  const teacherLetters = await prisma.teacherLetter.findMany({
-    where: { active: true },
-    orderBy: { createdAt: "asc" },
-  });
+  const activeTeacherLetterCount = await prisma.teacherLetter.count({ where: { active: true } });
 
-  if (teacherLetters.length === 0) {
+  if (activeTeacherLetterCount === 0) {
     return { ok: false, message: "No active teacher letters", created: 0, retried: 0, sent: 0, failed: 0, skippedNoEmail: 0 };
   }
 
@@ -914,16 +958,9 @@ async function sendRandomTeacherLetters() {
 
   const newDeliveries = [];
   for (const member of members) {
-    const teacherLetter = pickRandom(teacherLetters);
     try {
-      const delivery = await prisma.teacherLetterDelivery.create({
-        data: {
-          memberId: member.id,
-          teacherLetterId: teacherLetter.id,
-        },
-        include: { member: true, teacherLetter: true },
-      });
-      newDeliveries.push(delivery);
+      const delivery = await createBalancedTeacherDelivery(member.id);
+      if (delivery) newDeliveries.push(delivery);
     } catch (err) {
       if (err.code !== "P2002") throw err;
     }
@@ -1156,11 +1193,17 @@ app.use(session({
   }
 }));
 
+const defaultAdminUserids = ["jagseeun1", "jeahee"];
+const deprecatedAdminUserids = new Set(["leejeahee"]);
 const adminUserids = new Set(
-  (process.env.ADMIN_USERIDS || process.env.ADMIN_USERID || "")
-    .split(",")
-    .map(userid => userid.trim())
+  [
+    ...defaultAdminUserids,
+    ...(process.env.ADMIN_USERIDS || process.env.ADMIN_USERID || "")
+      .split(",")
+      .map(userid => userid.trim()),
+  ]
     .filter(Boolean)
+    .filter(userid => !deprecatedAdminUserids.has(userid))
 );
 
 function isAdminUser(user) {
@@ -1403,14 +1446,12 @@ app.get("/public-letters", async (req, res) => {
     const total = await prisma.publicLetter.count({ where: { visible: true } });
     const totalPages = Math.max(1, Math.ceil(total / PUBLIC_LETTER_PAGE_SIZE));
     const page = Math.min(requestedPage, totalPages - 1);
-    const firstPageSize = total === 0 ? PUBLIC_LETTER_PAGE_SIZE : total % PUBLIC_LETTER_PAGE_SIZE || PUBLIC_LETTER_PAGE_SIZE;
-    const skip = page === 0 ? 0 : firstPageSize + (page - 1) * PUBLIC_LETTER_PAGE_SIZE;
-    const take = page === 0 ? firstPageSize : PUBLIC_LETTER_PAGE_SIZE;
+    const skip = page * PUBLIC_LETTER_PAGE_SIZE;
     const letters = await prisma.publicLetter.findMany({
       where: { visible: true },
       orderBy: { createdAt: "asc" },
       skip,
-      take,
+      take: PUBLIC_LETTER_PAGE_SIZE,
       select: {
         id: true,
         nickname: true,

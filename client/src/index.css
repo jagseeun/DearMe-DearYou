@@ -8946,8 +8946,9 @@ canvas {
   right: calc(22px + env(safe-area-inset-right));
   bottom: calc(20px + env(safe-area-inset-bottom));
   z-index: 8;
-  min-height: 34px;
-  padding: 0 14px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid rgba(232, 194, 138, 0.28);
   background:
@@ -8955,7 +8956,8 @@ canvas {
     rgba(25, 27, 31, 0.58);
   color: rgba(255, 242, 222, 0.82);
   font-family: inherit;
-  font-size: 12px;
+  font-size: 22px;
+  line-height: 1;
   cursor: pointer;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
   backdrop-filter: blur(16px);
@@ -9530,6 +9532,11 @@ canvas {
   color: rgba(255, 242, 222, 0.54);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.open-board-title-row h1.open-board-emoji-title {
+  font-size: clamp(38px, 4.2vw, 58px) !important;
+  line-height: 1 !important;
 }
 
 .open-board-controls {
