@@ -860,7 +860,7 @@ export default function LetterViewPage() {
   if (letter.locked) { navigate(returnTo || '/letters', { replace: true }); return null; }
   if (letter.type === 'call') { navigate(returnTo || '/letters', { replace: true }); return null; }
 
-  const isPink = true;
+  const isPink = letter.emailTheme === 'pink' || returnTo === '/pink-letters';
   const d = daysSince(letter.openDate);
   const dChars = ['D', '+', ...String(d).split('')];
 
