@@ -107,6 +107,7 @@ export default function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
   const [resending, setResending] = useState(false);
+  const [teacherTestSendingId, setTeacherTestSendingId] = useState(null);
   const [letterSending, setLetterSending] = useState(false);
   const [busyId, setBusyId] = useState(null);
   const [sendResult, setSendResult] = useState(null);
@@ -240,6 +241,21 @@ export default function AdminPage() {
       setMessage(err.message || '재발송 실패');
     } finally {
       setResending(false);
+    }
+  }
+
+  async function sendTeacherTest(letter) {
+    if (!window.confirm(`이 편지를 s2468@e-mirim.hs.kr로 테스트 발송할까요?`)) return;
+
+    setTeacherTestSendingId(letter.id);
+    setMessage('');
+    try {
+      const data = await fetchJsonWithTimeout(`/teacher-letters/${letter.id}/test-send`, { method: 'POST' }, 30000);
+      setMessage(data.message || '테스트 이메일을 보냈습니다.');
+    } catch (err) {
+      setMessage(err.message || '테스트 이메일 발송 실패');
+    } finally {
+      setTeacherTestSendingId(null);
     }
   }
 
@@ -576,8 +592,16 @@ export default function AdminPage() {
                       <button
                         type="button"
                         style={{ ...buttonStyle, minHeight: 34, padding: '0 12px', fontSize: 12 }}
+                        onClick={() => sendTeacherTest(letter)}
+                        disabled={teacherTestSendingId === letter.id}
+                      >
+                        {teacherTestSendingId === letter.id ? '테스트 발송 중...' : '테스트 발송'}
+                      </button>
+                      <button
+                        type="button"
+                        style={{ ...buttonStyle, minHeight: 34, padding: '0 12px', fontSize: 12 }}
                         onClick={() => startEditTeacherLetter(letter)}
-                        disabled={saving && editingTeacherId === letter.id}
+                        disabled={(saving && editingTeacherId === letter.id) || teacherTestSendingId === letter.id}
                       >
                         수정
                       </button>
