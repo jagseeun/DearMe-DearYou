@@ -1455,6 +1455,32 @@ canvas {
   border-radius: 14px !important;
 }
 
+.letter-content-wrap-draw {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.letter-draw-frame {
+  width: 100%;
+  aspect-ratio: 1000 / 480;
+  max-height: min(64vh, 560px);
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.24);
+}
+
+.letter-draw-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+  background: #fdf6e8;
+}
+
 .letter-content-text {
   overflow-wrap: anywhere;
   word-break: keep-all;
@@ -7997,6 +8023,16 @@ canvas {
     width: min(100%, 360px) !important;
     max-width: 360px !important;
     margin: 0 auto !important;
+  }
+
+  .letter-content-wrap-draw {
+    width: min(calc(100vw - 36px), 520px) !important;
+    max-width: min(calc(100vw - 36px), 520px) !important;
+  }
+
+  .letter-draw-frame {
+    max-height: min(52dvh, 360px) !important;
+    border-radius: 16px !important;
   }
 
   .letter-content-box {

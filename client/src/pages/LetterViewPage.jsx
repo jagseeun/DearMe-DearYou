@@ -1036,14 +1036,22 @@ export default function LetterViewPage() {
 
             <div className="letter-content-viewport">
               <motion.div
-                className="letter-content-wrap"
+                className={`letter-content-wrap ${letter.type === 'draw' ? 'letter-content-wrap-draw' : ''}`.trim()}
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease }}
-                style={{ width: '100%', maxWidth: letter.type === 'video' ? 1120 : 900 }}>
+                style={{ width: '100%', maxWidth: letter.type === 'video' ? 1120 : letter.type === 'draw' ? 1000 : 900 }}>
 
                 {letter.type === 'draw' ? (
-                  <div style={{ width: '100%', borderRadius: 24, overflow: 'hidden', boxShadow: '0 4px 40px rgba(0,0,0,0.3)', border: letterBoxBorder }}>
-                    <img src={letter.imageUrl} style={{ width: '100%', display: 'block' }} />
+                  <div
+                    className="letter-draw-frame"
+                    style={{
+                      border: letterBoxBorder,
+                      background: isPink
+                        ? 'linear-gradient(180deg, rgba(255,249,244,0.98), rgba(255,238,232,0.96))'
+                        : 'linear-gradient(180deg, rgba(255,253,247,0.98), rgba(255,246,231,0.96))',
+                    }}
+                  >
+                    <img className="letter-draw-image" src={letter.imageUrl} alt="그림 편지" />
                   </div>
                 ) : letter.type === 'text' ? (
                   <div className="letters-scroll letter-content-box" style={{
