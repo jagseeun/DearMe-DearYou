@@ -286,6 +286,10 @@ export default function OpenMailboxPage() {
     if (nextMode !== 'text') setContent('');
   }
 
+  function changeContent(value) {
+    setContent(value.slice(0, CONTENT_MAX_LENGTH));
+  }
+
   return (
     <motion.div
       className="open-mailbox-page"
@@ -373,8 +377,8 @@ export default function OpenMailboxPage() {
             >
               <button type="button" className="open-compose-close" onClick={closeComposer}>닫기</button>
               <div className="open-compose-heading">
-                <span>WRITE</span>
-                <h2>열린 편지 남기기</h2>
+                <h2>모두에게 전하는 편지</h2>
+                <span>모든 사람이 볼 수 있습니다.</span>
               </div>
 
               <form className="open-compose-form" onSubmit={submitLetter}>
@@ -405,7 +409,7 @@ export default function OpenMailboxPage() {
                       key="text"
                       className="open-compose-textarea"
                       value={content}
-                      onChange={event => setContent(event.target.value)}
+                      onChange={event => changeContent(event.target.value)}
                       maxLength={CONTENT_MAX_LENGTH}
                       placeholder="모두에게 남길 편지"
                       initial={{ opacity: 0, y: 8 }}
