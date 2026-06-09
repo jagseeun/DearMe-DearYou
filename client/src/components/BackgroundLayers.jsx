@@ -6,15 +6,17 @@ import PinkStars from './PinkStars.jsx';
 export const PINK_ROUTES = ['/letters', '/view-letter', '/pink-letters', '/letter-login'];
 const ease = [0.22, 1, 0.36, 1];
 
-const DARK_GRADIENT = `linear-gradient(to bottom,
-  #111214 0%, #181823 18%, #202b2b 38%, #3d3a48 58%,
-  #6f5f55 78%, #c4a374 100%)`;
+const DARK_GRADIENT = `
+  radial-gradient(circle at 18% 18%, rgba(211, 169, 116, 0.16) 0%, rgba(211, 169, 116, 0) 30%),
+  radial-gradient(circle at 78% 28%, rgba(126, 148, 176, 0.14) 0%, rgba(126, 148, 176, 0) 36%),
+  radial-gradient(circle at 54% 92%, rgba(196, 163, 116, 0.18) 0%, rgba(196, 163, 116, 0) 42%),
+  linear-gradient(to bottom, #101114 0%, #171820 22%, #20292a 42%, #3a3647 64%, #7b655f 84%, #c4a374 100%)`;
 
 const PINK_GRADIENT = `
-  radial-gradient(circle at 18% 16%, rgba(210, 143, 166, 0.24) 0%, rgba(210, 143, 166, 0) 31%),
-  radial-gradient(circle at 82% 24%, rgba(128, 86, 134, 0.28) 0%, rgba(128, 86, 134, 0) 34%),
-  radial-gradient(circle at 52% 84%, rgba(182, 101, 116, 0.2) 0%, rgba(182, 101, 116, 0) 40%),
-  linear-gradient(180deg, #1d1424 0%, #35223a 34%, #5b344e 66%, #8e5862 100%)`;
+  radial-gradient(circle at 18% 16%, rgba(226, 158, 186, 0.24) 0%, rgba(226, 158, 186, 0) 31%),
+  radial-gradient(circle at 82% 24%, rgba(156, 112, 166, 0.22) 0%, rgba(156, 112, 166, 0) 34%),
+  radial-gradient(circle at 50% 84%, rgba(202, 120, 136, 0.18) 0%, rgba(202, 120, 136, 0) 42%),
+  linear-gradient(180deg, #201629 0%, #3c2946 42%, #74465f 72%, #a76c76 100%)`;
 
 const layerStyle = {
   position: 'fixed',

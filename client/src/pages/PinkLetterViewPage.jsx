@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
-import PinkStars from '../components/PinkStars.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -81,7 +80,6 @@ export default function PinkLetterViewPage() {
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
       transition={{ duration: 0.6, ease }}
     >
-      <PinkStars />
       <PinkLetterLogo className="pink-letter-fixed-logo" />
 
       <div className="letter-list-shell compact">
