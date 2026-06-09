@@ -265,7 +265,7 @@ export default function OpenMailboxPage() {
       resetForm();
       setShowComposer(false);
       setMessage('');
-      await loadLetters(0);
+      await loadLetters(Math.max(0, Math.ceil((total + 1) / pageSize) - 1));
     } catch (err) {
       setMessage(err.message || '열린 편지를 저장하지 못했습니다.');
     } finally {
