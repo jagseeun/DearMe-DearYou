@@ -38,7 +38,7 @@ export default function BackgroundLayers() {
 
     if (!hasDreamCursor) {
       return () => {
-        document.body.classList.remove('dream-cursor-active', 'pink-cursor-active', 'dark-cursor-active');
+        document.body.classList.remove('dream-cursor-active', 'dream-cursor-drawing', 'pink-cursor-active', 'dark-cursor-active');
       };
     }
 
@@ -46,12 +46,16 @@ export default function BackgroundLayers() {
       document.documentElement.style.setProperty('--dream-cursor-x', `${event.clientX}px`);
       document.documentElement.style.setProperty('--dream-cursor-y', `${event.clientY}px`);
       document.body.classList.add('dream-cursor-active');
+      document.body.classList.toggle(
+        'dream-cursor-drawing',
+        Boolean(event.target?.closest?.('.draw-canvas, .open-draw-canvas'))
+      );
     };
 
     window.addEventListener('pointermove', moveGlow, { passive: true });
     return () => {
       window.removeEventListener('pointermove', moveGlow);
-      document.body.classList.remove('dream-cursor-active', 'pink-cursor-active', 'dark-cursor-active');
+      document.body.classList.remove('dream-cursor-active', 'dream-cursor-drawing', 'pink-cursor-active', 'dark-cursor-active');
     };
   }, [hasDreamCursor, isPink]);
 
