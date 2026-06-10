@@ -313,6 +313,7 @@ export default function WritePage() {
   const [drawCanvasEl, setDrawCanvasEl] = useState(null);
   const [drawHasDrawn, setDrawHasDrawn] = useState(false);
   const [drawUploading, setDrawUploading] = useState(false);
+  const [drawDraftImageUrl, setDrawDraftImageUrl] = useState('');
 
   // 서명
   const [signatureData, setSignatureData] = useState(null);
@@ -331,6 +332,9 @@ export default function WritePage() {
   const [toOther, setToOther] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [recipientName, setRecipientName] = useState('');
+  const [draft, setDraft] = useState(null);
+  const [draftSaving, setDraftSaving] = useState(false);
+  const [draftMessage, setDraftMessage] = useState('');
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -342,6 +346,18 @@ export default function WritePage() {
     fetch('/get-user-info')
       .then(r => { if (r.status === 401) { navigate('/login'); return null; } return r.json(); })
       .then(d => { if (!d) return; if (d.email) setEmail(d.email); if (d.name) setName(d.name); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch('/letter-draft')
+      .then(r => {
+        if (r.status === 401) return null;
+        return r.json();
+      })
+      .then(data => {
+        if (data?.draft) setDraft(data.draft);
+      })
       .catch(() => {});
   }, []);
 
@@ -418,6 +434,7 @@ export default function WritePage() {
 
   function handleModeSwitch(m) {
     setMode(m);
+    if (m !== 'draw') setDrawDraftImageUrl('');
     if (m === 'text' && streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
@@ -504,6 +521,80 @@ export default function WritePage() {
       if (!put.ok) throw new Error();
       return publicUrl;
     } finally { setDrawUploading(false); }
+  }
+
+  function applyDraft(nextDraft) {
+    if (!nextDraft) return;
+    const nextMode = ['text', 'video', 'draw'].includes(nextDraft.type) ? nextDraft.type : 'text';
+    setMode(nextMode);
+    setText(nextDraft.content || '');
+    setVideoUrl(nextDraft.videoUrl || '');
+    setImageUrl(nextMode === 'text' ? (nextDraft.imageUrl || '') : '');
+    setDrawDraftImageUrl(nextMode === 'draw' ? (nextDraft.imageUrl || '') : '');
+    setSignatureData(nextDraft.signatureData || null);
+    setEmail(nextDraft.deliveryEmail || email);
+    setEmailTheme(nextDraft.emailTheme || 'dark');
+    setToOther(Boolean(nextDraft.toOther));
+    setRecipientName(nextDraft.recipientName || '');
+    setRecipientEmail(nextDraft.recipientEmail || '');
+    setOpenDate(nextDraft.openDate ? new Date(nextDraft.openDate).toISOString().split('T')[0] : defaultOpenDate());
+    setSendNow(false);
+    setStage(nextMode === 'video' && nextDraft.videoUrl ? 'done' : 'idle');
+    setDrawHasDrawn(Boolean(nextMode === 'draw' && nextDraft.imageUrl));
+    setDraftMessage('임시저장을 불러왔어요.');
+  }
+
+  async function saveDraft() {
+    setDraftSaving(true);
+    setDraftMessage('');
+    try {
+      let draftImageUrl = mode === 'draw' ? (drawDraftImageUrl || undefined) : (imageUrl || undefined);
+      if (mode === 'draw' && drawHasDrawn && drawCanvasEl) {
+        draftImageUrl = await uploadCanvas();
+      }
+
+      const res = await fetch('/letter-draft', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: mode,
+          content: mode === 'text' ? text : '',
+          videoUrl: mode === 'video' ? videoUrl || undefined : undefined,
+          imageUrl: mode === 'text' ? imageUrl || undefined : mode === 'draw' ? draftImageUrl : undefined,
+          signatureData: mode === 'text' ? signatureData || undefined : undefined,
+          openDate,
+          emailTheme,
+          deliveryEmail: email.trim().toLowerCase(),
+          toOther,
+          recipientEmail: toOther ? recipientEmail.trim().toLowerCase() : '',
+          recipientName: toOther ? recipientName.trim() : '',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || '임시저장에 실패했습니다.');
+      setDraft(data.draft);
+      setDraftMessage(data.message || '임시저장했습니다.');
+    } catch (err) {
+      setDraftMessage(err.message || '임시저장에 실패했습니다.');
+    } finally {
+      setDraftSaving(false);
+    }
+  }
+
+  async function deleteDraft() {
+    setDraftSaving(true);
+    setDraftMessage('');
+    try {
+      const res = await fetch('/letter-draft', { method: 'DELETE' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || '임시저장을 삭제하지 못했습니다.');
+      setDraft(null);
+      setDraftMessage(data.message || '임시저장을 삭제했습니다.');
+    } catch (err) {
+      setDraftMessage(err.message || '임시저장을 삭제하지 못했습니다.');
+    } finally {
+      setDraftSaving(false);
+    }
   }
 
   async function handleFromMe() {
@@ -765,6 +856,22 @@ export default function WritePage() {
               </button>
             ))}
           </div>
+          <div className="write-draft-actions">
+            <button type="button" onClick={saveDraft} disabled={draftSaving || drawUploading}>
+              {draftSaving ? '저장 중...' : '임시저장'}
+            </button>
+            {draft && (
+              <>
+                <button type="button" onClick={() => applyDraft(draft)} disabled={draftSaving}>
+                  불러오기
+                </button>
+                <button type="button" onClick={deleteDraft} disabled={draftSaving}>
+                  초안 삭제
+                </button>
+              </>
+            )}
+            {draftMessage && <span>{draftMessage}</span>}
+          </div>
         </motion.div>
 
         {/* 모드 콘텐츠 */}
@@ -822,7 +929,7 @@ export default function WritePage() {
               className="write-stage write-stage-draw"
               style={{ marginBottom: 20 }}
             >
-              <DrawCanvas onHasDrawn={setDrawHasDrawn} onCanvasReady={setDrawCanvasEl} />
+              <DrawCanvas initialImageUrl={mode === 'draw' ? drawDraftImageUrl : ''} onHasDrawn={setDrawHasDrawn} onCanvasReady={setDrawCanvasEl} />
             </motion.div>
           ) : (
             cameraUI
