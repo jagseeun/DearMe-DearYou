@@ -42,19 +42,30 @@ export default function BackgroundLayers() {
       };
     }
 
-    const moveGlow = event => {
-      document.documentElement.style.setProperty('--dream-cursor-x', `${event.clientX}px`);
-      document.documentElement.style.setProperty('--dream-cursor-y', `${event.clientY}px`);
+    let frame = 0;
+    let latestPointer = null;
+
+    const applyGlow = () => {
+      frame = 0;
+      if (!latestPointer) return;
+      document.documentElement.style.setProperty('--dream-cursor-x', `${latestPointer.clientX}px`);
+      document.documentElement.style.setProperty('--dream-cursor-y', `${latestPointer.clientY}px`);
       document.body.classList.add('dream-cursor-active');
       document.body.classList.toggle(
         'dream-cursor-drawing',
-        Boolean(event.target?.closest?.('.draw-canvas, .open-draw-canvas'))
+        Boolean(latestPointer.target?.closest?.('.draw-canvas, .open-draw-canvas'))
       );
+    };
+
+    const moveGlow = event => {
+      latestPointer = { clientX: event.clientX, clientY: event.clientY, target: event.target };
+      if (!frame) frame = requestAnimationFrame(applyGlow);
     };
 
     window.addEventListener('pointermove', moveGlow, { passive: true });
     return () => {
       window.removeEventListener('pointermove', moveGlow);
+      if (frame) cancelAnimationFrame(frame);
       document.body.classList.remove('dream-cursor-active', 'dream-cursor-drawing', 'pink-cursor-active', 'dark-cursor-active');
     };
   }, [hasDreamCursor, isPink]);
@@ -96,8 +107,12 @@ export default function BackgroundLayers() {
         animate={{ opacity: hasDreamCursor ? 1 : 0 }}
         transition={{ duration: 0.35, ease }}
       >
-        <span className="cursor-heart cursor-heart-main" />
-        <span className="cursor-heart cursor-heart-small" />
+        <svg className="cursor-heart cursor-heart-main" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 21.2 10.55 19.9C5.4 15.25 2 12.18 2 8.4 2 5.32 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08A5.9 5.9 0 0 1 16.5 3C19.58 3 22 5.32 22 8.4c0 3.78-3.4 6.85-8.55 11.5L12 21.2Z" />
+        </svg>
+        <svg className="cursor-heart cursor-heart-small" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 21.2 10.55 19.9C5.4 15.25 2 12.18 2 8.4 2 5.32 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08A5.9 5.9 0 0 1 16.5 3C19.58 3 22 5.32 22 8.4c0 3.78-3.4 6.85-8.55 11.5L12 21.2Z" />
+        </svg>
       </motion.div>
     </>
   );

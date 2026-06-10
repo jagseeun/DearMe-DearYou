@@ -11217,44 +11217,26 @@ canvas {
   display: block;
   width: var(--heart-size, 14px);
   height: var(--heart-size, 14px);
-  background: var(--heart-color, var(--cursor-heart-main));
-  border-radius: 30% 30% 12% 12%;
-  transform: rotate(-45deg);
-}
-
-.cursor-heart::before,
-.cursor-heart::after {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: inherit;
-}
-
-.cursor-heart::before {
-  top: -50%;
-  left: 0;
-}
-
-.cursor-heart::after {
-  top: 0;
-  left: 50%;
+  fill: var(--heart-color, var(--cursor-heart-main));
+  transform: rotate(-8deg);
+  transform-origin: 50% 55%;
+  overflow: visible;
 }
 
 .cursor-heart-main {
-  --heart-size: 18px;
+  --heart-size: 19px;
   --heart-color: var(--cursor-heart-main);
-  left: 8px;
-  top: 10px;
+  left: 7px;
+  top: 8px;
 }
 
 .cursor-heart-small {
   --heart-size: 11px;
   --heart-color: var(--cursor-heart-sub);
   left: 25px;
-  top: 5px;
+  top: 4px;
   opacity: 0.96;
+  transform: rotate(12deg);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -11350,4 +11332,46 @@ canvas {
     0 0 30px rgba(174, 154, 226, 0.18),
     0 18px 42px rgba(8, 12, 28, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+/* Final letter-list scroll lock: the page stays fixed, only the list area scrolls. */
+.pink-letter-list-page,
+.letters-main-page {
+  height: 100dvh !important;
+  min-height: 100dvh !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+}
+
+.pink-letter-list-page .letter-list-shell.compact,
+.letters-main-page .letters-main-shell {
+  height: 100dvh !important;
+  min-height: 0 !important;
+  max-height: 100dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.pink-letter-list-page .letter-list-action-row,
+.letters-main-page .letter-list-header {
+  flex: 0 0 auto !important;
+}
+
+.pink-letter-list-page .letter-scroll,
+.letters-main-page .letter-scroll {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+}
+
+.pink-letter-list-page .letter-empty,
+.letters-main-page .letter-empty {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
 }
