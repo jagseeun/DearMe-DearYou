@@ -31,7 +31,6 @@ const PUBLIC_LETTER_NICKNAME_MAX_LENGTH = 12;
 const PUBLIC_LETTER_PAGE_SIZE = 8;
 const PUBLIC_LETTER_PIN_REGEX = /^\d{4}$/;
 const SUPPORT_MESSAGE_CONTENT_MAX_LENGTH = 200;
-const SUPPORT_MESSAGE_NAME_MAX_LENGTH = 20;
 const URL_MAX_LENGTH = 2048;
 const MAIL_SEND_TIMEOUT_MS = Number(process.env.MAIL_SEND_TIMEOUT_MS || 20000);
 const ALLOWED_LETTER_TYPES = new Set(["text", "video", "draw"]);
@@ -1441,12 +1440,8 @@ app.get("/support-info", (_req, res) => {
 
 app.post("/support-messages", writeLimiter, async (req, res) => {
   const sessionUser = req.session.user || null;
-  const name = normalizePublicText(req.body.name || sessionUser?.name || "");
   const content = normalizePublicText(req.body.content || "");
 
-  if (name && name.length > SUPPORT_MESSAGE_NAME_MAX_LENGTH) {
-    return res.status(400).json({ message: `이름은 ${SUPPORT_MESSAGE_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  }
   if (!content) return res.status(400).json({ message: "남기고 싶은 마음을 입력해주세요." });
   if (content.length > SUPPORT_MESSAGE_CONTENT_MAX_LENGTH) {
     return res.status(400).json({ message: `남길 수 있는 글은 ${SUPPORT_MESSAGE_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
@@ -1455,7 +1450,7 @@ app.post("/support-messages", writeLimiter, async (req, res) => {
   try {
     const message = await prisma.supportMessage.create({
       data: {
-        name: name || sessionUser?.name || null,
+        name: sessionUser?.name || null,
         userid: sessionUser?.userid || null,
         email: sessionUser?.email || null,
         content,
