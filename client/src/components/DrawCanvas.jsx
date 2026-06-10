@@ -17,8 +17,8 @@ const BRUSH_SIZES = [
 
 const CANVAS_BG = '#fdf6e8';
 const MAX_HISTORY = 50;
-const DRAW_WIDTH = 1400;
-const DRAW_HEIGHT = 672;
+const DRAW_WIDTH = 1440;
+const DRAW_HEIGHT = 1080;
 
 export default function DrawCanvas({ onHasDrawn, onCanvasReady }) {
   const canvasRef = useRef(null);

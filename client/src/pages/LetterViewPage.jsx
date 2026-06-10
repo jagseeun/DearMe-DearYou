@@ -1034,7 +1034,7 @@ export default function LetterViewPage() {
 
             <div className="letter-content-viewport">
               <motion.div
-                className={`letter-content-wrap ${letter.type === 'draw' ? 'letter-content-wrap-draw' : ''}`.trim()}
+                className={`letter-content-wrap ${letter.type === 'draw' ? 'letter-content-wrap-draw' : letter.type === 'video' ? 'letter-content-wrap-video' : ''}`.trim()}
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease }}
                 style={{ width: '100%', maxWidth: letter.type === 'video' ? 1480 : letter.type === 'draw' ? 1680 : 1120 }}>
@@ -1082,7 +1082,7 @@ export default function LetterViewPage() {
                     )}
                   </div>
                 ) : (
-                  <div style={{ width: '100%', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 44px rgba(0,0,0,0.24)', background: '#080808' }}>
+                  <div className="letter-video-frame" style={{ width: '100%', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 44px rgba(0,0,0,0.24)', background: '#080808' }}>
                     <video src={letter.videoUrl} controls playsInline style={{ width: '100%', height: 'min(76vh, 800px)', minHeight: 'min(480px, 62vh)', objectFit: 'contain', display: 'block', background: '#080808' }} />
                   </div>
                 )}

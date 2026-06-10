@@ -11506,3 +11506,101 @@ canvas {
 .open-letter-modal img {
   max-height: min(62vh, 540px) !important;
 }
+
+/* Stable 4:3 media frames for draw and video. */
+.draw-editor.draw-editor-clean .draw-canvas-wrap,
+.draw-editor.draw-editor-clean .draw-canvas,
+.letter-draw-frame,
+.letter-video-frame,
+.open-draw-canvas {
+  aspect-ratio: 4 / 3 !important;
+}
+
+@media (min-width: 761px) {
+  .write-stage.write-camera-stage,
+  .write-stage.write-stage-draw {
+    width: min(1280px, calc(100vw - 72px)) !important;
+    max-width: min(1280px, calc(100vw - 72px)) !important;
+  }
+
+  .write-stage.write-camera-stage {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    --write-video-frame-height: auto;
+    --write-video-frame-min-height: 0;
+  }
+
+  .write-stage.write-camera-stage > .write-video-frame,
+  .write-stage.write-camera-stage > div.write-video-frame:last-child {
+    width: min(1120px, 100%) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 4 / 3 !important;
+    flex: 0 0 auto !important;
+    margin: 0 auto !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean {
+    width: min(1280px, 100%) !important;
+    max-width: min(1280px, 100%) !important;
+    grid-template-columns: minmax(0, 1fr) 156px !important;
+    gap: 16px !important;
+    align-items: center !important;
+    margin: 0 auto !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas-wrap,
+  .write-stage.write-stage-draw .draw-canvas-wrap {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas,
+  .write-stage.write-stage-draw .draw-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .letter-view-root .letter-content-wrap-draw,
+  .letter-view-root .letter-content-wrap-video {
+    width: min(1120px, calc(100vw - 96px)) !important;
+    max-width: min(1120px, calc(100vw - 96px)) !important;
+  }
+
+  .letter-view-root .letter-draw-frame,
+  .letter-view-root .letter-video-frame {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .letter-view-root .letter-video-frame video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .draw-editor.draw-editor-clean .draw-canvas-wrap {
+    height: auto !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .draw-editor.draw-editor-clean .draw-canvas {
+    height: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .letter-draw-frame {
+    aspect-ratio: 4 / 3 !important;
+  }
+}
