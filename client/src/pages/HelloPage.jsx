@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 
@@ -29,9 +29,11 @@ const questions = [
 
 export default function HelloPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [qIdx, setQIdx] = useState(0);
+  const [deliveryNotice, setDeliveryNotice] = useState(location.state?.deliveryNotice || null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -59,6 +61,18 @@ export default function HelloPage() {
     const t = setInterval(() => setQIdx(i => (i + 1) % questions.length), 4000);
     return () => clearInterval(t);
   }, []);
+
+  useEffect(() => {
+    if (!location.state?.deliveryNotice) return;
+    setDeliveryNotice(location.state.deliveryNotice);
+    navigate('/hello', { replace: true });
+  }, [location.state, navigate]);
+
+  useEffect(() => {
+    if (!deliveryNotice) return undefined;
+    const timer = setTimeout(() => setDeliveryNotice(null), 4200);
+    return () => clearTimeout(timer);
+  }, [deliveryNotice]);
 
   function openProfileModal() {
     setDraftName(name || '');
@@ -248,6 +262,24 @@ export default function HelloPage() {
       >
         개발자에게 마음 전하기
       </motion.button>
+
+      <AnimatePresence>
+        {deliveryNotice && (
+          <motion.div
+            className={`hello-delivery-toast ${deliveryNotice.kind === 'failed' ? 'is-failed' : ''}`}
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+            transition={{ duration: 0.32, ease }}
+          >
+            <div>
+              <strong>{deliveryNotice.title}</strong>
+              <span>{deliveryNotice.message}</span>
+            </div>
+            <button type="button" onClick={() => setDeliveryNotice(null)}>확인</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* 이름/이메일 변경 모달 */}
       <AnimatePresence>

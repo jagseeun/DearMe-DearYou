@@ -652,9 +652,6 @@ export default function WritePage() {
       });
       const data = await res.json();
       if (res.ok) {
-        if (isImmediateDelivery && data.delivery && data.delivery.sent === 0) {
-          alert(data.delivery.message || '편지는 저장됐지만 이메일 발송은 실패했습니다. 관리자에서 다시 발송해주세요.');
-        }
         navigate('/done', {
           state: {
             openDate: effectiveOpenDate,
@@ -857,9 +854,6 @@ export default function WritePage() {
             ))}
           </div>
           <div className="write-draft-actions">
-            <button type="button" onClick={saveDraft} disabled={draftSaving || drawUploading}>
-              {draftSaving ? '저장 중...' : '임시저장'}
-            </button>
             {draft && (
               <>
                 <button type="button" onClick={() => applyDraft(draft)} disabled={draftSaving}>
@@ -944,10 +938,23 @@ export default function WritePage() {
         </AnimatePresence>
 
         {/* 저장 버튼 */}
-        <motion.button variants={item} whileHover={{ translateY: -2, boxShadow: '0 0 28px rgba(232,194,138,0.32), 0 18px 42px rgba(0,0,0,0.24)' }} onClick={handleFromMe}
-          className="write-submit">
-          보내기
-        </motion.button>
+        <motion.div variants={item} className="write-action-row">
+          <button
+            type="button"
+            onClick={saveDraft}
+            disabled={draftSaving || drawUploading}
+            className="write-draft-save"
+          >
+            {draftSaving ? '저장 중...' : '임시 저장'}
+          </button>
+          <motion.button
+            whileHover={{ translateY: -2, boxShadow: '0 0 28px rgba(232,194,138,0.32), 0 18px 42px rgba(0,0,0,0.24)' }}
+            onClick={handleFromMe}
+            className="write-submit"
+          >
+            보내기
+          </motion.button>
+        </motion.div>
       </div>
 
       {/* ── 카메라 촬영 모달 ── */}
