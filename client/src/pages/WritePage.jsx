@@ -588,7 +588,7 @@ export default function WritePage() {
       className="write-stage write-camera-stage"
       initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.35, ease }}
-      style={{ width: 'min(1120px, calc(100vw - 48px))', marginBottom: 24 }}
+      style={{ width: 'min(1320px, calc(100vw - 64px))', marginBottom: 24 }}
     >
       <div className="write-video-frame" style={{
         width: '100%',

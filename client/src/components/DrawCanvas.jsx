@@ -17,6 +17,8 @@ const BRUSH_SIZES = [
 
 const CANVAS_BG = '#fdf6e8';
 const MAX_HISTORY = 50;
+const DRAW_WIDTH = 1400;
+const DRAW_HEIGHT = 672;
 
 export default function DrawCanvas({ onHasDrawn, onCanvasReady }) {
   const canvasRef = useRef(null);
@@ -144,8 +146,8 @@ export default function DrawCanvas({ onHasDrawn, onCanvasReady }) {
       <div className="draw-canvas-wrap">
         <canvas
           ref={canvasRef}
-          width={1000}
-          height={480}
+          width={DRAW_WIDTH}
+          height={DRAW_HEIGHT}
           className="draw-canvas"
           style={{ cursor: tool === 'eraser' ? 'cell' : 'crosshair' }}
           onMouseDown={onDown}
