@@ -1037,7 +1037,7 @@ export default function LetterViewPage() {
                 className={`letter-content-wrap ${letter.type === 'draw' ? 'letter-content-wrap-draw' : ''}`.trim()}
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease }}
-                style={{ width: '100%', maxWidth: letter.type === 'video' ? 1120 : letter.type === 'draw' ? 1000 : 900 }}>
+                style={{ width: '100%', maxWidth: letter.type === 'video' ? 1360 : letter.type === 'draw' ? 1280 : 1080 }}>
 
                 {letter.type === 'draw' ? (
                   <div
@@ -1053,14 +1053,14 @@ export default function LetterViewPage() {
                   </div>
                 ) : letter.type === 'text' ? (
                   <div className="letters-scroll letter-content-box" style={{
-                    width: '100%', minHeight: 320, maxHeight: '58vh',
+                    width: '100%', minHeight: 360, maxHeight: '66vh',
                     background: letterBoxBg,
                     border: letterBoxBorder,
                     borderRadius: 24, backdropFilter: 'blur(16px)',
-                    padding: '44px 56px', overflowY: 'auto',
+                    padding: '52px 64px', overflowY: 'auto',
                     boxShadow: isPink ? '0 0 34px rgba(218,157,176,0.14), 0 18px 44px rgba(21,12,25,0.26)' : '0 4px 40px rgba(0,0,0,0.1)',
                   }}>
-                    <p className="letter-content-text" style={{ color: textMain, fontSize: 22, fontWeight: 300, lineHeight: 2.2, whiteSpace: 'pre-wrap', margin: 0, letterSpacing: 0.4 }}>
+                    <p className="letter-content-text" style={{ color: textMain, fontSize: 24, fontWeight: 300, lineHeight: 2.15, whiteSpace: 'pre-wrap', margin: 0, letterSpacing: 0.4 }}>
                       {letter.content}
                     </p>
 
@@ -1083,7 +1083,7 @@ export default function LetterViewPage() {
                   </div>
                 ) : (
                   <div style={{ width: '100%', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 44px rgba(0,0,0,0.24)', background: '#080808' }}>
-                    <video src={letter.videoUrl} controls playsInline style={{ width: '100%', height: 'min(72vh, 720px)', minHeight: 'min(420px, 58vh)', objectFit: 'contain', display: 'block', background: '#080808' }} />
+                    <video src={letter.videoUrl} controls playsInline style={{ width: '100%', height: 'min(76vh, 800px)', minHeight: 'min(480px, 62vh)', objectFit: 'contain', display: 'block', background: '#080808' }} />
                   </div>
                 )}
               </motion.div>

@@ -11405,3 +11405,96 @@ canvas {
   flex: 1 1 auto !important;
   min-height: 0 !important;
 }
+
+/* Desktop scale and drawing-ratio lock. */
+@media (min-width: 761px) {
+  .write-layout {
+    width: min(1440px, calc(100vw - 88px)) !important;
+    height: calc(100dvh - 120px) !important;
+    max-height: calc(100dvh - 120px) !important;
+  }
+
+  .write-stage.write-stage-text > .write-paper {
+    width: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .write-stage.write-stage-text .write-textarea {
+    font-size: clamp(20px, 1.45vw, 26px) !important;
+    line-height: 1.85 !important;
+    padding: clamp(34px, 4.2vw, 58px) !important;
+  }
+
+  .write-stage.write-camera-stage {
+    --write-video-frame-height: min(74dvh, 800px);
+    --write-video-frame-min-height: min(500px, 62dvh);
+    width: min(1440px, calc(100vw - 88px)) !important;
+    max-width: 100% !important;
+  }
+
+  .write-stage.write-camera-stage > .write-video-frame,
+  .write-stage.write-camera-stage > div.write-video-frame:last-child {
+    height: var(--write-video-frame-height) !important;
+    min-height: var(--write-video-frame-min-height) !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 176px !important;
+    gap: 16px !important;
+    align-items: center !important;
+    height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .write-stage.write-stage-draw .draw-canvas-wrap {
+    width: min(100%, calc((100dvh - 252px) * 2.083333)) !important;
+    height: auto !important;
+    aspect-ratio: 125 / 60 !important;
+    justify-self: center !important;
+    align-self: center !important;
+    flex: 0 0 auto !important;
+  }
+
+  .write-stage.write-stage-draw .draw-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 125 / 60 !important;
+  }
+
+  .write-stage.write-stage-draw .draw-toolbar {
+    align-self: center !important;
+    max-height: min(74dvh, 680px) !important;
+  }
+
+  .letter-view-root .letter-content-viewport {
+    padding: 72px min(6vw, 96px) 36px !important;
+  }
+
+  .letter-view-root .letter-draw-frame {
+    aspect-ratio: 125 / 60 !important;
+    max-height: min(76vh, 720px) !important;
+  }
+
+  .letter-view-root .letter-content-box {
+    max-height: 66vh !important;
+  }
+}
+
+.open-draw-wrap {
+  width: 100% !important;
+}
+
+.open-compose-media {
+  min-height: 0 !important;
+}
+
+.open-draw-canvas {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 4 / 3 !important;
+}
+
+.open-letter-modal img {
+  max-height: min(62vh, 540px) !important;
+}

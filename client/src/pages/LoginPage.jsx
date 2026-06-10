@@ -44,7 +44,7 @@ export default function LoginPage() {
         <span className="from">Dear You</span>
       </motion.h1>
 
-      <motion.p variants={item} className="home-subtitle">나와 너에게 남기는 편지</motion.p>
+      <motion.p variants={item} className="home-subtitle">오늘의 마음을 나와 친구에게 전하는 편지</motion.p>
 
       <motion.form
         className="form-container"

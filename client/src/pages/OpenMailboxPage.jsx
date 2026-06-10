@@ -6,6 +6,8 @@ import { fetchJson } from '../utils/api.js';
 const ease = [0.22, 1, 0.36, 1];
 const CONTENT_MAX_LENGTH = 100;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const OPEN_DRAW_WIDTH = 960;
+const OPEN_DRAW_HEIGHT = 720;
 const modes = [
   { key: 'text', label: '텍스트' },
   { key: 'draw', label: '그림' },
@@ -36,14 +38,12 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
-    const width = Math.max(1, canvas.clientWidth || canvas.getBoundingClientRect().width);
-    const height = Math.max(1, canvas.clientHeight || canvas.getBoundingClientRect().height);
-    canvas.width = Math.floor(width * dpr);
-    canvas.height = Math.floor(height * dpr);
+    canvas.width = Math.floor(OPEN_DRAW_WIDTH * dpr);
+    canvas.height = Math.floor(OPEN_DRAW_HEIGHT * dpr);
     const ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = '#fffaf0';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, OPEN_DRAW_WIDTH, OPEN_DRAW_HEIGHT);
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -60,13 +60,11 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
     const borderBottom = parseFloat(styles.borderBottomWidth) || 0;
     const contentWidth = Math.max(1, rect.width - borderLeft - borderRight);
     const contentHeight = Math.max(1, rect.height - borderTop - borderBottom);
-    const drawingWidth = Math.max(1, canvas.clientWidth || contentWidth);
-    const drawingHeight = Math.max(1, canvas.clientHeight || contentHeight);
-    const x = ((event.clientX - rect.left - borderLeft) / contentWidth) * drawingWidth;
-    const y = ((event.clientY - rect.top - borderTop) / contentHeight) * drawingHeight;
+    const x = ((event.clientX - rect.left - borderLeft) / contentWidth) * OPEN_DRAW_WIDTH;
+    const y = ((event.clientY - rect.top - borderTop) / contentHeight) * OPEN_DRAW_HEIGHT;
     return {
-      x: Math.min(Math.max(x, 0), drawingWidth),
-      y: Math.min(Math.max(y, 0), drawingHeight),
+      x: Math.min(Math.max(x, 0), OPEN_DRAW_WIDTH),
+      y: Math.min(Math.max(y, 0), OPEN_DRAW_HEIGHT),
     };
   }
 
@@ -104,11 +102,9 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
   function clear() {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const width = Math.max(1, canvas.clientWidth || canvas.getBoundingClientRect().width);
-    const height = Math.max(1, canvas.clientHeight || canvas.getBoundingClientRect().height);
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#fffaf0';
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, OPEN_DRAW_WIDTH, OPEN_DRAW_HEIGHT);
     onDrawn(false);
   }
 
