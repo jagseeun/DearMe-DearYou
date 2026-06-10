@@ -47,20 +47,20 @@ model Letter {
 }
 
 model LetterDraft {
-  id            Int       @id @default(autoincrement())
-  type          String    @default("text")
-  content       String?
-  videoUrl      String?
-  imageUrl      String?
-  signatureData String?
-  deliveryEmail String?
-  emailTheme    String    @default("dark")
+  id             Int       @id @default(autoincrement())
+  type           String    @default("text")
+  content        String?
+  videoUrl       String?
+  imageUrl       String?
+  signatureData  String?
+  deliveryEmail  String?
+  emailTheme     String    @default("dark")
   recipientEmail String?
-  recipientName String?
-  toOther       Boolean   @default(false)
-  openDate      DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  recipientName  String?
+  toOther        Boolean   @default(false)
+  openDate       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   author   Member @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId Int    @unique
@@ -100,4 +100,15 @@ model PublicLetter {
   pinHash   String?
   createdAt DateTime @default(now())
   visible   Boolean  @default(true)
+}
+
+model SupportMessage {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  userid    String?
+  email     String?
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

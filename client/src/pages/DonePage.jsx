@@ -9,7 +9,6 @@ export default function DonePage() {
   const navigate = useNavigate();
   const { openDate, name, recipientName, recipientEmail, sentNow, delivery } = useLocation().state || {};
   const [phase, setPhase] = useState(sentNow ? 'envelope' : 'seal');
-  const [supportEmail, setSupportEmail] = useState('');
 
   useEffect(() => {
     if (!openDate) navigate('/login', { replace: true });
@@ -20,13 +19,6 @@ export default function DonePage() {
     const timer = setTimeout(() => navigate('/hello', { replace: true }), 6200);
     return () => clearTimeout(timer);
   }, [phase, navigate]);
-
-  useEffect(() => {
-    fetch('/support-info')
-      .then(r => r.json())
-      .then(data => setSupportEmail(data.developerEmail || ''))
-      .catch(() => {});
-  }, []);
 
   if (!openDate) return null;
 
@@ -174,17 +166,16 @@ export default function DonePage() {
                 </motion.div>
               )}
 
-              {supportEmail && (
-                <motion.a
+              <motion.button
+                  type="button"
                   className="done-support-link"
-                  href={`mailto:${supportEmail}?subject=${encodeURIComponent('Dear Me ; Dear You 응원 메시지')}`}
+                  onClick={() => navigate('/support')}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, delay: 0.65, ease }}
                 >
                   개발자에게 응원 보내기
-                </motion.a>
-              )}
+                </motion.button>
 
             </div>
           </motion.div>
