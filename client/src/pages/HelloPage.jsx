@@ -34,6 +34,7 @@ export default function HelloPage() {
   const [qIdx, setQIdx] = useState(0);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [draftName, setDraftName] = useState('');
   const [draftEmail, setDraftEmail] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -131,7 +132,10 @@ export default function HelloPage() {
   }
 
   function handleLogout() {
-    if (!window.confirm('정말 로그아웃할까요?')) return;
+    setShowLogoutModal(true);
+  }
+
+  function confirmLogout() {
     window.location.href = '/logout';
   }
 
@@ -341,6 +345,39 @@ export default function HelloPage() {
                   onClick={handlePasswordSave} disabled={passwordSaving}
                   style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.25s', opacity: passwordSaving ? 0.6 : 1 }}>
                   {passwordSaving ? '변경 중...' : '변경'}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showLogoutModal && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="modal-backdrop"
+            onClick={e => { if (e.target === e.currentTarget) setShowLogoutModal(false); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }}
+              transition={{ duration: 0.35, ease }}
+              className="modal-panel"
+            >
+              <div style={{ fontSize: 28, fontWeight: 400, color: '#e9dcc6' }}>로그아웃할까요?</div>
+              <div style={{ color: 'rgba(255,252,223,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 1.7 }}>
+                지금 계정에서 나가면<br />다시 로그인해야 편지를 확인할 수 있어요.
+              </div>
+              <div className="modal-actions" style={{ marginTop: 4 }}>
+                <motion.button whileHover={{ background: 'rgba(255,255,255,0.12)' }}
+                  onClick={() => setShowLogoutModal(false)}
+                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', transition: 'all 0.25s' }}>
+                  취소
+                </motion.button>
+                <motion.button whileHover={{ translateY: -2 }}
+                  onClick={confirmLogout}
+                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.25s' }}>
+                  로그아웃
                 </motion.button>
               </div>
             </motion.div>

@@ -43,7 +43,7 @@ export default function DonePage() {
   const deliveryText = deliveryFailed
     ? (delivery?.message || '편지는 저장됐지만 이메일 발송은 실패했습니다. 관리자에서 다시 발송해주세요.')
     : deliveryAccepted
-      ? '메일 서비스에는 접수됐어요. 받은편지함에 없으면 스팸함이나 프로모션함도 확인해주세요.'
+      ? '발송 요청이 접수됐어요. 받은편지함에 없으면 스팸함도 확인해주세요.'
       : '편지가 저장됐어요.';
   const dChars = ['D', '-', ...String(d).split('')];
   const openDateLabel = new Date(openDate).toLocaleDateString('ko-KR', {
