@@ -236,6 +236,16 @@ export default function HelloPage() {
         >
           편지 쓰기
         </motion.button>
+
+        <motion.button
+          variants={item}
+          type="button"
+          onClick={() => navigate('/support')}
+          whileHover={{ color: 'rgba(255,247,234,0.86)', borderColor: 'rgba(232,194,138,0.36)' }}
+          className="hello-support-link"
+        >
+          작은 응원 남기기
+        </motion.button>
       </div>
 
       {/* 이름/이메일 변경 모달 */}

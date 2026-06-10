@@ -1447,9 +1447,9 @@ app.post("/support-messages", writeLimiter, async (req, res) => {
   if (name && name.length > SUPPORT_MESSAGE_NAME_MAX_LENGTH) {
     return res.status(400).json({ message: `이름은 ${SUPPORT_MESSAGE_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   }
-  if (!content) return res.status(400).json({ message: "응원 메시지를 입력해주세요." });
+  if (!content) return res.status(400).json({ message: "남기고 싶은 마음을 입력해주세요." });
   if (content.length > SUPPORT_MESSAGE_CONTENT_MAX_LENGTH) {
-    return res.status(400).json({ message: `응원 메시지는 ${SUPPORT_MESSAGE_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
+    return res.status(400).json({ message: `남길 수 있는 글은 ${SUPPORT_MESSAGE_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   }
 
   try {
@@ -1470,7 +1470,7 @@ app.post("/support-messages", writeLimiter, async (req, res) => {
     res.status(201).json(message);
   } catch (err) {
     console.error("support message create error:", err);
-    res.status(500).json({ message: "응원 메시지를 저장하지 못했습니다." });
+    res.status(500).json({ message: "마음을 저장하지 못했습니다." });
   }
 });
 
@@ -1491,7 +1491,7 @@ app.get("/developer/support-messages", requireDeveloper, async (_req, res) => {
     res.json(messages);
   } catch (err) {
     console.error("support message list error:", err);
-    res.status(500).json({ message: "응원 메시지를 불러오지 못했습니다." });
+    res.status(500).json({ message: "도착한 마음을 불러오지 못했습니다." });
   }
 });
 

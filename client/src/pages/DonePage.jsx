@@ -174,7 +174,7 @@ export default function DonePage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, delay: 0.65, ease }}
                 >
-                  개발자에게 응원 보내기
+                  작은 응원 남기기
                 </motion.button>
 
             </div>
