@@ -30,6 +30,8 @@ const PUBLIC_LETTER_CONTENT_MAX_LENGTH = 100;
 const PUBLIC_LETTER_NICKNAME_MAX_LENGTH = 12;
 const PUBLIC_LETTER_PAGE_SIZE = 8;
 const PUBLIC_LETTER_PIN_REGEX = /^\d{4}$/;
+const SUPPORT_MESSAGE_CONTENT_MAX_LENGTH = 200;
+const SUPPORT_MESSAGE_NAME_MAX_LENGTH = 20;
 const URL_MAX_LENGTH = 2048;
 const MAIL_SEND_TIMEOUT_MS = Number(process.env.MAIL_SEND_TIMEOUT_MS || 20000);
 const ALLOWED_LETTER_TYPES = new Set(["text", "video", "draw"]);
@@ -1266,14 +1268,32 @@ const adminUserids = new Set(
     .filter(Boolean)
     .filter(userid => !deprecatedAdminUserids.has(userid))
 );
+const developerUserids = new Set(
+  [
+    "jagseeun1",
+    ...(process.env.DEVELOPER_USERIDS || "")
+      .split(",")
+      .map(userid => userid.trim()),
+  ].filter(Boolean)
+);
 
 function isAdminUser(user) {
   return !!user && adminUserids.has(user.userid);
 }
 
+function isDeveloperUser(user) {
+  return !!user && developerUserids.has(user.userid);
+}
+
 function requireAdmin(req, res, next) {
   if (!req.session.user) return res.status(401).json({ message: "Login required" });
   if (!isAdminUser(req.session.user)) return res.status(403).json({ message: "Admin only" });
+  next();
+}
+
+function requireDeveloper(req, res, next) {
+  if (!req.session.user) return res.status(401).json({ message: "Login required" });
+  if (!isDeveloperUser(req.session.user)) return res.status(403).json({ message: "Developer only" });
   next();
 }
 
@@ -1406,11 +1426,73 @@ app.post("/login", authLimiter, async (req, res) => {
 // 4. 유저 정보 (이름 + 이메일)
 app.get("/get-user-info", (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
-  res.json({ name: req.session.user.name, email: req.session.user.email || "", isAdmin: isAdminUser(req.session.user) });
+  res.json({
+    userid: req.session.user.userid,
+    name: req.session.user.name,
+    email: req.session.user.email || "",
+    isAdmin: isAdminUser(req.session.user),
+    isDeveloper: isDeveloperUser(req.session.user),
+  });
 });
 
 app.get("/support-info", (_req, res) => {
   res.json({ developerEmail });
+});
+
+app.post("/support-messages", writeLimiter, async (req, res) => {
+  const sessionUser = req.session.user || null;
+  const name = normalizePublicText(req.body.name || sessionUser?.name || "");
+  const content = normalizePublicText(req.body.content || "");
+
+  if (name && name.length > SUPPORT_MESSAGE_NAME_MAX_LENGTH) {
+    return res.status(400).json({ message: `이름은 ${SUPPORT_MESSAGE_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  }
+  if (!content) return res.status(400).json({ message: "응원 메시지를 입력해주세요." });
+  if (content.length > SUPPORT_MESSAGE_CONTENT_MAX_LENGTH) {
+    return res.status(400).json({ message: `응원 메시지는 ${SUPPORT_MESSAGE_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  }
+
+  try {
+    const message = await prisma.supportMessage.create({
+      data: {
+        name: name || sessionUser?.name || null,
+        userid: sessionUser?.userid || null,
+        email: sessionUser?.email || null,
+        content,
+      },
+      select: {
+        id: true,
+        name: true,
+        content: true,
+        createdAt: true,
+      },
+    });
+    res.status(201).json(message);
+  } catch (err) {
+    console.error("support message create error:", err);
+    res.status(500).json({ message: "응원 메시지를 저장하지 못했습니다." });
+  }
+});
+
+app.get("/developer/support-messages", requireDeveloper, async (_req, res) => {
+  try {
+    const messages = await prisma.supportMessage.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      select: {
+        id: true,
+        name: true,
+        userid: true,
+        email: true,
+        content: true,
+        createdAt: true,
+      },
+    });
+    res.json(messages);
+  } catch (err) {
+    console.error("support message list error:", err);
+    res.status(500).json({ message: "응원 메시지를 불러오지 못했습니다." });
+  }
 });
 
 // 5. 로그아웃
