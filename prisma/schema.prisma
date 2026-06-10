@@ -16,6 +16,7 @@ model Member {
   lastLoginAt DateTime?
 
   letters                 Letter[]
+  letterDraft             LetterDraft?
   teacherLetters          TeacherLetter[]
   teacherLetterDeliveries TeacherLetterDelivery[]
 }
@@ -36,12 +37,33 @@ model Letter {
   callCompositeVideoUrl String?
   callReplyEmail        String?
   callReplySentAt       DateTime?
+  favorite              Boolean   @default(false)
   openDate              DateTime
   createdAt             DateTime  @default(now())
   sentAt                DateTime?
 
   author   Member @relation(fields: [authorId], references: [id])
   authorId Int
+}
+
+model LetterDraft {
+  id            Int       @id @default(autoincrement())
+  type          String    @default("text")
+  content       String?
+  videoUrl      String?
+  imageUrl      String?
+  signatureData String?
+  deliveryEmail String?
+  emailTheme    String    @default("dark")
+  recipientEmail String?
+  recipientName String?
+  toOther       Boolean   @default(false)
+  openDate      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  author   Member @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId Int    @unique
 }
 
 model TeacherLetter {
@@ -75,6 +97,7 @@ model PublicLetter {
   type      String   @default("text")
   content   String?
   imageUrl  String?
+  pinHash   String?
   createdAt DateTime @default(now())
   visible   Boolean  @default(true)
 }

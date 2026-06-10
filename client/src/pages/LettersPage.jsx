@@ -27,6 +27,7 @@ export default function LettersPage() {
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [favoriteOnly, setFavoriteOnly] = useState(false);
 
   useEffect(() => {
     fetch('/get-user-info')
@@ -46,9 +47,29 @@ export default function LettersPage() {
   const now = new Date();
   const unlockedCount = letters.filter(l => new Date(l.openDate) <= now).length;
   const lockedCount = letters.length - unlockedCount;
+  const favoriteCount = letters.filter(l => l.favorite).length;
+  const visibleLetters = favoriteOnly ? letters.filter(l => l.favorite) : letters;
 
   function openLetter(letter) {
     navigate('/view-letter', { state: { letter, name, returnTo: '/letters' } });
+  }
+
+  async function toggleFavorite(letter, event) {
+    event.stopPropagation();
+    const nextFavorite = !letter.favorite;
+    setLetters(prev => prev.map(item => item.id === letter.id ? { ...item, favorite: nextFavorite } : item));
+    try {
+      const res = await fetch(`/letters/${letter.id}/favorite`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ favorite: nextFavorite }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || '즐겨찾기를 변경하지 못했습니다.');
+    } catch (err) {
+      setLetters(prev => prev.map(item => item.id === letter.id ? { ...item, favorite: letter.favorite } : item));
+      alert(err.message || '즐겨찾기를 변경하지 못했습니다.');
+    }
   }
 
   async function deleteLetter(id) {
@@ -109,6 +130,12 @@ export default function LettersPage() {
               </div>
             </div>
           )}
+          {!loading && letters.length > 0 && (
+            <div className="letter-list-filters" aria-label="편지 필터">
+              <button type="button" className={!favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(false)}>전체</button>
+              <button type="button" className={favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(true)}>즐겨찾기 {favoriteCount}</button>
+            </div>
+          )}
         </motion.header>
 
         {loading ? (
@@ -123,9 +150,19 @@ export default function LettersPage() {
             <span>미래의 나에게 첫 편지를 남겨보세요.</span>
             <button type="button" className="soft-button" onClick={() => navigate('/write')}>첫 편지 쓰기</button>
           </motion.div>
+        ) : visibleLetters.length === 0 ? (
+          <motion.div
+            className="letter-empty"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <strong>즐겨찾기한 편지가 아직 없어요</strong>
+            <span>별을 눌러 다시 보고 싶은 편지를 모아둘 수 있어요.</span>
+            <button type="button" className="soft-button" onClick={() => setFavoriteOnly(false)}>전체 보기</button>
+          </motion.div>
         ) : (
           <div className="letter-scroll letters-scroll">
-            {letters.map((letter, i) => {
+            {visibleLetters.map((letter, i) => {
               const unlocked = new Date(letter.openDate) <= now;
               const days = daysUntil(letter.openDate);
               const type = getType(letter);
@@ -168,6 +205,14 @@ export default function LettersPage() {
                     </div>
 
                     <div className="letter-card-actions">
+                      <button
+                        type="button"
+                        className={`letter-favorite-button ${letter.favorite ? 'active' : ''}`}
+                        onClick={event => toggleFavorite(letter, event)}
+                        aria-label={letter.favorite ? '즐겨찾기 해제' : '즐겨찾기'}
+                      >
+                        ★
+                      </button>
                       {unlocked ? (
                         <button type="button" className="letter-open-arrow" onClick={() => openLetter(letter)} aria-label="편지 열기">▶</button>
                       ) : (

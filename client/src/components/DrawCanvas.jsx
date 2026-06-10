@@ -20,7 +20,7 @@ const MAX_HISTORY = 50;
 const DRAW_WIDTH = 1440;
 const DRAW_HEIGHT = 1080;
 
-export default function DrawCanvas({ onHasDrawn, onCanvasReady }) {
+export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasReady }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const lastPos = useRef(null);
@@ -37,9 +37,31 @@ export default function DrawCanvas({ onHasDrawn, onCanvasReady }) {
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = CANVAS_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    historyRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
-    onCanvasReady?.(canvas);
-  }, [onCanvasReady]);
+    function storeHistory() {
+      try {
+        historyRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
+      } catch {
+        historyRef.current = [];
+      }
+      onCanvasReady?.(canvas);
+    }
+
+    if (initialImageUrl) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        storeHistory();
+        setDrawn(true);
+      };
+      img.onerror = storeHistory;
+      img.src = initialImageUrl;
+      return;
+    }
+
+    storeHistory();
+    setDrawn(false);
+  }, [initialImageUrl, onCanvasReady]);
 
   useEffect(() => {
     function onKeyDown(e) {

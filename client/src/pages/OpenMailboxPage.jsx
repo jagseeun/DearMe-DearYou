@@ -136,8 +136,14 @@ export default function OpenMailboxPage() {
   const [mode, setMode] = useState('text');
   const [nickname, setNickname] = useState('');
   const [content, setContent] = useState('');
+  const [pin, setPin] = useState('');
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
+  const [editingSelected, setEditingSelected] = useState(false);
+  const [editNickname, setEditNickname] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editPin, setEditPin] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
   const [photoUploading, setPhotoUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
@@ -173,6 +179,14 @@ export default function OpenMailboxPage() {
       photoStreamRef.current?.getTracks().forEach(track => track.stop());
     };
   }, []);
+
+  useEffect(() => {
+    setEditingSelected(false);
+    setEditNickname(selected?.nickname || '');
+    setEditContent(selected?.content || '');
+    setEditPin('');
+    setMessage('');
+  }, [selected]);
 
   async function uploadImageBlob(blob, ext, contentType) {
     if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('이미지가 너무 큽니다.');
@@ -245,6 +259,7 @@ export default function OpenMailboxPage() {
     setMode('text');
     setNickname('');
     setContent('');
+    setPin('');
     setPhotoUrl('');
     setDrawn(false);
   }
@@ -260,6 +275,7 @@ export default function OpenMailboxPage() {
     const cleanContent = content.trim();
 
     if (!cleanNickname) return setMessage('닉네임을 입력해주세요.');
+    if (!/^\d{4}$/.test(pin)) return setMessage('수정/삭제에 사용할 4자리 PIN을 입력해주세요.');
     if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
     if (mode === 'text' && !cleanContent) return setMessage('내용을 입력해주세요.');
     if (mode === 'photo' && !photoUrl) return setMessage('사진을 촬영해주세요.');
@@ -277,6 +293,7 @@ export default function OpenMailboxPage() {
           type: mode,
           content: mode === 'text' ? cleanContent : '',
           imageUrl,
+          pin,
         }),
       });
       resetForm();
@@ -305,6 +322,57 @@ export default function OpenMailboxPage() {
 
   function changeContent(value) {
     setContent(value.slice(0, CONTENT_MAX_LENGTH));
+  }
+
+  async function updateSelectedLetter(event) {
+    event.preventDefault();
+    if (!selected) return;
+    const cleanNickname = editNickname.trim();
+    const cleanContent = editContent.trim();
+    if (!cleanNickname) return setMessage('닉네임을 입력해주세요.');
+    if (!/^\d{4}$/.test(editPin)) return setMessage('4자리 PIN을 입력해주세요.');
+    if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+    if (selected.type === 'text' && !cleanContent) return setMessage('내용을 입력해주세요.');
+
+    setEditSaving(true);
+    setMessage('');
+    try {
+      const updated = await fetchJson(`/public-letters/${selected.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nickname: cleanNickname, content: cleanContent, pin: editPin }),
+      });
+      setLetters(prev => prev.map(letter => letter.id === updated.id ? updated : letter));
+      setSelected(updated);
+      setEditingSelected(false);
+      setEditPin('');
+    } catch (err) {
+      setMessage(err.message || '열린 편지를 수정하지 못했습니다.');
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  async function deleteSelectedLetter() {
+    if (!selected) return;
+    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해주세요.');
+    if (!window.confirm('이 열린 편지를 삭제할까요?')) return;
+
+    setEditSaving(true);
+    setMessage('');
+    try {
+      await fetchJson(`/public-letters/${selected.id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin: editPin }),
+      });
+      setSelected(null);
+      await loadLetters(page);
+    } catch (err) {
+      setMessage(err.message || '열린 편지를 삭제하지 못했습니다.');
+    } finally {
+      setEditSaving(false);
+    }
   }
 
   return (
@@ -406,6 +474,14 @@ export default function OpenMailboxPage() {
                   maxLength={12}
                   placeholder="닉네임"
                 />
+                <input
+                  className="open-compose-input"
+                  value={pin}
+                  onChange={event => setPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                  inputMode="numeric"
+                  maxLength={4}
+                  placeholder="수정/삭제 PIN 4자리"
+                />
 
                 <div className="open-mode-tabs" aria-label="작성 형식">
                   {modes.map(item => (
@@ -500,11 +576,56 @@ export default function OpenMailboxPage() {
             >
               <button type="button" onClick={() => setSelected(null)}>닫기</button>
               <span>{formatDate(selected.createdAt)}</span>
-              {(selected.type === 'draw' || selected.type === 'photo') && selected.imageUrl && (
-                <img src={selected.imageUrl} alt="" />
+              {editingSelected ? (
+                <form className="open-letter-edit-form" onSubmit={updateSelectedLetter}>
+                  <input
+                    className="open-compose-input"
+                    value={editNickname}
+                    onChange={event => setEditNickname(event.target.value)}
+                    maxLength={12}
+                    placeholder="닉네임"
+                  />
+                  <textarea
+                    className="open-compose-textarea compact"
+                    value={editContent}
+                    onChange={event => setEditContent(event.target.value.slice(0, CONTENT_MAX_LENGTH))}
+                    maxLength={CONTENT_MAX_LENGTH}
+                    placeholder={selected.type === 'text' ? '내용' : '짧은 설명'}
+                  />
+                  <input
+                    className="open-compose-input"
+                    value={editPin}
+                    onChange={event => setEditPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                    inputMode="numeric"
+                    maxLength={4}
+                    placeholder="PIN 4자리"
+                  />
+                  <div className="open-letter-actions">
+                    <button type="button" onClick={() => setEditingSelected(false)} disabled={editSaving}>취소</button>
+                    <button type="submit" disabled={editSaving}>{editSaving ? '저장 중...' : '수정 저장'}</button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  {(selected.type === 'draw' || selected.type === 'photo') && selected.imageUrl && (
+                    <img src={selected.imageUrl} alt="" />
+                  )}
+                  {selected.content && <p>{selected.content}</p>}
+                  <footer>from. {selected.nickname}</footer>
+                  <div className="open-letter-pin-actions">
+                    <input
+                      value={editPin}
+                      onChange={event => setEditPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                      inputMode="numeric"
+                      maxLength={4}
+                      placeholder="PIN 4자리"
+                    />
+                    <button type="button" onClick={() => setEditingSelected(true)} disabled={editSaving}>수정</button>
+                    <button type="button" onClick={deleteSelectedLetter} disabled={editSaving}>삭제</button>
+                  </div>
+                </>
               )}
-              {selected.content && <p>{selected.content}</p>}
-              <footer>from. {selected.nickname}</footer>
+              {message && <div className="open-message">{message}</div>}
             </motion.article>
           </motion.div>
         )}

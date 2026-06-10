@@ -11546,6 +11546,122 @@ canvas {
   color: rgba(255, 230, 232, 0.92);
 }
 
+.done-support-link {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(8px, 1.6vh, 16px);
+  z-index: 5;
+  transform: translateX(-50%);
+  color: rgba(241, 205, 213, 0.74);
+  font-size: 12px;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(241, 205, 213, 0.28);
+}
+
+.write-draft-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.write-draft-actions button,
+.letter-list-filters button,
+.letter-favorite-button,
+.open-letter-pin-actions button,
+.open-letter-actions button {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 252, 223, 0.68);
+  border-radius: 999px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.write-draft-actions button {
+  padding: 7px 14px;
+  font-size: 12px;
+}
+
+.write-draft-actions button:disabled,
+.open-letter-pin-actions button:disabled,
+.open-letter-actions button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.write-draft-actions span {
+  flex-basis: 100%;
+  color: rgba(255, 252, 223, 0.46);
+  font-size: 12px;
+  text-align: center;
+}
+
+.letter-list-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.letter-list-filters button {
+  padding: 8px 14px;
+  font-size: 12px;
+}
+
+.letter-list-filters button.active,
+.letter-favorite-button.active {
+  border-color: rgba(224, 164, 176, 0.46);
+  background: rgba(224, 164, 176, 0.16);
+  color: #ffe8ef;
+}
+
+.letter-favorite-button {
+  width: 34px;
+  height: 34px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.open-letter-edit-form,
+.open-letter-pin-actions {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.open-letter-pin-actions {
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+}
+
+.open-letter-pin-actions input {
+  min-width: 0;
+  border: 1px solid rgba(96, 66, 55, 0.14);
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.5);
+  color: #514032;
+  font-family: inherit;
+  outline: none;
+}
+
+.open-letter-pin-actions button,
+.open-letter-actions button {
+  padding: 9px 14px;
+  color: #584435;
+  border-color: rgba(96, 66, 55, 0.14);
+  background: rgba(255, 255, 255, 0.52);
+}
+
+.open-letter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* Stable 4:3 media frames for draw and video. */
 .draw-editor.draw-editor-clean .draw-canvas-wrap,
 .draw-editor.draw-editor-clean .draw-canvas,
