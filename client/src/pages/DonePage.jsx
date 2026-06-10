@@ -169,12 +169,12 @@ export default function DonePage() {
               <motion.button
                   type="button"
                   className="done-support-link"
-                  onClick={() => navigate('/support')}
+                  onClick={() => navigate('/support', { state: { from: '/hello' } })}
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.7, delay: 0.65, ease }}
                 >
-                  작은 응원 남기기
+                  개발자에게 마음 전하기
                 </motion.button>
 
             </div>

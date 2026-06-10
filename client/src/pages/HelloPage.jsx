@@ -237,16 +237,17 @@ export default function HelloPage() {
           편지 쓰기
         </motion.button>
 
-        <motion.button
-          variants={item}
-          type="button"
-          onClick={() => navigate('/support')}
-          whileHover={{ color: 'rgba(255,247,234,0.86)', borderColor: 'rgba(232,194,138,0.36)' }}
-          className="hello-support-link"
-        >
-          작은 응원 남기기
-        </motion.button>
       </div>
+
+      <motion.button
+        variants={item}
+        type="button"
+        onClick={() => navigate('/support', { state: { from: '/hello' } })}
+        whileHover={{ color: 'rgba(255,247,234,0.86)', borderColor: 'rgba(232,194,138,0.38)' }}
+        className="hello-support-link"
+      >
+        개발자에게 마음 전하기
+      </motion.button>
 
       {/* 이름/이메일 변경 모달 */}
       <AnimatePresence>

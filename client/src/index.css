@@ -12303,3 +12303,230 @@ canvas {
     grid-template-columns: 1fr;
   }
 }
+
+/* Final write/support layout lock: one frame size, stable actions, no option-driven jumps. */
+@media (min-width: 761px) {
+  .write-shell {
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+    padding: 56px 24px 28px !important;
+  }
+
+  .write-layout {
+    --write-frame-height: min(640px, calc(100dvh - 230px));
+    --write-frame-width: min(calc(var(--write-frame-height) * 4 / 3), calc(100vw - 360px));
+    width: min(1120px, calc(100vw - 64px)) !important;
+    height: calc(100dvh - 88px) !important;
+    max-height: calc(100dvh - 88px) !important;
+    margin: 0 auto !important;
+    display: grid !important;
+    grid-template-rows: auto var(--write-frame-height) 50px !important;
+    align-content: center !important;
+    justify-items: center !important;
+    gap: 10px !important;
+  }
+
+  .write-layout > .write-header {
+    width: min(960px, 100%) !important;
+    max-width: min(960px, 100%) !important;
+    min-height: 62px !important;
+  }
+
+  .write-stage,
+  .write-stage.write-stage-text,
+  .write-stage.write-camera-stage,
+  .write-stage.write-stage-draw {
+    width: var(--write-frame-width) !important;
+    max-width: var(--write-frame-width) !important;
+    height: var(--write-frame-height) !important;
+    max-height: var(--write-frame-height) !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+  }
+
+  .write-stage.write-stage-text > .write-paper,
+  .write-stage.write-stage-text .write-paper,
+  .write-stage.write-camera-stage > .write-video-frame,
+  .write-stage.write-camera-stage > div.write-video-frame:last-child,
+  .write-stage.write-stage-draw .draw-canvas-wrap {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 4 / 3 !important;
+    margin: 0 !important;
+  }
+
+  .write-paper {
+    position: relative !important;
+    overflow: hidden !important;
+  }
+
+  .write-stage.write-stage-text .write-textarea {
+    width: 100% !important;
+    height: 100% !important;
+    padding-bottom: 92px !important;
+  }
+
+  .write-stage.write-stage-text .write-paper.is-signing .write-textarea {
+    padding-bottom: 252px !important;
+  }
+
+  .write-stage.write-stage-text .write-tools-row {
+    position: absolute !important;
+    left: clamp(22px, 3vw, 34px) !important;
+    right: clamp(22px, 3vw, 34px) !important;
+    bottom: 20px !important;
+    z-index: 4 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .write-signature-drawer {
+    position: absolute;
+    left: clamp(22px, 3vw, 34px);
+    right: clamp(22px, 3vw, 34px);
+    bottom: 66px;
+    z-index: 5;
+    padding: 14px 16px 12px;
+    border: 1px solid rgba(255, 236, 205, 0.18);
+    border-radius: 16px;
+    background: rgba(28, 25, 24, 0.82);
+    box-shadow: 0 18px 36px rgba(20, 12, 8, 0.22);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .write-signature-drawer canvas {
+    height: 88px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean {
+    position: relative !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas-wrap,
+  .write-stage.write-stage-draw .draw-canvas-wrap,
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas,
+  .write-stage.write-stage-draw .draw-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-toolbar,
+  .write-stage.write-stage-draw .draw-toolbar {
+    position: absolute !important;
+    left: calc(100% + 14px) !important;
+    top: 50% !important;
+    width: 136px !important;
+    height: auto !important;
+    max-height: 100% !important;
+    transform: translateY(-50%) !important;
+    z-index: 6 !important;
+  }
+
+  .write-layout > .write-submit {
+    align-self: start !important;
+    justify-self: center !important;
+    width: 240px !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+}
+
+.hello-support-link {
+  position: fixed !important;
+  right: 32px !important;
+  bottom: max(54px, calc(28px + env(safe-area-inset-bottom))) !important;
+  width: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 0 4px !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(255, 236, 205, 0.26) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: rgba(255, 252, 223, 0.76) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  text-shadow: 0 0 12px rgba(255, 236, 205, 0.16);
+  z-index: 60;
+}
+
+.done-support-link {
+  left: auto !important;
+  right: 72px !important;
+}
+
+.support-page {
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.support-compose {
+  width: min(900px, calc(100vw - 48px));
+  margin: clamp(34px, 6vh, 64px) auto 0;
+  gap: 14px;
+}
+
+.support-heading span {
+  color: rgba(255, 238, 205, 0.54);
+}
+
+.support-paper {
+  min-height: min(440px, calc(100dvh - 330px));
+}
+
+.support-bottom-row em {
+  color: rgba(255, 238, 205, 0.68);
+}
+
+.support-complete {
+  min-height: min(360px, calc(100dvh - 260px));
+}
+
+.support-complete small {
+  color: rgba(255, 238, 205, 0.42);
+  font-size: 12px;
+}
+
+.support-complete > button {
+  margin-top: 6px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 236, 205, 0.24);
+  background: transparent;
+  color: rgba(255, 252, 223, 0.58);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .hello-support-link {
+    right: 18px !important;
+    bottom: max(42px, calc(18px + env(safe-area-inset-bottom))) !important;
+    font-size: 13px !important;
+  }
+
+  .support-page {
+    overflow-y: auto;
+  }
+}

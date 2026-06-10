@@ -885,7 +885,7 @@ export default function WritePage() {
             >
               {/* 텍스트 입력 */}
               <div
-                className="write-paper"
+                className={`write-paper ${showSig ? 'is-signing' : ''}`}
                 onClick={() => document.getElementById('textInput')?.focus()}
               >
                 <LetterTextarea
@@ -893,34 +893,41 @@ export default function WritePage() {
                   onChange={setText}
                   placeholder="내년의 나에게 하고 싶은 말을 적어주세요"
                 />
-              </div>
 
-              {/* 사진 촬영 */}
-              <div className="write-tools-row">
-                <button onClick={imageUploading ? undefined : openPhotoCamera} disabled={imageUploading}
-                  style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: imageUploading ? 'default' : 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.65)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, opacity: imageUploading ? 0.6 : 1 }}>
-                  {imageUploading ? '업로드 중...' : '📷 사진 촬영'}
-                </button>
-                {imageUrl && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <img src={imageUrl} style={{ height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)' }} />
-                    <button onClick={() => setImageUrl('')} style={{ background: 'none', border: 'none', color: 'rgba(255,100,100,0.7)', cursor: 'pointer', fontSize: 16 }}>×</button>
-                  </div>
-                )}
-                <button onClick={() => setShowSig(s => !s)}
-                  style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid', transition: 'all 0.2s', borderColor: showSig ? 'rgba(205,154,99,0.5)' : 'rgba(255,255,255,0.2)', background: showSig ? 'rgba(72,56,41,0.6)' : 'rgba(255,255,255,0.07)', color: showSig ? '#ffeacd' : 'rgba(255,252,223,0.65)' }}>
-                  ✍ 서명 {signatureData ? '✓' : ''}
-                </button>
-              </div>
+                {/* 사진 촬영 */}
+                <div className="write-tools-row">
+                  <button onClick={imageUploading ? undefined : openPhotoCamera} disabled={imageUploading}
+                    style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: imageUploading ? 'default' : 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.65)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, opacity: imageUploading ? 0.6 : 1 }}>
+                    {imageUploading ? '업로드 중...' : '📷 사진 촬영'}
+                  </button>
+                  {imageUrl && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <img src={imageUrl} style={{ height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)' }} />
+                      <button onClick={() => setImageUrl('')} style={{ background: 'none', border: 'none', color: 'rgba(255,100,100,0.7)', cursor: 'pointer', fontSize: 16 }}>×</button>
+                    </div>
+                  )}
+                  <button onClick={() => setShowSig(s => !s)}
+                    style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid', transition: 'all 0.2s', borderColor: showSig ? 'rgba(205,154,99,0.5)' : 'rgba(255,255,255,0.2)', background: showSig ? 'rgba(72,56,41,0.6)' : 'rgba(255,255,255,0.07)', color: showSig ? '#ffeacd' : 'rgba(255,252,223,0.65)' }}>
+                    ✍ 서명 {signatureData ? '✓' : ''}
+                  </button>
+                </div>
 
-              {/* 서명 캔버스 */}
-              <AnimatePresence>
-                {showSig && (
-                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
-                    <SignatureCanvas onSave={(data) => setSignatureData(data)} onClose={() => setShowSig(false)} existing={signatureData} />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                {/* 서명 캔버스 */}
+                <AnimatePresence>
+                  {showSig && (
+                    <motion.div
+                      className="write-signature-drawer"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.25, ease }}
+                      onClick={event => event.stopPropagation()}
+                    >
+                      <SignatureCanvas onSave={(data) => setSignatureData(data)} onClose={() => setShowSig(false)} existing={signatureData} />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </motion.div>
           ) : mode === 'draw' ? (
             <motion.div key="draw"
