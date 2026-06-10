@@ -7,7 +7,7 @@ const ease = [0.22, 1, 0.36, 1];
 
 export default function DonePage() {
   const navigate = useNavigate();
-  const { openDate, name, recipientName, recipientEmail, sentNow } = useLocation().state || {};
+  const { openDate, name, recipientName, recipientEmail, sentNow, delivery } = useLocation().state || {};
   const [phase, setPhase] = useState(sentNow ? 'envelope' : 'seal');
 
   useEffect(() => {
@@ -25,6 +25,18 @@ export default function DonePage() {
   const d = sentNow ? 0 : Math.max(0, daysUntil(openDate));
   const senderName = name || '나';
   const recipientDisplayName = recipientName || recipientEmail || senderName;
+  const deliveryFailed = Boolean(sentNow && delivery && delivery.sent === 0);
+  const deliveryAccepted = Boolean(sentNow && delivery && delivery.sent > 0);
+  const deliveryTitle = deliveryFailed
+    ? '이메일 발송 실패'
+    : deliveryAccepted
+      ? '이메일 발송 요청 접수'
+      : '오늘의 편지 저장 완료';
+  const deliveryText = deliveryFailed
+    ? (delivery?.message || '편지는 저장됐지만 이메일 발송은 실패했습니다. 관리자에서 다시 발송해주세요.')
+    : deliveryAccepted
+      ? '메일 서비스에는 접수됐어요. 받은편지함에 없으면 스팸함이나 프로모션함도 확인해주세요.'
+      : '편지가 저장됐어요.';
   const dChars = ['D', '-', ...String(d).split('')];
   const openDateLabel = new Date(openDate).toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -141,6 +153,18 @@ export default function DonePage() {
               </motion.div>
 
               <div className="done-mobile-day">D-{d}</div>
+
+              {sentNow && (
+                <motion.div
+                  className={`done-delivery-status ${deliveryFailed ? 'is-failed' : 'is-accepted'}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.45, ease }}
+                >
+                  <strong>{deliveryTitle}</strong>
+                  <span>{deliveryText}</span>
+                </motion.div>
+              )}
 
             </div>
           </motion.div>
