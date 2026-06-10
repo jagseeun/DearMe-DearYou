@@ -1037,7 +1037,7 @@ export default function LetterViewPage() {
                 className={`letter-content-wrap ${letter.type === 'draw' ? 'letter-content-wrap-draw' : ''}`.trim()}
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease }}
-                style={{ width: '100%', maxWidth: letter.type === 'video' ? 1360 : letter.type === 'draw' ? 1280 : 1080 }}>
+                style={{ width: '100%', maxWidth: letter.type === 'video' ? 1480 : letter.type === 'draw' ? 1680 : 1120 }}>
 
                 {letter.type === 'draw' ? (
                   <div
