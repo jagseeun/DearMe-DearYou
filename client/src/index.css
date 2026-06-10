@@ -11409,9 +11409,9 @@ canvas {
 /* Desktop scale and drawing-ratio lock. */
 @media (min-width: 761px) {
   .write-layout {
-    width: min(1440px, calc(100vw - 88px)) !important;
-    height: calc(100dvh - 120px) !important;
-    max-height: calc(100dvh - 120px) !important;
+    width: min(1680px, calc(100vw - 64px)) !important;
+    height: calc(100dvh - 108px) !important;
+    max-height: calc(100dvh - 108px) !important;
   }
 
   .write-stage.write-stage-text > .write-paper {
@@ -11428,7 +11428,7 @@ canvas {
   .write-stage.write-camera-stage {
     --write-video-frame-height: min(74dvh, 800px);
     --write-video-frame-min-height: min(500px, 62dvh);
-    width: min(1440px, calc(100vw - 88px)) !important;
+    width: min(1680px, calc(100vw - 64px)) !important;
     max-width: 100% !important;
   }
 
@@ -11440,15 +11440,19 @@ canvas {
 
   .write-stage.write-stage-draw .draw-editor.draw-editor-clean {
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 176px !important;
+    grid-template-columns: minmax(0, 1fr) 156px !important;
     gap: 16px !important;
     align-items: center !important;
+    width: 100% !important;
+    max-width: none !important;
     height: 100% !important;
     min-height: 0 !important;
+    margin: 0 !important;
   }
 
   .write-stage.write-stage-draw .draw-canvas-wrap {
-    width: min(100%, calc((100dvh - 252px) * 2.083333)) !important;
+    width: 100% !important;
+    max-width: none !important;
     height: auto !important;
     aspect-ratio: 125 / 60 !important;
     justify-self: center !important;
@@ -11464,16 +11468,20 @@ canvas {
 
   .write-stage.write-stage-draw .draw-toolbar {
     align-self: center !important;
-    max-height: min(74dvh, 680px) !important;
+    max-height: min(78dvh, 720px) !important;
   }
 
   .letter-view-root .letter-content-viewport {
-    padding: 72px min(6vw, 96px) 36px !important;
+    padding: 64px min(3.5vw, 64px) 28px !important;
+  }
+
+  .letter-view-root .letter-content-wrap-draw {
+    max-width: min(1680px, calc(100vw - 96px)) !important;
   }
 
   .letter-view-root .letter-draw-frame {
     aspect-ratio: 125 / 60 !important;
-    max-height: min(76vh, 720px) !important;
+    max-height: min(82vh, 820px) !important;
   }
 
   .letter-view-root .letter-content-box {
