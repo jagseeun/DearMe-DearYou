@@ -1447,6 +1447,7 @@ app.put("/change-password", authLimiter, async (req, res) => {
     if (!member) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
     const isMatch = await bcrypt.compare(currentPassword, member.password);
     if (!isMatch) return res.status(400).json({ message: "현재 비밀번호가 틀렸습니다." });
+    if (currentPassword === nextPassword) return res.status(400).json({ message: "새 비밀번호는 현재 비밀번호와 다르게 입력해주세요." });
 
     const hashedPassword = await bcrypt.hash(nextPassword, 10);
     await prisma.member.update({ where: { id: member.id }, data: { password: hashedPassword } });

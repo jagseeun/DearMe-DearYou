@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Stars from './Stars.jsx';
@@ -30,6 +30,8 @@ export default function BackgroundLayers() {
   const location = useLocation();
   const isPink = PINK_ROUTES.some(route => location.pathname.startsWith(route));
   const hasDreamCursor = !location.pathname.startsWith('/admin');
+  const cursorGlowRef = useRef(null);
+  const cursorHeartRef = useRef(null);
 
   useEffect(() => {
     document.body.classList.remove('dream-cursor-active');
@@ -48,8 +50,14 @@ export default function BackgroundLayers() {
     const applyGlow = () => {
       frame = 0;
       if (!latestPointer) return;
-      document.documentElement.style.setProperty('--dream-cursor-x', `${latestPointer.clientX}px`);
-      document.documentElement.style.setProperty('--dream-cursor-y', `${latestPointer.clientY}px`);
+      const x = latestPointer.clientX;
+      const y = latestPointer.clientY;
+      if (cursorGlowRef.current) {
+        cursorGlowRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+      }
+      if (cursorHeartRef.current) {
+        cursorHeartRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-38%, -42%)`;
+      }
       document.body.classList.add('dream-cursor-active');
       document.body.classList.toggle(
         'dream-cursor-drawing',
@@ -97,12 +105,13 @@ export default function BackgroundLayers() {
         <PinkStars />
       </motion.div>
       <motion.div
+        ref={cursorGlowRef}
         className={`dream-cursor-glow ${isPink ? 'dream-cursor-glow-pink' : 'dream-cursor-glow-dark'}`}
         animate={{ opacity: hasDreamCursor ? 1 : 0 }}
         transition={{ duration: 0.5, ease }}
-        style={layerStyle}
       />
       <motion.div
+        ref={cursorHeartRef}
         className={`dream-cursor-heart ${isPink ? 'dream-cursor-heart-pink' : 'dream-cursor-heart-dark'}`}
         animate={{ opacity: hasDreamCursor ? 1 : 0 }}
         transition={{ duration: 0.35, ease }}

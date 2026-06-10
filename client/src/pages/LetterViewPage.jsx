@@ -867,30 +867,30 @@ export default function LetterViewPage() {
   const recipientName = letter.recipientName || name || '나';
 
   // 핑크 테마 색상 시스템
-  const textMain        = isPink ? '#fff1e8'                  : '#ece8ff';
-  const textSub         = isPink ? 'rgba(241,205,213,0.86)'   : 'rgba(218,211,246,0.58)';
-  const textHint        = isPink ? 'rgba(232,190,202,0.76)'   : 'rgba(198,190,230,0.36)';
-  const textBtn         = isPink ? '#fff1e8'                  : '#f1ecff';
-  const btnBg           = isPink ? 'linear-gradient(135deg, rgba(138,74,104,0.82), rgba(72,42,76,0.82)), rgba(232,190,202,0.1)' : 'linear-gradient(135deg, rgba(58,66,112,0.84), rgba(74,54,108,0.82)), rgba(174,154,226,0.1)';
-  const btnBorder       = isPink ? '1px solid rgba(244,211,218,0.38)'        : '1px solid rgba(190,178,232,0.3)';
-  const backColor       = isPink ? 'rgba(255,239,232,0.9)'    : 'rgba(232,226,255,0.82)';
-  const backBg          = isPink ? 'linear-gradient(135deg, rgba(88,50,84,0.72), rgba(47,29,50,0.68)), rgba(232,190,202,0.08)' : 'linear-gradient(135deg, rgba(44,51,94,0.58), rgba(64,47,92,0.52)), rgba(174,154,226,0.08)';
-  const backBorder      = isPink ? '1px solid rgba(232,190,202,0.3)'         : '1px solid rgba(190,178,232,0.22)';
-  const dividerBg       = isPink ? 'rgba(232,190,202,0.2)'    : 'rgba(190,178,232,0.18)';
-  const sidebarBg       = isPink ? 'linear-gradient(to bottom, rgba(255,241,232,0.12), rgba(128,86,134,0.16)), rgba(42,27,43,0.46)' : 'linear-gradient(to bottom, rgba(124,112,178,0.34), rgba(18,29,64,0.82))';
-  const sidebarBorder   = isPink ? '1px solid rgba(232,190,202,0.22)'        : '1px solid rgba(190,178,232,0.18)';
-  const letterBoxBg     = isPink ? 'linear-gradient(135deg, rgba(255,241,232,0.12), rgba(218,157,176,0.09) 56%, rgba(128,86,134,0.08)), rgba(42,27,43,0.5)' : 'linear-gradient(135deg, rgba(216,209,246,0.08), rgba(112,98,166,0.08)), rgba(17,24,52,0.44)';
-  const letterBoxBorder = isPink ? '1px solid rgba(232,190,202,0.24)'        : '1px solid rgba(190,178,232,0.24)';
+  const textMain        = isPink ? '#fff1e8'                  : '#fff1f2';
+  const textSub         = isPink ? 'rgba(241,205,213,0.86)'   : 'rgba(241,205,224,0.72)';
+  const textHint        = isPink ? 'rgba(232,190,202,0.76)'   : 'rgba(232,190,216,0.66)';
+  const textBtn         = isPink ? '#fff1e8'                  : '#fff0f6';
+  const btnBg           = isPink ? 'linear-gradient(135deg, rgba(138,74,104,0.82), rgba(72,42,76,0.82)), rgba(232,190,202,0.1)' : 'linear-gradient(135deg, rgba(146,74,126,0.84), rgba(86,50,104,0.8)), rgba(232,190,216,0.1)';
+  const btnBorder       = isPink ? '1px solid rgba(244,211,218,0.38)'        : '1px solid rgba(244,190,218,0.34)';
+  const backColor       = isPink ? 'rgba(255,239,232,0.9)'    : 'rgba(255,236,246,0.88)';
+  const backBg          = isPink ? 'linear-gradient(135deg, rgba(88,50,84,0.72), rgba(47,29,50,0.68)), rgba(232,190,202,0.08)' : 'linear-gradient(135deg, rgba(94,54,106,0.62), rgba(62,39,78,0.58)), rgba(232,190,216,0.09)';
+  const backBorder      = isPink ? '1px solid rgba(232,190,202,0.3)'         : '1px solid rgba(232,190,216,0.26)';
+  const dividerBg       = isPink ? 'rgba(232,190,202,0.2)'    : 'rgba(232,190,216,0.2)';
+  const sidebarBg       = isPink ? 'linear-gradient(to bottom, rgba(255,241,232,0.12), rgba(128,86,134,0.16)), rgba(42,27,43,0.46)' : 'linear-gradient(to bottom, rgba(170,95,142,0.28), rgba(48,28,64,0.76))';
+  const sidebarBorder   = isPink ? '1px solid rgba(232,190,202,0.22)'        : '1px solid rgba(232,190,216,0.2)';
+  const letterBoxBg     = isPink ? 'linear-gradient(135deg, rgba(255,241,232,0.12), rgba(218,157,176,0.09) 56%, rgba(128,86,134,0.08)), rgba(42,27,43,0.5)' : 'linear-gradient(135deg, rgba(255,220,232,0.09), rgba(156,108,174,0.08)), rgba(40,23,52,0.48)';
+  const letterBoxBorder = isPink ? '1px solid rgba(232,190,202,0.24)'        : '1px solid rgba(232,190,216,0.25)';
 
   const btnStyle = {
     padding: '14px 56px', borderRadius: 50,
     border: btnBorder, background: btnBg,
     color: textBtn, fontSize: 17, fontFamily: 'inherit', cursor: 'pointer',
-    boxShadow: isPink ? '0 0 28px rgba(218,157,176,0.2), 0 16px 38px rgba(21,12,25,0.32), inset 0 1px 0 rgba(255,255,255,0.18)' : '0 0 24px rgba(174,154,226,0.14), 0 16px 38px rgba(8,12,28,0.26), inset 0 1px 0 rgba(255,255,255,0.14)',
+    boxShadow: isPink ? '0 0 28px rgba(218,157,176,0.2), 0 16px 38px rgba(21,12,25,0.32), inset 0 1px 0 rgba(255,255,255,0.18)' : '0 0 26px rgba(218,157,196,0.17), 0 16px 38px rgba(21,12,30,0.28), inset 0 1px 0 rgba(255,255,255,0.14)',
     backdropFilter: 'blur(24px)', whiteSpace: 'nowrap',
     transition: 'all 0.3s cubic-bezier(0.22,1,0.36,1)',
     letterSpacing: 0,
-    textShadow: isPink ? '0 1px 7px rgba(24,13,28,0.42)' : '0 1px 7px rgba(8,12,28,0.38)',
+    textShadow: isPink ? '0 1px 7px rgba(24,13,28,0.42)' : '0 1px 7px rgba(24,13,34,0.4)',
   };
 
   const backBtnStyle = {
@@ -898,8 +898,8 @@ export default function LetterViewPage() {
     padding: '8px 20px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
     border: backBorder, background: backBg, color: backColor,
     backdropFilter: 'blur(18px)', transition: 'all 0.25s',
-    boxShadow: isPink ? '0 0 22px rgba(218,157,176,0.14), 0 12px 28px rgba(21,12,25,0.24)' : '0 0 18px rgba(174,154,226,0.1), 0 12px 28px rgba(8,12,28,0.22)',
-    textShadow: isPink ? '0 1px 7px rgba(24,13,28,0.38)' : '0 1px 7px rgba(8,12,28,0.34)',
+    boxShadow: isPink ? '0 0 22px rgba(218,157,176,0.14), 0 12px 28px rgba(21,12,25,0.24)' : '0 0 20px rgba(218,157,196,0.12), 0 12px 28px rgba(21,12,30,0.24)',
+    textShadow: isPink ? '0 1px 7px rgba(24,13,28,0.38)' : '0 1px 7px rgba(24,13,34,0.36)',
   };
 
   return (
