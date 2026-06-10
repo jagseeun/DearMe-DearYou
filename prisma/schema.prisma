@@ -99,6 +99,7 @@ model PublicLetter {
   imageUrl  String?
   pinHash   String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
   visible   Boolean  @default(true)
 }
 
