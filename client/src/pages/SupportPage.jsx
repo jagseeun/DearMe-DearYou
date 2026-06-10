@@ -86,8 +86,8 @@ export default function SupportPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease }}
           >
-            <strong>잘 도착했어요</strong>
-            <span>남겨준 마음은 조용히 간직할게요.</span>
+            <strong>개발자에게 마음이 전달되었어요</strong>
+            <span>작성해주셔서 감사합니다.</span>
             <small>잠시 후 돌아갑니다.</small>
             <button type="button" onClick={() => navigate(returnTo, { replace: true })}>바로 돌아가기</button>
           </motion.div>
