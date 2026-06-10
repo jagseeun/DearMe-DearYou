@@ -544,6 +544,24 @@ canvas {
   box-shadow: 0 0 30px rgba(232,194,138,0.22), var(--shadow);
 }
 
+.hello-support-link {
+  width: min(220px, 100%);
+  min-height: 38px;
+  margin-top: -18px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 236, 205, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(255, 252, 223, 0.58);
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
 .nav-pill {
   height: 38px;
   padding: 0 16px;
@@ -11763,16 +11781,16 @@ canvas {
 /* Final scoped repair: keep write/view/done layouts restrained and centered. */
 @media (min-width: 761px) {
   .write-shell {
-    padding: 80px 24px 44px !important;
+    padding: 62px 24px 34px !important;
   }
 
   .write-layout {
     width: min(1180px, calc(100vw - 64px)) !important;
     height: auto !important;
     max-height: none !important;
-    margin: clamp(18px, 3vh, 34px) auto 0 !important;
+    margin: clamp(4px, 1.3vh, 18px) auto 0 !important;
     align-items: center !important;
-    gap: 12px !important;
+    gap: 10px !important;
   }
 
   .write-layout > .write-header,
@@ -11806,7 +11824,7 @@ canvas {
   .write-heading {
     grid-area: title !important;
     line-height: 1.12 !important;
-    font-size: clamp(32px, 3.2vw, 42px) !important;
+    font-size: clamp(30px, 3vw, 40px) !important;
   }
 
   .mode-tabs {
@@ -11828,7 +11846,7 @@ canvas {
   .write-stage.write-stage-text > .write-paper,
   .write-stage.write-stage-text .write-textarea {
     width: 100% !important;
-    height: clamp(460px, 58vh, 610px) !important;
+    height: min(clamp(460px, 58vh, 610px), calc(100dvh - 270px)) !important;
     min-height: 0 !important;
     max-height: none !important;
   }
@@ -11852,7 +11870,7 @@ canvas {
 
   .write-stage.write-camera-stage > .write-video-frame,
   .write-stage.write-camera-stage > div.write-video-frame:last-child {
-    width: min(clamp(820px, 48vw, 940px), 100%) !important;
+    width: min(clamp(780px, 48vw, 940px), calc((100dvh - 250px) * 4 / 3), 100%) !important;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
@@ -11870,7 +11888,7 @@ canvas {
     width: 100% !important;
     max-width: 100% !important;
     display: grid !important;
-    grid-template-columns: minmax(0, clamp(790px, 47vw, 900px)) 136px !important;
+    grid-template-columns: minmax(0, min(clamp(760px, 47vw, 900px), calc((100dvh - 250px) * 4 / 3))) 136px !important;
     justify-content: center !important;
     align-items: center !important;
     gap: 14px !important;
@@ -11881,7 +11899,7 @@ canvas {
 
   .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas-wrap,
   .write-stage.write-stage-draw .draw-canvas-wrap {
-    width: min(clamp(790px, 47vw, 900px), 100%) !important;
+    width: min(clamp(760px, 47vw, 900px), calc((100dvh - 250px) * 4 / 3), 100%) !important;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;

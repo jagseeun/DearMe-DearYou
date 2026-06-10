@@ -28,7 +28,7 @@ export default function DevelopPage() {
     try {
       setMessages(await fetchJson('/developer/support-messages'));
     } catch (err) {
-      setMessage(err.message || '응원 메시지를 불러오지 못했습니다.');
+      setMessage(err.message || '도착한 마음을 불러오지 못했습니다.');
     } finally {
       setLoading(false);
     }
@@ -83,7 +83,7 @@ export default function DevelopPage() {
         <div className="develop-header">
           <div>
             <span>jagseeun1</span>
-            <strong>응원 메시지</strong>
+            <strong>도착한 응원</strong>
           </div>
           <button type="button" onClick={loadMessages} disabled={loading || checking}>
             {loading ? '불러오는 중...' : '새로고침'}
@@ -95,7 +95,7 @@ export default function DevelopPage() {
         {checking ? (
           <div className="develop-empty">확인 중...</div>
         ) : messages.length === 0 ? (
-          <div className="develop-empty">아직 도착한 응원 메시지가 없어요.</div>
+          <div className="develop-empty">아직 도착한 응원이 없어요.</div>
         ) : (
           <div className="develop-list">
             {messages.map(item => (

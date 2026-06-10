@@ -29,7 +29,7 @@ export default function SupportPage() {
     const cleanContent = content.trim();
 
     if (!cleanContent) {
-      setMessage('응원 메시지를 적어주세요.');
+      setMessage('남기고 싶은 마음을 적어주세요.');
       return;
     }
     if (cleanContent.length > SUPPORT_MAX_LENGTH) {
@@ -48,7 +48,7 @@ export default function SupportPage() {
       setSent(true);
       setContent('');
     } catch (err) {
-      setMessage(err.message || '응원 메시지를 보내지 못했습니다.');
+      setMessage(err.message || '마음을 남기지 못했습니다.');
     } finally {
       setSaving(false);
     }
@@ -78,8 +78,8 @@ export default function SupportPage() {
 
       <section className="support-compose">
         <div className="support-heading">
-          <span>개발자에게</span>
-          <strong>응원 보내기</strong>
+          <span>Dear Me ; Dear You에게</span>
+          <strong>작은 응원 남기기</strong>
         </div>
 
         {sent ? (
@@ -89,8 +89,8 @@ export default function SupportPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease }}
           >
-            <strong>응원이 도착했어요</strong>
-            <span>따뜻한 말은 개발자 응원함에 저장됐어요.</span>
+            <strong>마음이 도착했어요</strong>
+            <span>남겨준 말은 조용히 잘 간직할게요.</span>
             <div className="support-actions">
               <button type="button" onClick={() => setSent(false)}>하나 더 쓰기</button>
               <button type="button" onClick={() => navigate('/hello')}>돌아가기</button>
@@ -118,7 +118,7 @@ export default function SupportPage() {
               <textarea
                 value={content}
                 onChange={event => setContent(event.target.value.slice(0, SUPPORT_MAX_LENGTH))}
-                placeholder="작게라도 힘이 되는 말을 남겨주세요"
+                placeholder="이 공간에 남기고 싶은 마음을 적어주세요"
                 maxLength={SUPPORT_MAX_LENGTH}
               />
             </label>
