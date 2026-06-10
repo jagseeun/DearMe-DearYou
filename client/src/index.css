@@ -12764,3 +12764,310 @@ canvas {
     width: auto;
   }
 }
+
+/* Requested repair: simpler paper, bounded text area, visible draw tools, cleaner open mailbox edits. */
+@media (min-width: 761px) {
+  .write-layout {
+    --write-frame-height: min(586px, calc(100dvh - 242px));
+    --write-frame-width: min(calc(var(--write-frame-height) * 5 / 3), calc(100vw - 380px));
+  }
+
+  .write-paper {
+    --paper-pad-x: clamp(42px, 4vw, 58px);
+    --paper-pad-top: 42px;
+    --paper-tool-space: 118px;
+    background:
+      linear-gradient(180deg, rgba(255, 252, 244, 0.98), rgba(255, 244, 226, 0.95) 62%, rgba(249, 231, 204, 0.93)) !important;
+    background-position: 0 0 !important;
+    background-size: auto !important;
+  }
+
+  .write-paper::before {
+    left: var(--paper-pad-x) !important;
+    right: var(--paper-pad-x) !important;
+    top: auto !important;
+    bottom: 76px !important;
+    height: 0 !important;
+    border: 0 !important;
+    border-top: 1px solid rgba(116, 88, 63, 0.18) !important;
+    border-radius: 0 !important;
+  }
+
+  .write-stage.write-stage-text .write-textarea {
+    width: 100% !important;
+    height: calc(100% - var(--paper-tool-space)) !important;
+    padding: var(--paper-pad-top) var(--paper-pad-x) 14px !important;
+    line-height: 1.78 !important;
+    font-size: 18px !important;
+    overflow-y: auto !important;
+  }
+
+  .write-stage.write-stage-text .write-paper.is-signing .write-textarea {
+    height: calc(100% - 252px) !important;
+    padding-bottom: 14px !important;
+  }
+
+  .write-stage.write-stage-text .write-tools-row {
+    left: var(--paper-pad-x) !important;
+    right: var(--paper-pad-x) !important;
+    bottom: 22px !important;
+    padding-top: 11px !important;
+    border-top: 0 !important;
+  }
+
+  .write-draft-save,
+  .write-action-row > .write-submit {
+    border-radius: 10px !important;
+  }
+
+  .write-draft-save {
+    width: 146px !important;
+    background:
+      linear-gradient(135deg, rgba(255, 238, 202, 0.12), rgba(168, 200, 181, 0.08)),
+      rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 236, 205, 0.26) !important;
+    color: rgba(255, 247, 234, 0.78) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16) !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean {
+    display: grid !important;
+    grid-template-columns: minmax(0, calc(var(--write-frame-height) * 4 / 3)) 126px !important;
+    grid-template-rows: 100% !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+    justify-content: center !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas-wrap,
+  .write-stage.write-stage-draw .draw-canvas-wrap,
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas,
+  .write-stage.write-stage-draw .draw-canvas {
+    width: 100% !important;
+    height: 100% !important;
+    aspect-ratio: 4 / 3 !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-toolbar,
+  .write-stage.write-stage-draw .draw-toolbar {
+    position: static !important;
+    width: 126px !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    transform: none !important;
+    overflow-y: auto !important;
+    padding: 10px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-swatch {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-tool-button,
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-size {
+    min-height: 34px !important;
+  }
+}
+
+.hello-delivery-toast {
+  background: rgba(255, 250, 238, 0.18) !important;
+  border-color: rgba(255, 246, 232, 0.24) !important;
+  box-shadow: 0 18px 42px rgba(14, 12, 10, 0.18) !important;
+}
+
+.done-support-link {
+  left: 50% !important;
+  right: auto !important;
+  bottom: 24px !important;
+  transform: translateX(-50%) !important;
+  color: rgba(255, 247, 234, 0.62) !important;
+  border-bottom-color: rgba(255, 247, 234, 0.22) !important;
+}
+
+.letters-main-page .letter-list-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+}
+
+.letters-main-page .letter-list-controls .letter-list-stats,
+.letters-main-page .letter-list-controls .letter-list-filters {
+  flex: 0 0 auto;
+}
+
+.letter-icon-svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.open-letter-card footer time {
+  white-space: nowrap;
+}
+
+.open-edited-label {
+  margin-left: 8px;
+  padding: 2px 7px;
+  border: 1px solid rgba(96, 66, 55, 0.14);
+  border-radius: 999px;
+  color: rgba(79, 58, 45, 0.62);
+  font-style: normal;
+  font-size: 11px;
+}
+
+.open-letter-edit-form {
+  gap: 12px !important;
+}
+
+.open-edit-draw .open-draw-wrap {
+  width: 100%;
+}
+
+.open-edit-draw .open-draw-canvas {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 4 / 3 !important;
+}
+
+.open-edit-photo-note {
+  display: grid;
+  gap: 8px;
+  color: rgba(70, 53, 42, 0.58);
+  font-size: 12px;
+}
+
+.open-edit-photo-note img {
+  width: 100%;
+  max-height: 260px;
+  margin: 0;
+  object-fit: contain;
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.open-compose-input[type="password"],
+.open-letter-pin-actions input[type="password"] {
+  -webkit-text-security: disc;
+}
+
+.open-message {
+  color: rgba(255, 238, 205, 0.78);
+}
+
+.open-message:has(+ *) {
+  margin-bottom: 0;
+}
+
+@media (max-width: 760px) {
+  .letters-main-page .letter-list-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .letters-main-page .letter-list-controls .letter-list-stats,
+  .letters-main-page .letter-list-controls .letter-list-filters {
+    justify-content: center;
+  }
+}
+
+/* Open mailbox edit/compose repair pass. */
+.open-compose-modal {
+  max-height: calc(100dvh - 44px) !important;
+  overflow: auto !important;
+}
+
+.open-compose-modal .open-compose-form {
+  min-height: 0 !important;
+}
+
+.open-compose-modal .open-compose-media,
+.open-compose-modal .open-photo-tool {
+  min-height: 0 !important;
+}
+
+.open-compose-modal .open-draw-wrap,
+.open-letter-edit-form .open-draw-wrap {
+  width: min(100%, 400px) !important;
+  margin: 0 auto !important;
+  gap: 8px !important;
+}
+
+.open-compose-modal .open-draw-canvas,
+.open-letter-edit-form .open-draw-canvas {
+  width: 100% !important;
+  height: auto !important;
+  max-height: min(300px, 38dvh) !important;
+  aspect-ratio: 4 / 3 !important;
+}
+
+.open-compose-modal .open-tool-mini-button,
+.open-letter-edit-form .open-tool-mini-button {
+  justify-self: end !important;
+}
+
+.open-letter-edit-form .open-compose-textarea.compact {
+  min-height: 150px !important;
+  max-height: 220px !important;
+  overflow-y: auto !important;
+}
+
+.open-letter-modal .open-compose-input,
+.open-letter-modal .open-compose-textarea {
+  border-color: rgba(96, 66, 55, 0.16) !important;
+  background: rgba(255, 255, 255, 0.58) !important;
+  color: #4f3d31 !important;
+}
+
+.open-letter-modal .open-compose-input::placeholder,
+.open-letter-modal .open-compose-textarea::placeholder {
+  color: rgba(79, 61, 49, 0.36) !important;
+}
+
+.open-letter-modal .open-tool-mini-button,
+.open-letter-modal .open-letter-actions button,
+.open-letter-modal .open-letter-pin-actions button {
+  border-color: rgba(96, 66, 55, 0.16) !important;
+  background: rgba(255, 255, 255, 0.58) !important;
+  color: #5d4637 !important;
+}
+
+.open-letter-modal .open-message {
+  color: rgba(70, 53, 42, 0.64) !important;
+}
+
+.open-delete-confirm {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 0 0;
+  border-top: 1px solid rgba(96, 66, 55, 0.12);
+  color: rgba(70, 53, 42, 0.62);
+  font-size: 12px;
+}
+
+.open-delete-confirm span {
+  margin-right: auto;
+}
+
+.open-delete-confirm button {
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(96, 66, 55, 0.14);
+  background: rgba(255, 255, 255, 0.52);
+  color: #584435;
+  font-family: inherit;
+  cursor: pointer;
+}

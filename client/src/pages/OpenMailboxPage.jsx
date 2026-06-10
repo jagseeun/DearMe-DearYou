@@ -21,6 +21,11 @@ function formatDate(value) {
   });
 }
 
+function wasEdited(letter) {
+  if (!letter?.createdAt || !letter?.updatedAt) return false;
+  return new Date(letter.updatedAt).getTime() - new Date(letter.createdAt).getTime() > 1000;
+}
+
 function OpenMailboxLogo() {
   return (
     <div className="top-title open-mailbox-logo" aria-label="Dear Me; Dear You">
@@ -31,8 +36,44 @@ function OpenMailboxLogo() {
   );
 }
 
-function OpenDrawCanvas({ canvasRef, onDrawn }) {
+function OpenDrawCanvas({ canvasRef, onDrawn, initialImageUrl = '' }) {
   const drawingRef = useRef(false);
+  const movedRef = useRef(false);
+  const historyRef = useRef([]);
+
+  function saveSnapshot() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    try {
+      historyRef.current = [...historyRef.current.slice(-24), canvas.toDataURL('image/png')];
+    } catch {
+      historyRef.current = [];
+    }
+  }
+
+  function paintBackground(ctx) {
+    ctx.fillStyle = '#fffaf0';
+    ctx.fillRect(0, 0, OPEN_DRAW_WIDTH, OPEN_DRAW_HEIGHT);
+  }
+
+  function restoreSnapshot(dataUrl) {
+    const canvas = canvasRef.current;
+    if (!canvas || !dataUrl) return;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = () => {
+      paintBackground(ctx);
+      ctx.drawImage(img, 0, 0, OPEN_DRAW_WIDTH, OPEN_DRAW_HEIGHT);
+      onDrawn(historyRef.current.length > 1 || Boolean(initialImageUrl));
+    };
+    img.src = dataUrl;
+  }
+
+  function undo() {
+    if (historyRef.current.length <= 1) return;
+    historyRef.current.pop();
+    restoreSnapshot(historyRef.current[historyRef.current.length - 1]);
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -42,13 +83,46 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
     canvas.height = Math.floor(OPEN_DRAW_HEIGHT * dpr);
     const ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#fffaf0';
-    ctx.fillRect(0, 0, OPEN_DRAW_WIDTH, OPEN_DRAW_HEIGHT);
     ctx.lineWidth = 3;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.strokeStyle = '#4e3d31';
-  }, [canvasRef]);
+    paintBackground(ctx);
+
+    if (initialImageUrl) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        paintBackground(ctx);
+        ctx.drawImage(img, 0, 0, OPEN_DRAW_WIDTH, OPEN_DRAW_HEIGHT);
+        historyRef.current = [];
+        saveSnapshot();
+        onDrawn(true);
+      };
+      img.onerror = () => {
+        historyRef.current = [];
+        saveSnapshot();
+        onDrawn(false);
+      };
+      img.src = initialImageUrl;
+      return;
+    }
+
+    historyRef.current = [];
+    saveSnapshot();
+    onDrawn(false);
+  }, [canvasRef, initialImageUrl, onDrawn]);
+
+  useEffect(() => {
+    function onKeyDown(event) {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+        event.preventDefault();
+        undo();
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  });
 
   function point(event) {
     const canvas = canvasRef.current;
@@ -74,6 +148,7 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
     if (!canvas) return;
     canvas.setPointerCapture?.(event.pointerId);
     drawingRef.current = true;
+    movedRef.current = false;
     const ctx = canvas.getContext('2d');
     const p = point(event);
     ctx.beginPath();
@@ -89,6 +164,7 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
     const p = point(event);
     ctx.lineTo(p.x, p.y);
     ctx.stroke();
+    movedRef.current = true;
     onDrawn(true);
   }
 
@@ -96,15 +172,18 @@ function OpenDrawCanvas({ canvasRef, onDrawn }) {
     if (event?.pointerId !== undefined && event.currentTarget?.hasPointerCapture?.(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+    if (drawingRef.current && movedRef.current) saveSnapshot();
     drawingRef.current = false;
+    movedRef.current = false;
   }
 
   function clear() {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#fffaf0';
-    ctx.fillRect(0, 0, OPEN_DRAW_WIDTH, OPEN_DRAW_HEIGHT);
+    paintBackground(ctx);
+    historyRef.current = [];
+    saveSnapshot();
     onDrawn(false);
   }
 
@@ -144,11 +223,14 @@ export default function OpenMailboxPage() {
   const [editContent, setEditContent] = useState('');
   const [editPin, setEditPin] = useState('');
   const [editSaving, setEditSaving] = useState(false);
+  const [editDrawn, setEditDrawn] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [photoUrl, setPhotoUrl] = useState('');
   const [photoUploading, setPhotoUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [drawn, setDrawn] = useState(false);
   const canvasRef = useRef(null);
+  const editCanvasRef = useRef(null);
   const photoVideoRef = useRef(null);
   const photoStreamRef = useRef(null);
 
@@ -184,8 +266,9 @@ export default function OpenMailboxPage() {
     setEditingSelected(false);
     setEditNickname(selected?.nickname || '');
     setEditContent(selected?.content || '');
+    setEditDrawn(Boolean(selected?.type === 'draw' && selected?.imageUrl));
     setEditPin('');
-    setMessage('');
+    setConfirmingDelete(false);
   }, [selected]);
 
   async function uploadImageBlob(blob, ext, contentType) {
@@ -248,9 +331,9 @@ export default function OpenMailboxPage() {
     }
   }
 
-  async function uploadDrawing() {
-    const canvas = canvasRef.current;
-    if (!canvas || !drawn) throw new Error('그림을 그려주세요.');
+  async function uploadDrawing(targetCanvasRef = canvasRef, hasDrawing = drawn) {
+    const canvas = targetCanvasRef.current;
+    if (!canvas || !hasDrawing) throw new Error('그림을 그려주세요.');
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     return uploadImageBlob(blob, 'png', 'image/png');
   }
@@ -331,21 +414,35 @@ export default function OpenMailboxPage() {
     const cleanContent = editContent.trim();
     if (!cleanNickname) return setMessage('닉네임을 입력해주세요.');
     if (!/^\d{4}$/.test(editPin)) return setMessage('4자리 PIN을 입력해주세요.');
-    if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
-    if (selected.type === 'text' && !cleanContent) return setMessage('내용을 입력해주세요.');
+    if (selected.type === 'text') {
+      if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+      if (!cleanContent) return setMessage('내용을 입력해주세요.');
+    }
+    if (selected.type === 'draw' && !editDrawn) return setMessage('수정할 그림을 확인해주세요.');
 
     setEditSaving(true);
     setMessage('');
     try {
+      const body = {
+        nickname: cleanNickname,
+        pin: editPin,
+      };
+      if (selected.type === 'text') {
+        body.content = cleanContent;
+      }
+      if (selected.type === 'draw') {
+        body.imageUrl = await uploadDrawing(editCanvasRef, editDrawn);
+      }
       const updated = await fetchJson(`/public-letters/${selected.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname: cleanNickname, content: cleanContent, pin: editPin }),
+        body: JSON.stringify(body),
       });
       setLetters(prev => prev.map(letter => letter.id === updated.id ? updated : letter));
       setSelected(updated);
       setEditingSelected(false);
       setEditPin('');
+      setMessage('수정됨');
     } catch (err) {
       setMessage(err.message || '열린 편지를 수정하지 못했습니다.');
     } finally {
@@ -353,11 +450,15 @@ export default function OpenMailboxPage() {
     }
   }
 
+  function requestDeleteSelectedLetter() {
+    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해주세요.');
+    setConfirmingDelete(true);
+    setMessage('');
+  }
+
   async function deleteSelectedLetter() {
     if (!selected) return;
     if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해주세요.');
-    if (!window.confirm('이 열린 편지를 삭제할까요?')) return;
-
     setEditSaving(true);
     setMessage('');
     try {
@@ -424,7 +525,7 @@ export default function OpenMailboxPage() {
                   type="button"
                   key={letter.id}
                   className={`open-letter-card ${letter.type} ${letter.content ? '' : 'has-no-copy'}`.trim()}
-                  onClick={() => setSelected(letter)}
+                  onClick={() => { setMessage(''); setSelected(letter); }}
                 >
                   {(letter.type === 'draw' || letter.type === 'photo') && letter.imageUrl && (
                     <img src={letter.imageUrl} alt="" />
@@ -432,7 +533,7 @@ export default function OpenMailboxPage() {
                   {letter.content && <p>{letter.content}</p>}
                   <footer>
                     <span>{letter.nickname}</span>
-                    <time>{formatDate(letter.createdAt)}</time>
+                    <time>{wasEdited(letter) ? '수정됨' : formatDate(letter.createdAt)}</time>
                   </footer>
                 </button>
               ))}
@@ -476,9 +577,11 @@ export default function OpenMailboxPage() {
                 />
                 <input
                   className="open-compose-input"
+                  type="password"
                   value={pin}
                   onChange={event => setPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
                   inputMode="numeric"
+                  autoComplete="new-password"
                   maxLength={4}
                   placeholder="수정/삭제 PIN 4자리"
                 />
@@ -565,7 +668,7 @@ export default function OpenMailboxPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelected(null)}
+            onClick={() => { setMessage(''); setSelected(null); }}
           >
             <motion.article
               className="open-letter-modal"
@@ -574,8 +677,11 @@ export default function OpenMailboxPage() {
               exit={{ opacity: 0, y: 12, scale: 0.98 }}
               onClick={event => event.stopPropagation()}
             >
-              <button type="button" onClick={() => setSelected(null)}>닫기</button>
-              <span>{formatDate(selected.createdAt)}</span>
+              <button type="button" onClick={() => { setMessage(''); setSelected(null); }}>닫기</button>
+              <span>
+                {formatDate(selected.createdAt)}
+                {wasEdited(selected) && <em className="open-edited-label">수정됨</em>}
+              </span>
               {editingSelected ? (
                 <form className="open-letter-edit-form" onSubmit={updateSelectedLetter}>
                   <input
@@ -585,18 +691,38 @@ export default function OpenMailboxPage() {
                     maxLength={12}
                     placeholder="닉네임"
                   />
-                  <textarea
-                    className="open-compose-textarea compact"
-                    value={editContent}
-                    onChange={event => setEditContent(event.target.value.slice(0, CONTENT_MAX_LENGTH))}
-                    maxLength={CONTENT_MAX_LENGTH}
-                    placeholder={selected.type === 'text' ? '내용' : '짧은 설명'}
-                  />
+                  {selected.type === 'text' && (
+                    <textarea
+                      className="open-compose-textarea compact"
+                      value={editContent}
+                      onChange={event => setEditContent(event.target.value.slice(0, CONTENT_MAX_LENGTH))}
+                      maxLength={CONTENT_MAX_LENGTH}
+                      placeholder="내용"
+                    />
+                  )}
+                  {selected.type === 'draw' && (
+                    <div className="open-edit-draw">
+                      <OpenDrawCanvas
+                        key={`edit-draw-${selected.id}`}
+                        canvasRef={editCanvasRef}
+                        initialImageUrl={selected.imageUrl || ''}
+                        onDrawn={setEditDrawn}
+                      />
+                    </div>
+                  )}
+                  {selected.type === 'photo' && selected.imageUrl && (
+                    <div className="open-edit-photo-note">
+                      <img src={selected.imageUrl} alt="" />
+                      <span>사진은 그대로 두고 닉네임만 수정할 수 있어요.</span>
+                    </div>
+                  )}
                   <input
                     className="open-compose-input"
+                    type="password"
                     value={editPin}
                     onChange={event => setEditPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
                     inputMode="numeric"
+                    autoComplete="new-password"
                     maxLength={4}
                     placeholder="PIN 4자리"
                   />
@@ -614,15 +740,26 @@ export default function OpenMailboxPage() {
                   <footer>from. {selected.nickname}</footer>
                   <div className="open-letter-pin-actions">
                     <input
+                      type="password"
                       value={editPin}
                       onChange={event => setEditPin(event.target.value.replace(/\D/g, '').slice(0, 4))}
                       inputMode="numeric"
+                      autoComplete="new-password"
                       maxLength={4}
                       placeholder="PIN 4자리"
                     />
                     <button type="button" onClick={() => setEditingSelected(true)} disabled={editSaving}>수정</button>
-                    <button type="button" onClick={deleteSelectedLetter} disabled={editSaving}>삭제</button>
+                    <button type="button" onClick={requestDeleteSelectedLetter} disabled={editSaving}>삭제</button>
                   </div>
+                  {confirmingDelete && (
+                    <div className="open-delete-confirm">
+                      <span>정말 삭제할까요?</span>
+                      <button type="button" onClick={() => setConfirmingDelete(false)} disabled={editSaving}>취소</button>
+                      <button type="button" onClick={deleteSelectedLetter} disabled={editSaving}>
+                        {editSaving ? '삭제 중...' : '삭제'}
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
               {message && <div className="open-message">{message}</div>}

@@ -1643,6 +1643,7 @@ app.get("/public-letters", async (req, res) => {
         content: true,
         imageUrl: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
     res.json({ letters, total, page, pageSize: PUBLIC_LETTER_PAGE_SIZE });
@@ -1699,6 +1700,7 @@ app.post("/public-letters", publicLetterLimiter, async (req, res) => {
         content: true,
         imageUrl: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
     res.status(201).json(letter);
@@ -1738,9 +1740,21 @@ app.put("/public-letters/:id", publicLetterLimiter, async (req, res) => {
     const pinMatches = await bcrypt.compare(pin, existing.pinHash);
     if (!pinMatches) return res.status(403).json({ message: "PIN이 올바르지 않습니다." });
 
+    const data = { nickname };
+    if (existing.type === "text") {
+      data.content = content;
+    } else {
+      data.content = null;
+    }
+    if (existing.type === "draw" && req.body.imageUrl !== undefined) {
+      const imageUrl = normalizePublicAssetUrl(req.body.imageUrl);
+      if (!imageUrl) return res.status(400).json({ message: "수정할 그림 이미지를 확인할 수 없습니다." });
+      data.imageUrl = imageUrl;
+    }
+
     const letter = await prisma.publicLetter.update({
       where: { id },
-      data: { nickname, content: content || null },
+      data,
       select: {
         id: true,
         nickname: true,
@@ -1748,6 +1762,7 @@ app.put("/public-letters/:id", publicLetterLimiter, async (req, res) => {
         content: true,
         imageUrl: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
     res.json(letter);
