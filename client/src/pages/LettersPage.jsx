@@ -137,7 +137,7 @@ export default function LettersPage() {
                   className={`letter-card ${unlocked ? 'is-open' : 'is-locked'}`}
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.06, ease }}
+                  transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.035, ease }}
                   whileHover={unlocked ? { translateY: -2, boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
                 >
                   <div className="letter-card-inner">
