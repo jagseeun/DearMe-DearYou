@@ -396,7 +396,7 @@ export default function AdminPage() {
     try {
       const data = await fetchJsonWithTimeout('/admin/letters/send-due', { method: 'POST' }, 90000);
       setSendResult(data);
-      setMessage(data.message || `편지 발송을 실행했습니다. 성공 ${data.sent}, 실패 ${data.failed}`);
+      setMessage(data.message || `편지 발송 요청을 실행했습니다. 성공 ${data.sent}, 실패 ${data.failed}`);
       await loadAdminLetters();
     } catch (err) {
       setMessage(err.message || '편지 발송 실패');
@@ -413,7 +413,7 @@ export default function AdminPage() {
     try {
       const data = await fetchJsonWithTimeout(`/admin/letters/${letter.id}/send`, { method: 'POST' }, 45000);
       setSendResult(data);
-      setMessage(data.message || '편지를 발송했습니다.');
+      setMessage(data.message || '편지 발송 요청이 접수되었습니다.');
       await loadAdminLetters();
     } catch (err) {
       setMessage(err.message || '편지 발송 실패');

@@ -46,7 +46,7 @@ export default function PinkLetterViewPage() {
       const res = await fetch('/trigger-send', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || '발송 실패');
-      setSendMsg(data.sent ? '이메일 발송 완료' : '발송할 편지가 없습니다');
+      setSendMsg(data.sent ? '이메일 발송 요청이 접수됐어요. 스팸함이나 프로모션함도 확인해주세요.' : '발송할 편지가 없습니다');
       setTimeout(() => setSendMsg(''), 3000);
     } catch (err) {
       setSendMsg(err.message || '발송 실패');

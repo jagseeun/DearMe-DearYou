@@ -247,6 +247,13 @@ async function sendMail(options) {
   return withTimeout(mailer.sendMail(options), MAIL_SEND_TIMEOUT_MS, "mail send timeout");
 }
 
+function mailMessageId(result) {
+  if (!result) return null;
+  if (typeof result.messageId === "string") return result.messageId;
+  if (Array.isArray(result.messageIds) && result.messageIds[0]) return result.messageIds[0];
+  return null;
+}
+
 function validatePassword(value) {
   if (typeof value !== "string" || value.length < PASSWORD_MIN_LENGTH) {
     return `비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상으로 입력해주세요.`;
@@ -343,7 +350,15 @@ verifyMailerConfig();
 // 개봉일이 된 편지 이메일 발송
 async function sendDueLetters({ authorId, letterId, force = false } = {}) {
   const now = new Date();
-  const stats = { checked: 0, sent: 0, failed: 0, skippedNoEmail: 0, errors: [] };
+  const stats = {
+    checked: 0,
+    sent: 0,
+    failed: 0,
+    skippedNoEmail: 0,
+    senderNotifyFailed: 0,
+    accepted: [],
+    errors: [],
+  };
 
   try {
     const letters = await prisma.letter.findMany({
@@ -405,7 +420,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
 
       try {
         // 수신자에게 발송
-        await sendMail({
+        const recipientResult = await sendMail({
           from: emailFromHeader,
           replyTo: emailReplyTo,
           to: email,
@@ -416,26 +431,41 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
           html,
         });
 
-        // 타인에게 보내는 편지라면 발신자에게도 발송 알림
-        if (isToOther && isValidEmail(letter.author.email)) {
-          const senderHtml = buildSenderNotifyEmail(senderName, recipientName, letter.openDate, emailTheme, emailMeta);
-          await sendMail({
-            from: emailFromHeader,
-            replyTo: emailReplyTo,
-            to: letter.author.email,
-            subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었어요`),
-            text: `안녕, ${senderName}.\n네가 ${recipientName}에게 보낸 편지가 오늘 전달되었어.\n\n${metaText}\n\n${buildEmailHomeText()}`,
-            html: senderHtml,
-          });
-        }
-
         await prisma.letter.update({
           where: { id: letter.id },
           data: { sentAt: deliveredAt, sentToEmail: email },
         });
 
         stats.sent += 1;
-        console.log(`✉ 발송 완료: ${email} (편지 #${letter.id})`);
+        stats.accepted.push({
+          letterId: letter.id,
+          to: email,
+          messageId: mailMessageId(recipientResult),
+        });
+        console.log(`✉ 발송 요청 접수: ${email} (편지 #${letter.id}, messageId: ${mailMessageId(recipientResult) || "n/a"})`);
+
+        // 타인에게 보내는 편지라면 발신자에게도 발송 알림. 이 알림 실패는 수신자 발송 성공을 취소하지 않는다.
+        if (isToOther && isValidEmail(letter.author.email)) {
+          try {
+            const senderHtml = buildSenderNotifyEmail(senderName, recipientName, letter.openDate, emailTheme, emailMeta);
+            await sendMail({
+              from: emailFromHeader,
+              replyTo: emailReplyTo,
+              to: letter.author.email,
+              subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었어요`),
+              text: `안녕, ${senderName}.\n네가 ${recipientName}에게 보낸 편지가 오늘 전달되었어.\n\n${metaText}\n\n${buildEmailHomeText()}`,
+              html: senderHtml,
+            });
+          } catch (notifyErr) {
+            stats.senderNotifyFailed += 1;
+            stats.errors.push({
+              letterId: letter.id,
+              reason: "sender_notify_failed",
+              message: "수신자 이메일 발송 요청은 접수됐지만 발신자 알림 메일은 실패했습니다.",
+            });
+            console.error(`✉ 발신자 알림 실패: ${letter.author.email}`, notifyErr.message);
+          }
+        }
       } catch (err) {
         stats.failed += 1;
         stats.errors.push({
@@ -507,7 +537,7 @@ function publicMailErrorMessage(err) {
 
 function deliveryResultMessage(delivery) {
   if (!delivery) return "";
-  if (delivery.sent > 0) return "이메일 발송이 완료되었습니다.";
+  if (delivery.sent > 0) return "이메일 발송 요청이 접수되었습니다. 받은편지함에 없으면 스팸함이나 프로모션함도 확인해주세요.";
   if (delivery.checked === 0) return "발송 대상 편지를 찾지 못했습니다. 관리자에서 편지 상태를 확인해주세요.";
   if (delivery.skippedNoEmail > 0) return "발송할 이메일 주소가 없거나 형식이 올바르지 않습니다.";
   if (delivery.errors?.[0]?.message) return delivery.errors[0].message;
@@ -1714,7 +1744,7 @@ app.delete("/delete-letter/:id", async (req, res) => {
 app.post("/trigger-send", async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
   const result = await sendDueLetters({ authorId: req.session.user.id });
-  res.json({ message: "발송 완료", ...result });
+  res.json({ message: deliveryResultMessage(result) || "발송 요청이 접수되었습니다.", ...result });
 });
 
 app.post("/teacher-letters", requireAdmin, async (req, res) => {
@@ -2052,7 +2082,7 @@ app.patch("/admin/letters/:id/delivery-email", adminLimiter, requireAdmin, async
 app.post("/admin/letters/send-due", adminLimiter, requireAdmin, async (req, res) => {
   try {
     const result = await sendDueLetters();
-    res.json({ message: "개봉일이 지난 편지 발송을 실행했습니다.", ...result });
+    res.json({ message: deliveryResultMessage(result) || "개봉일이 지난 편지 발송 요청을 실행했습니다.", ...result });
   } catch (err) {
     console.error("admin due letter send error:", err);
     res.status(500).json({ message: "편지 발송에 실패했습니다." });
@@ -2081,7 +2111,7 @@ app.post("/admin/letters/:id/send", adminLimiter, requireAdmin, async (req, res)
 
     const result = await sendDueLetters({ letterId: id });
     if (result.sent > 0) {
-      return res.json({ message: "편지를 발송했습니다.", ...result });
+      return res.json({ message: deliveryResultMessage(result) || "편지 발송 요청이 접수되었습니다.", ...result });
     }
     const status = result.failed > 0 ? 500 : 400;
     res.status(status).json({ message: "발송할 수 있는 편지가 없거나 이메일이 없습니다.", ...result });

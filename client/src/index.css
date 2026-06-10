@@ -11507,6 +11507,45 @@ canvas {
   max-height: min(62vh, 540px) !important;
 }
 
+.done-delivery-status {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(18px, 4vh, 34px);
+  z-index: 4;
+  width: min(520px, calc(100vw - 48px));
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 18px;
+  border: 1px solid rgba(244, 211, 218, 0.22);
+  border-radius: 999px;
+  background: rgba(42, 27, 43, 0.42);
+  color: rgba(255, 241, 232, 0.88);
+  text-align: center;
+  backdrop-filter: blur(18px) saturate(0.92);
+  -webkit-backdrop-filter: blur(18px) saturate(0.92);
+  box-shadow: 0 16px 38px rgba(16, 9, 24, 0.24);
+}
+
+.done-delivery-status strong {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.done-delivery-status span {
+  font-size: 12px;
+  line-height: 1.45;
+  color: rgba(241, 205, 213, 0.78);
+}
+
+.done-delivery-status.is-failed {
+  border-color: rgba(255, 150, 166, 0.34);
+  color: rgba(255, 230, 232, 0.92);
+}
+
 /* Stable 4:3 media frames for draw and video. */
 .draw-editor.draw-editor-clean .draw-canvas-wrap,
 .draw-editor.draw-editor-clean .draw-canvas,

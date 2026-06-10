@@ -350,7 +350,7 @@ function CallActive({ letter, name, onHangup }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ letterId: letter.id, presentVideoUrl, compositeVideoUrl, email }),
       }).then(r => r.json()).then(d => { if (d.message) throw new Error(d.message); return d; });
-      setSendMsg('이메일이 발송됐어요!');
+      setSendMsg('이메일 발송 요청이 접수됐어요.');
       setTimeout(onHangup, 1500);
     } catch (err) {
       setSendMsg(err.message || '발송 실패');
