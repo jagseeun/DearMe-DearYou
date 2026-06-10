@@ -78,7 +78,7 @@ export default function SignupPage() {
         <span className="from">Dear You</span>
       </motion.h1>
 
-      <motion.p variants={item} className="home-subtitle">미래의 나에게 편지를 남깁니다</motion.p>
+      <motion.p variants={item} className="home-subtitle">오늘의 마음을 나와 친구에게 전하는 편지</motion.p>
 
       <motion.form
         className="form-container"

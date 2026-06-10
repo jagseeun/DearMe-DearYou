@@ -104,6 +104,7 @@ export default function HelloPage() {
     if (!currentPassword || !nextPassword) { setPasswordMsg('현재 비밀번호와 새 비밀번호를 입력해주세요.'); return; }
     if (nextPassword.length < 6) { setPasswordMsg('새 비밀번호는 6자 이상으로 입력해주세요.'); return; }
     if (nextPassword.length > PASSWORD_MAX_LENGTH) { setPasswordMsg(`새 비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`); return; }
+    if (currentPassword === nextPassword) { setPasswordMsg('새 비밀번호는 현재 비밀번호와 다르게 입력해주세요.'); return; }
 
     setPasswordSaving(true);
     setPasswordMsg('');
