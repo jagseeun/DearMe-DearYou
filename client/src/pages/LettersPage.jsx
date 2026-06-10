@@ -21,6 +21,47 @@ function recipientText(letter) {
   return '';
 }
 
+function LetterTypeIcon({ type, locked }) {
+  if (locked) {
+    return (
+      <svg className="letter-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="6" y="10" width="12" height="10" rx="2.4" />
+        <path d="M8.5 10V7.7a3.5 3.5 0 0 1 7 0V10" />
+        <path d="M12 14v2.4" />
+      </svg>
+    );
+  }
+
+  if (type === 'draw') {
+    return (
+      <svg className="letter-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4.5 16.8c3.5.7 5.8-.1 7-2.5" />
+        <path d="M11.4 14.4 18.8 7a2 2 0 0 0-2.8-2.8l-7.4 7.4" />
+        <path d="M8.6 11.6 11.4 14.4" />
+        <path d="M5.4 18.8c1.7.1 3.2-.3 4.5-1.1" />
+      </svg>
+    );
+  }
+
+  if (type === 'video') {
+    return (
+      <svg className="letter-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="6" width="13" height="12" rx="2.5" />
+        <path d="m17 10 3.4-2v8L17 14" />
+        <path d="m9.5 9.5 4 2.5-4 2.5z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="letter-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="6.5" width="16" height="11" rx="2.5" />
+      <path d="m5 8 7 5 7-5" />
+      <path d="M8 15h8" />
+    </svg>
+  );
+}
+
 export default function LettersPage() {
   const navigate = useNavigate();
   const [letters, setLetters] = useState([]);
@@ -117,7 +158,10 @@ export default function LettersPage() {
             <div className="letter-list-kicker">MY LETTERS</div>
             <h2 className="letter-list-title">나의 편지</h2>
           </div>
-          {!loading && letters.length > 0 && (
+        </motion.header>
+
+        {!loading && letters.length > 0 && (
+          <div className="letter-list-controls">
             <div className="letter-list-stats" aria-label="편지 통계">
               <div className="letter-list-stat">
                 <strong>{unlockedCount}</strong>
@@ -129,14 +173,13 @@ export default function LettersPage() {
                 <span>잠김</span>
               </div>
             </div>
-          )}
-          {!loading && letters.length > 0 && (
+
             <div className="letter-list-filters" aria-label="편지 필터">
               <button type="button" className={!favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(false)}>전체</button>
               <button type="button" className={favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(true)}>즐겨찾기 {favoriteCount}</button>
             </div>
-          )}
-        </motion.header>
+          </div>
+        )}
 
         {loading ? (
           <div className="letter-empty">불러오는 중...</div>
@@ -178,7 +221,9 @@ export default function LettersPage() {
                   whileHover={unlocked ? { translateY: -2, boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
                 >
                   <div className="letter-card-inner">
-                    <div className="letter-icon" aria-hidden="true">{unlocked ? type.icon : '🔒'}</div>
+                    <div className="letter-icon" aria-hidden="true">
+                      <LetterTypeIcon type={letter.type} locked={!unlocked} />
+                    </div>
 
                     <div
                       className={unlocked ? 'letter-card-copy letter-card-click' : 'letter-card-copy'}

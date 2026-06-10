@@ -885,7 +885,7 @@ export default function WritePage() {
                 <LetterTextarea
                   value={text}
                   onChange={setText}
-                  placeholder="내년의 나에게 하고 싶은 말을 적어주세요"
+                  placeholder="오늘의 마음을 나와 너에게 조용히 남겨주세요"
                 />
 
                 {/* 사진 촬영 */}
