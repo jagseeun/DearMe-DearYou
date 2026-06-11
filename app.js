@@ -2052,6 +2052,7 @@ app.get("/received-letters", async (req, res) => {
       where: {
         authorId: { not: req.session.user.id },
         type: { not: "call" },
+        openDate: { lte: now },
         OR: [
           { recipientEmail },
           { deliveryEmail: recipientEmail },

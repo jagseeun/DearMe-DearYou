@@ -644,7 +644,7 @@ export default function WritePage() {
           signatureData: mode === 'text' ? draftSignatureData || undefined : undefined,
           openDate,
           emailTheme,
-          deliveryEmail: email.trim().toLowerCase(),
+          deliveryEmail: toOther ? '' : email.trim().toLowerCase(),
           toOther,
           recipientEmail: toOther ? recipientEmail.trim().toLowerCase() : '',
           recipientName: toOther ? recipientName.trim() : '',
@@ -720,7 +720,7 @@ export default function WritePage() {
         signatureData: mode === 'text' ? (finalSignature || undefined) : undefined,
         openDate: effectiveOpenDate,
         emailTheme,
-        email: cleanEmail,
+        email: toOther ? undefined : cleanEmail,
         recipientEmail: toOther ? cleanRecipientEmail : undefined,
         recipientName: toOther ? cleanRecipientName : undefined,
       };
@@ -1183,11 +1183,12 @@ export default function WritePage() {
                 </AnimatePresence>
               </div>
 
-              {/* 내 발송 이메일 */}
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={labelStyle}>✉ {toOther ? '내 이메일 (선택)' : '발송 이메일'} <span style={{ color: 'rgba(255,252,223,0.3)' }}>(개봉일에 자동 발송)</span></label>
-                <input type="email" placeholder="이메일 주소" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
-              </div>
+              {!toOther && (
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <label style={labelStyle}>✉ 발송 이메일 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(개봉일에 자동 발송)</span></label>
+                  <input type="email" placeholder="이메일 주소" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
+                </div>
+              )}
 
               {/* 버튼 */}
               <div className="write-modal-actions">
