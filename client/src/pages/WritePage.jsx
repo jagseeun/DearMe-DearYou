@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import fixWebmDuration from 'fix-webm-duration';
 import DrawCanvas from '../components/DrawCanvas.jsx';
+import NoticeModal from '../components/NoticeModal.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.18 } } };
@@ -334,13 +335,17 @@ export default function WritePage() {
   const [recipientName, setRecipientName] = useState('');
   const [draft, setDraft] = useState(null);
   const [draftSaving, setDraftSaving] = useState(false);
-  const [draftMessage, setDraftMessage] = useState('');
+  const [notice, setNotice] = useState(null);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const recorderRef = useRef(null);
   const recordingStartedAtRef = useRef(0);
   const chunksRef = useRef([]);
+
+  function showNotice(message, title = '확인해주세요') {
+    setNotice({ title, message });
+  }
 
   useEffect(() => {
     fetch('/get-user-info')
@@ -385,7 +390,7 @@ export default function WritePage() {
       setStage('counting');
       setCountdown(3);
       setVideoUrl('');
-    } catch { alert('카메라 권한을 허용해주세요.'); }
+    } catch { showNotice('카메라 권한을 허용해주세요.', '카메라 확인'); }
   }
 
   function startRecording() {
@@ -421,7 +426,7 @@ export default function WritePage() {
       setVideoUrl(publicUrl);
       setStage('done');
     } catch {
-      alert('업로드 실패. 다시 시도해주세요.');
+      showNotice('업로드 실패. 다시 시도해주세요.', '업로드 실패');
       setStage('idle');
     }
   }
@@ -460,7 +465,7 @@ export default function WritePage() {
           photoVideoRef.current.play?.().catch(() => {});
         }
       });
-    } catch { alert('카메라 권한을 허용해주세요.'); }
+    } catch { showNotice('카메라 권한을 허용해주세요.', '카메라 확인'); }
   }
 
   function closePhotoCamera() {
@@ -488,7 +493,7 @@ export default function WritePage() {
       const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/jpeg' } });
       if (!put.ok) throw new Error();
       setImageUrl(publicUrl);
-    } catch { alert('사진 업로드 실패. 다시 시도해주세요.'); }
+    } catch { showNotice('사진 업로드 실패. 다시 시도해주세요.', '업로드 실패'); }
     finally { setImageUploading(false); }
   }
 
@@ -541,12 +546,11 @@ export default function WritePage() {
     setSendNow(false);
     setStage(nextMode === 'video' && nextDraft.videoUrl ? 'done' : 'idle');
     setDrawHasDrawn(Boolean(nextMode === 'draw' && nextDraft.imageUrl));
-    setDraftMessage('임시저장을 불러왔어요.');
+    showNotice('임시저장을 불러왔어요.', '초안 불러오기');
   }
 
   async function saveDraft() {
     setDraftSaving(true);
-    setDraftMessage('');
     try {
       let draftImageUrl = mode === 'draw' ? (drawDraftImageUrl || undefined) : (imageUrl || undefined);
       if (mode === 'draw' && drawHasDrawn && drawCanvasEl) {
@@ -573,9 +577,9 @@ export default function WritePage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || '임시저장에 실패했습니다.');
       setDraft(data.draft);
-      setDraftMessage(data.message || '임시저장했습니다.');
+      showNotice(data.message || '임시저장했습니다.', '임시 저장');
     } catch (err) {
-      setDraftMessage(err.message || '임시저장에 실패했습니다.');
+      showNotice(err.message || '임시저장에 실패했습니다.', '임시 저장 실패');
     } finally {
       setDraftSaving(false);
     }
@@ -583,41 +587,40 @@ export default function WritePage() {
 
   async function deleteDraft() {
     setDraftSaving(true);
-    setDraftMessage('');
     try {
       const res = await fetch('/letter-draft', { method: 'DELETE' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || '임시저장을 삭제하지 못했습니다.');
       setDraft(null);
-      setDraftMessage(data.message || '임시저장을 삭제했습니다.');
+      showNotice(data.message || '임시저장을 삭제했습니다.', '초안 삭제');
     } catch (err) {
-      setDraftMessage(err.message || '임시저장을 삭제하지 못했습니다.');
+      showNotice(err.message || '임시저장을 삭제하지 못했습니다.', '초안 삭제 실패');
     } finally {
       setDraftSaving(false);
     }
   }
 
   async function handleFromMe() {
-    if (mode === 'text' && !text.trim()) return alert('내용을 작성해주세요!');
-    if (mode === 'video' && !videoUrl) return alert('먼저 영상을 촬영해주세요!');
-    if (mode === 'draw' && !drawHasDrawn) return alert('그림을 그려주세요!');
+    if (mode === 'text' && !text.trim()) return showNotice('내용을 작성해주세요.');
+    if (mode === 'video' && !videoUrl) return showNotice('먼저 영상을 촬영해주세요.');
+    if (mode === 'draw' && !drawHasDrawn) return showNotice('그림을 그려주세요.');
     setShowModal(true);
   }
 
   async function handleSave() {
-    if (!openDate) return alert('개봉일을 선택해주세요!');
+    if (!openDate) return showNotice('개봉일을 선택해주세요.');
     const cleanEmail = email.trim().toLowerCase();
     const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
     const cleanRecipientName = recipientName.trim();
     const effectiveOpenDate = sendNow ? new Date().toISOString() : openDate;
     const isImmediateDelivery = sendNow || new Date(effectiveOpenDate) <= new Date();
-    if (isImmediateDelivery && !toOther && !cleanEmail) return alert('바로 보내려면 발송 이메일을 입력해주세요.');
-    if (text.length > LETTER_CONTENT_MAX_LENGTH) return alert(`내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
-    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return alert('이메일 형식이 올바르지 않습니다.');
+    if (isImmediateDelivery && !toOther && !cleanEmail) return showNotice('바로 보내려면 발송 이메일을 입력해주세요.');
+    if (text.length > LETTER_CONTENT_MAX_LENGTH) return showNotice(`내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return showNotice('이메일 형식이 올바르지 않습니다.');
     if (toOther) {
-      if (!cleanRecipientEmail) return alert('받는 사람 이메일을 입력해주세요.');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanRecipientEmail)) return alert('받는 사람 이메일 형식이 올바르지 않습니다.');
-      if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return alert(`받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
+      if (!cleanRecipientEmail) return showNotice('받는 사람 이메일을 입력해주세요.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanRecipientEmail)) return showNotice('받는 사람 이메일 형식이 올바르지 않습니다.');
+      if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return showNotice(`받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
     }
     setSaving(true);
     try {
@@ -663,10 +666,10 @@ export default function WritePage() {
           },
         });
       } else {
-        alert(data.message || '오류가 발생했습니다.');
+        showNotice(data.message || '오류가 발생했습니다.', '저장 실패');
         if (res.status === 401) navigate('/login');
       }
-    } catch (err) { alert(err.message || '서버 연결 오류'); }
+    } catch (err) { showNotice(err.message || '서버 연결 오류', '저장 실패'); }
     finally { setSaving(false); }
   }
 
@@ -835,6 +838,18 @@ export default function WritePage() {
           <div className="write-heading">
             편지 쓰기
           </div>
+          <div className="write-draft-actions">
+            {draft && (
+              <>
+                <button type="button" onClick={() => applyDraft(draft)} disabled={draftSaving}>
+                  불러오기
+                </button>
+                <button type="button" onClick={deleteDraft} disabled={draftSaving}>
+                  초안 삭제
+                </button>
+              </>
+            )}
+          </div>
           <div className="mode-tabs">
             {[
               { key: 'text', label: '✉ 텍스트' },
@@ -852,19 +867,6 @@ export default function WritePage() {
                 {label}
               </button>
             ))}
-          </div>
-          <div className="write-draft-actions">
-            {draft && (
-              <>
-                <button type="button" onClick={() => applyDraft(draft)} disabled={draftSaving}>
-                  불러오기
-                </button>
-                <button type="button" onClick={deleteDraft} disabled={draftSaving}>
-                  초안 삭제
-                </button>
-              </>
-            )}
-            {draftMessage && <span>{draftMessage}</span>}
           </div>
         </motion.div>
 
@@ -1115,6 +1117,13 @@ export default function WritePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <NoticeModal
+        open={Boolean(notice)}
+        title={notice?.title}
+        message={notice?.message}
+        onClose={() => setNotice(null)}
+      />
     </motion.div>
   );
 }

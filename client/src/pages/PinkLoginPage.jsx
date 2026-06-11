@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import PinkStars from '../components/PinkStars.jsx';
+import NoticeModal from '../components/NoticeModal.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.16 } } };
@@ -13,10 +14,14 @@ export default function PinkLoginPage() {
   const navigate = useNavigate();
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
+  const [notice, setNotice] = useState(null);
 
   async function handleLogin() {
     const nextUserid = userid.trim();
-    if (!nextUserid || !password) return alert('아이디와 비밀번호를 입력해주세요.');
+    if (!nextUserid || !password) {
+      setNotice({ title: '로그인 확인', message: '아이디와 비밀번호를 입력해주세요.' });
+      return;
+    }
     try {
       const res = await fetch('/login', {
         method: 'POST',
@@ -25,9 +30,9 @@ export default function PinkLoginPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) navigate('/pink-letters');
-      else alert(data.message || '로그인에 실패했습니다.');
+      else setNotice({ title: '로그인 실패', message: data.message || '로그인에 실패했습니다.' });
     } catch {
-      alert('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.' });
     }
   }
 
@@ -113,6 +118,13 @@ export default function PinkLoginPage() {
           ← 돌아가기
         </motion.button>
       </motion.div>
+      <NoticeModal
+        open={Boolean(notice)}
+        title={notice?.title}
+        message={notice?.message}
+        onClose={() => setNotice(null)}
+        variant="pink"
+      />
     </div>
   );
 }

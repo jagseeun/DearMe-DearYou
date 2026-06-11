@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
+import NoticeModal from '../components/NoticeModal.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.14 } } };
@@ -17,10 +18,21 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [idMsg, setIdMsg] = useState({ text: '', ok: false });
   const [idChecked, setIdChecked] = useState(false);
+  const [notice, setNotice] = useState(null);
+  const [confirmingPasswordNote, setConfirmingPasswordNote] = useState(false);
+
+  function closeNotice() {
+    const afterClose = notice?.afterClose;
+    setNotice(null);
+    afterClose?.();
+  }
 
   async function checkUsername() {
     const nextUserid = userid.trim();
-    if (!nextUserid) return alert('아이디를 입력해주세요.');
+    if (!nextUserid) {
+      setNotice({ title: '아이디 확인', message: '아이디를 입력해주세요.' });
+      return;
+    }
     try {
       const res = await fetch('/check-username', {
         method: 'POST',
@@ -40,12 +52,19 @@ export default function SignupPage() {
     const nextName = name.trim();
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
-    if (!nextName || !nextUserid || !password || !passwordConfirm || !nextEmail) return alert('모든 정보를 입력해주세요.');
-    if (!idChecked) return alert('아이디 중복 확인을 해주세요.');
-    if (password.length < 6) return alert('비밀번호는 6자 이상으로 입력해주세요.');
-    if (password.length > PASSWORD_MAX_LENGTH) return alert(`비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`);
-    if (password !== passwordConfirm) return alert('비밀번호가 서로 일치하지 않습니다. 다시 확인해주세요.');
-    if (!window.confirm('비밀번호는 로그인에 꼭 필요합니다. 잊지 않도록 안전한 곳에 기록해두셨나요?')) return;
+    if (!nextName || !nextUserid || !password || !passwordConfirm || !nextEmail) return setNotice({ title: '회원가입 확인', message: '모든 정보를 입력해주세요.' });
+    if (!idChecked) return setNotice({ title: '아이디 확인', message: '아이디 중복 확인을 해주세요.' });
+    if (password.length < 6) return setNotice({ title: '비밀번호 확인', message: '비밀번호는 6자 이상으로 입력해주세요.' });
+    if (password.length > PASSWORD_MAX_LENGTH) return setNotice({ title: '비밀번호 확인', message: `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
+    if (password !== passwordConfirm) return setNotice({ title: '비밀번호 확인', message: '비밀번호가 서로 일치하지 않습니다. 다시 확인해주세요.' });
+    setConfirmingPasswordNote(true);
+  }
+
+  async function submitRegister() {
+    setConfirmingPasswordNote(false);
+    const nextName = name.trim();
+    const nextUserid = userid.trim();
+    const nextEmail = email.trim();
     try {
       const res = await fetch('/register', {
         method: 'POST',
@@ -54,13 +73,16 @@ export default function SignupPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        alert('회원가입이 완료되었습니다.');
-        navigate('/login');
+        setNotice({
+          title: '회원가입 완료',
+          message: '회원가입이 완료되었습니다.',
+          afterClose: () => navigate('/login'),
+        });
       } else {
-        alert(data.message || '회원가입에 실패했습니다.');
+        setNotice({ title: '회원가입 실패', message: data.message || '회원가입에 실패했습니다.' });
       }
     } catch {
-      alert('서버 연결에 실패했습니다.');
+      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다.' });
     }
   }
 
@@ -160,6 +182,22 @@ export default function SignupPage() {
       <motion.button variants={item} className="back-link" onClick={() => navigate('/')}>
         ← 돌아가기
       </motion.button>
+
+      <NoticeModal
+        open={Boolean(notice)}
+        title={notice?.title}
+        message={notice?.message}
+        onClose={closeNotice}
+      />
+      <NoticeModal
+        open={confirmingPasswordNote}
+        title="비밀번호 확인"
+        message="비밀번호는 로그인에 꼭 필요합니다. 잊지 않도록 안전한 곳에 기록해두셨나요?"
+        cancelLabel="돌아가기"
+        confirmLabel="가입하기"
+        onClose={() => setConfirmingPasswordNote(false)}
+        onConfirm={submitRegister}
+      />
     </motion.div>
   );
 }

@@ -9,24 +9,33 @@
 - 텍스트 편지 작성, 사진 첨부, 서명
 - 그림 편지 작성
 - 영상 편지 작성 및 업로드
+- 편지 임시 저장, 불러오기, 초안 삭제
 - 다른 사람에게 편지 보내기
 - 지정 날짜 예약 발송
 - 이메일 자동 발송
-- Cloudflare R2 파일 업로드
-- 편지 목록 조회 및 삭제
+- 편지 목록 조회, 즐겨찾기, 삭제
+- 열린 편지함 게시판 작성, 수정, 삭제
+- 개발자에게 마음 보내기
+- 커스텀 알림 모달과 반응형 작성 화면
 - 핑크 테마 편지 읽기
+- Cloudflare R2 파일 업로드
 
 ## 기술 스택
 
 | 분류 | 기술 |
 | --- | --- |
-| Backend | Node.js, Express |
-| Database | PostgreSQL + Prisma ORM |
-| Storage | Cloudflare R2 |
-| Auth | express-session, bcrypt |
+| Runtime | Node.js 22+ |
+| Backend | Express 5, dotenv |
+| Database | PostgreSQL, Prisma ORM, pg |
+| Session/Auth | express-session, connect-pg-simple, bcrypt |
+| Security | helmet, express-rate-limit |
+| Scheduler | node-cron |
 | Email | nodemailer |
-| Frontend | React 18, Vite |
-| UI | Framer Motion, CSS |
+| Storage | Cloudflare R2, AWS SDK S3 Presigner |
+| Frontend | React 18, Vite, React Router |
+| UI/Animation | Framer Motion, GSAP, CSS |
+| Media | Canvas API, MediaRecorder API, fix-webm-duration |
+| 3D/Visual | Three.js |
 
 ## 실행 방법
 

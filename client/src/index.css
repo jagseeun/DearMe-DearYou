@@ -13071,3 +13071,294 @@ canvas {
   font-family: inherit;
   cursor: pointer;
 }
+
+/* Delivery/notice tone: warmer brown, slightly calmer than the light cream toast. */
+.hello-delivery-toast {
+  border-color: rgba(214, 174, 128, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(118, 82, 56, 0.2), rgba(84, 60, 44, 0.1)),
+    rgba(68, 48, 38, 0.86) !important;
+  color: rgba(255, 243, 226, 0.94) !important;
+  box-shadow: 0 18px 42px rgba(24, 14, 8, 0.28) !important;
+}
+
+.hello-delivery-toast strong {
+  color: rgba(255, 246, 232, 0.96) !important;
+}
+
+.hello-delivery-toast span {
+  color: rgba(235, 211, 183, 0.78) !important;
+}
+
+.hello-delivery-toast button {
+  border-color: rgba(255, 232, 198, 0.32) !important;
+  background: rgba(244, 219, 185, 0.92) !important;
+  color: rgba(62, 43, 31, 0.92) !important;
+}
+
+.notice-modal-panel.brown {
+  border-color: rgba(214, 174, 128, 0.28) !important;
+  background:
+    linear-gradient(135deg, rgba(122, 86, 58, 0.2), rgba(85, 62, 45, 0.12)),
+    rgba(56, 42, 34, 0.94) !important;
+  color: rgba(255, 243, 226, 0.94) !important;
+}
+
+.notice-modal-panel.brown p {
+  color: rgba(235, 211, 183, 0.78) !important;
+}
+
+.notice-modal-panel.brown .notice-modal-actions button {
+  background: rgba(244, 219, 185, 0.92) !important;
+  color: rgba(62, 43, 31, 0.92) !important;
+}
+
+/* Final requested UI repairs: custom notices, stable writing frame, draft placement, mailbox labels. */
+.notice-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(12, 10, 12, 0.54);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.notice-modal-panel {
+  width: min(420px, 100%);
+  padding: 28px 28px 24px;
+  display: grid;
+  gap: 14px;
+  border: 1px solid rgba(255, 236, 205, 0.24);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, rgba(255, 246, 226, 0.12), rgba(168, 200, 181, 0.07)),
+    rgba(30, 31, 36, 0.92);
+  color: rgba(255, 247, 234, 0.94);
+  box-shadow: 0 26px 70px rgba(5, 5, 8, 0.38);
+  text-align: center;
+}
+
+.notice-modal-panel.pink {
+  border-color: rgba(244, 211, 218, 0.34);
+  background:
+    linear-gradient(135deg, rgba(255, 241, 232, 0.12), rgba(218, 157, 176, 0.1)),
+    rgba(43, 27, 45, 0.94);
+}
+
+.notice-modal-mark {
+  width: 38px;
+  height: 3px;
+  margin: 0 auto 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e7cfa1, #a8c8b5);
+}
+
+.notice-modal-panel.pink .notice-modal-mark {
+  background: linear-gradient(90deg, #f2cbd5, #a88ab0);
+}
+
+.notice-modal-panel h2 {
+  margin: 0;
+  color: rgba(255, 250, 240, 0.98);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.notice-modal-panel p {
+  margin: 0;
+  color: rgba(255, 238, 205, 0.7);
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.notice-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.notice-modal-actions button {
+  min-width: 108px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 236, 205, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 250, 238, 0.9);
+  color: rgba(52, 40, 31, 0.9);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.notice-modal-actions button.ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 247, 234, 0.78);
+}
+
+@media (min-width: 761px) {
+  .write-layout {
+    --write-frame-height: clamp(460px, 63dvh, 720px) !important;
+    --write-frame-width: min(calc(var(--write-frame-height) * 5 / 3), calc(100vw - clamp(96px, 18vw, 340px))) !important;
+    width: min(1280px, calc(100vw - 48px)) !important;
+    grid-template-rows: auto var(--write-frame-height) 50px !important;
+  }
+
+  .write-header {
+    display: grid !important;
+    grid-template-columns: minmax(170px, 1fr) auto !important;
+    grid-template-areas:
+      "title draft"
+      "title modes" !important;
+    align-items: end !important;
+    gap: 8px 18px !important;
+  }
+
+  .write-heading {
+    grid-area: title !important;
+    align-self: center !important;
+  }
+
+  .write-draft-actions {
+    grid-area: draft !important;
+    justify-self: end !important;
+    min-height: 30px !important;
+    margin: 0 !important;
+  }
+
+  .mode-tabs {
+    grid-area: modes !important;
+    justify-self: end !important;
+  }
+
+  .write-draft-actions:empty {
+    display: block !important;
+    visibility: hidden !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean {
+    grid-template-columns: minmax(0, calc(var(--write-frame-height) * 4 / 3)) 170px !important;
+    gap: 18px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-toolbar,
+  .write-stage.write-stage-draw .draw-toolbar {
+    width: 170px !important;
+    padding: 14px !important;
+    gap: 14px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-palette {
+    grid-template-columns: repeat(4, 30px) !important;
+    gap: 10px !important;
+    justify-content: center !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-swatch {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-size-group {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-size,
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-tool-button {
+    min-height: 40px !important;
+  }
+}
+
+@media (min-width: 1280px) and (min-height: 820px) {
+  .write-layout {
+    --write-frame-height: min(70dvh, 760px) !important;
+    --write-frame-width: min(calc(var(--write-frame-height) * 5 / 3), calc(100vw - 320px)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .write-header {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    justify-items: center !important;
+    gap: 10px !important;
+  }
+
+  .write-draft-actions {
+    order: 2 !important;
+    margin-top: 0 !important;
+  }
+
+  .mode-tabs {
+    order: 3 !important;
+  }
+
+  .notice-modal-panel {
+    padding: 24px 20px 20px;
+  }
+}
+
+.letters-main-page .letter-list-header {
+  align-items: center !important;
+}
+
+.letters-main-page .letter-list-header > div:first-child {
+  max-width: none !important;
+}
+
+.letters-main-page .letter-list-controls {
+  justify-content: flex-end !important;
+  margin-top: -2px !important;
+}
+
+.letters-main-page .letter-list-controls .letter-list-filters {
+  margin-left: auto !important;
+}
+
+.open-letter-date-stack {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.open-letter-date-stack em {
+  padding: 1px 6px;
+  border: 1px solid rgba(96, 66, 55, 0.14);
+  border-radius: 999px;
+  color: rgba(79, 58, 45, 0.62);
+  font-style: normal;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.open-letter-card footer {
+  align-items: center;
+}
+
+@media (max-width: 560px) {
+  .open-letter-date-stack {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .letters-main-page .letter-list-header {
+    align-items: stretch !important;
+  }
+
+  .letters-main-page .letter-list-stats {
+    justify-content: center !important;
+  }
+}
