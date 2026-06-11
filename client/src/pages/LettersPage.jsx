@@ -22,6 +22,15 @@ function recipientText(letter) {
   return '';
 }
 
+function senderText(letter) {
+  return letter.senderName || '누군가';
+}
+
+function receivedDateText(letter, unlocked) {
+  const date = letter.arrivedAt || letter.sentAt || letter.openDate;
+  return unlocked ? `✓ ${formatDate(date)} 도착` : `${formatDate(letter.openDate)} 도착 예정`;
+}
+
 function LetterTypeIcon({ type, locked }) {
   if (locked) {
     return (
@@ -66,32 +75,74 @@ function LetterTypeIcon({ type, locked }) {
 export default function LettersPage() {
   const navigate = useNavigate();
   const [letters, setLetters] = useState([]);
+  const [receivedLetters, setReceivedLetters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [favoriteOnly, setFavoriteOnly] = useState(false);
+  const [activeBox, setActiveBox] = useState('mine');
   const [notice, setNotice] = useState(null);
 
   useEffect(() => {
-    fetch('/get-user-info')
-      .then(r => { if (r.status === 401) { navigate('/login'); return null; } return r.json(); })
-      .then(d => { if (d?.name) setName(d.name); })
-      .catch(() => {});
+    let cancelled = false;
 
-    fetch('/my-letters')
-      .then(r => { if (r.status === 401) { navigate('/login'); return null; } return r.json(); })
-      .then(data => {
-        if (data) setLetters(data.filter(letter => letter.type !== 'call'));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    async function loadLetters() {
+      setLoading(true);
+      try {
+        const userRes = await fetch('/get-user-info');
+        if (userRes.status === 401) {
+          navigate('/login');
+          return;
+        }
+        const userData = await userRes.json();
+        if (cancelled) return;
+        setName(userData?.name || '');
+        setUserEmail(userData?.email || '');
+
+        const [myRes, receivedRes] = await Promise.all([
+          fetch('/my-letters'),
+          fetch('/received-letters'),
+        ]);
+        if (myRes.status === 401 || receivedRes.status === 401) {
+          navigate('/login');
+          return;
+        }
+
+        const myData = await myRes.json().catch(() => []);
+        const receivedData = await receivedRes.json().catch(() => []);
+        if (cancelled) return;
+        const nextLetters = Array.isArray(myData) ? myData.filter(letter => letter.type !== 'call') : [];
+        const nextReceivedLetters = Array.isArray(receivedData) ? receivedData.filter(letter => letter.type !== 'call') : [];
+        setLetters(nextLetters);
+        setReceivedLetters(nextReceivedLetters);
+        if (nextLetters.length === 0 && nextReceivedLetters.length > 0) setActiveBox('received');
+      } catch {
+        if (!cancelled) {
+          setLetters([]);
+          setReceivedLetters([]);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadLetters();
+    return () => { cancelled = true; };
   }, [navigate]);
 
   const now = new Date();
-  const unlockedCount = letters.filter(l => new Date(l.openDate) <= now).length;
-  const lockedCount = letters.length - unlockedCount;
+  const isReceivedBox = activeBox === 'received';
+  const activeLetters = isReceivedBox ? receivedLetters : letters;
+  const unlockedCount = activeLetters.filter(l => new Date(l.openDate) <= now).length;
+  const lockedCount = activeLetters.length - unlockedCount;
   const favoriteCount = letters.filter(l => l.favorite).length;
-  const visibleLetters = favoriteOnly ? letters.filter(l => l.favorite) : letters;
+  const visibleLetters = !isReceivedBox && favoriteOnly ? letters.filter(l => l.favorite) : activeLetters;
+
+  function switchMailbox(nextBox) {
+    setActiveBox(nextBox);
+    if (nextBox === 'received') setFavoriteOnly(false);
+  }
 
   function openLetter(letter) {
     navigate('/view-letter', { state: { letter, name, returnTo: '/letters' } });
@@ -157,10 +208,10 @@ export default function LettersPage() {
           transition={{ duration: 0.8, delay: 0.1, ease }}
         >
           <div>
-            <div className="letter-list-kicker">MY LETTERS</div>
-            <h2 className="letter-list-title">나의 편지</h2>
+            <div className="letter-list-kicker">{isReceivedBox ? 'RECEIVED' : 'MY LETTERS'}</div>
+            <h2 className="letter-list-title">{isReceivedBox ? '받은 편지' : '나의 편지'}</h2>
           </div>
-          {!loading && letters.length > 0 && (
+          {!loading && activeLetters.length > 0 && (
             <div className="letter-list-stats" aria-label="편지 통계">
               <div className="letter-list-stat">
                 <strong>{unlockedCount}</strong>
@@ -175,7 +226,18 @@ export default function LettersPage() {
           )}
         </motion.header>
 
-        {!loading && letters.length > 0 && (
+        {!loading && (
+          <div className="letter-mailbox-tabs" aria-label="편지함 전환">
+            <button type="button" className={!isReceivedBox ? 'active' : ''} onClick={() => switchMailbox('mine')}>
+              나의 편지 <span>{letters.length}</span>
+            </button>
+            <button type="button" className={isReceivedBox ? 'active' : ''} onClick={() => switchMailbox('received')}>
+              받은 편지 <span>{receivedLetters.length}</span>
+            </button>
+          </div>
+        )}
+
+        {!loading && !isReceivedBox && letters.length > 0 && (
           <div className="letter-list-controls">
             <div className="letter-list-filters" aria-label="편지 필터">
               <button type="button" className={!favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(false)}>전체</button>
@@ -186,17 +248,26 @@ export default function LettersPage() {
 
         {loading ? (
           <div className="letter-empty">불러오는 중...</div>
-        ) : letters.length === 0 ? (
+        ) : activeLetters.length === 0 ? (
           <motion.div
             className="letter-empty"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <strong>아직 작성한 편지가 없어요.</strong>
-            <span>미래의 나에게 첫 편지를 남겨보세요.</span>
-            <button type="button" className="soft-button" onClick={() => navigate('/write')}>첫 편지 쓰기</button>
+            {isReceivedBox ? (
+              <>
+                <strong>{userEmail ? '아직 받은 편지가 없어요.' : '받은 편지를 찾을 이메일이 없어요.'}</strong>
+                <span>{userEmail ? '도착한 편지가 생기면 여기에 모여요.' : '내 계정 이메일과 일치하는 편지만 보여요.'}</span>
+              </>
+            ) : (
+              <>
+                <strong>아직 작성한 편지가 없어요.</strong>
+                <span>미래의 나에게 첫 편지를 남겨보세요.</span>
+                <button type="button" className="soft-button" onClick={() => navigate('/write')}>첫 편지 쓰기</button>
+              </>
+            )}
           </motion.div>
-        ) : visibleLetters.length === 0 ? (
+        ) : !isReceivedBox && visibleLetters.length === 0 ? (
           <motion.div
             className="letter-empty"
             initial={{ opacity: 0, y: 12 }}
@@ -213,11 +284,16 @@ export default function LettersPage() {
               const days = daysUntil(letter.openDate);
               const type = getType(letter);
               const recipient = recipientText(letter);
+              const sender = senderText(letter);
+              const cardTitle = isReceivedBox ? `보낸 사람 ${sender}` : `${formatDate(letter.createdAt)} 작성`;
+              const dateText = isReceivedBox
+                ? receivedDateText(letter, unlocked)
+                : unlocked ? `✓ ${formatDate(letter.openDate)} 개봉` : `${formatDate(letter.openDate)} 개봉 예정`;
 
               return (
                 <motion.article
                   key={letter.id}
-                  className={`letter-card ${unlocked ? 'is-open' : 'is-locked'}`}
+                  className={`letter-card ${unlocked ? 'is-open' : 'is-locked'} ${isReceivedBox ? 'is-received' : ''}`.trim()}
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.035, ease }}
@@ -236,7 +312,7 @@ export default function LettersPage() {
                       onKeyDown={e => { if (unlocked && e.key === 'Enter') openLetter(letter); }}
                     >
                       <div className="letter-card-title-line">
-                        <span className="letter-card-title">{formatDate(letter.createdAt)} 작성</span>
+                        <span className="letter-card-title">{cardTitle}</span>
                       </div>
                       <div className="letter-card-info-line">
                         <span
@@ -245,35 +321,45 @@ export default function LettersPage() {
                         >
                           {type.label}
                         </span>
-                        {recipient && <span className="letter-recipient">→ {recipient}</span>}
+                        {!isReceivedBox && recipient && <span className="letter-recipient">→ {recipient}</span>}
                         <span className="letter-date-line">
-                          {unlocked ? `✓ ${formatDate(letter.openDate)} 개봉` : `${formatDate(letter.openDate)} 개봉 예정`}
+                          {dateText}
                         </span>
                       </div>
                     </div>
 
                     <div className="letter-card-actions">
-                      <button
-                        type="button"
-                        className={`letter-favorite-button ${letter.favorite ? 'active' : ''}`}
-                        onClick={event => toggleFavorite(letter, event)}
-                        aria-label={letter.favorite ? '즐겨찾기 해제' : '즐겨찾기'}
-                      >
-                        ★
-                      </button>
-                      {unlocked ? (
-                        <button type="button" className="letter-open-arrow" onClick={() => openLetter(letter)} aria-label="편지 열기">▶</button>
+                      {isReceivedBox ? (
+                        unlocked ? (
+                          <button type="button" className="letter-open-arrow" onClick={() => openLetter(letter)} aria-label="편지 열기">▶</button>
+                        ) : (
+                          <span className="letter-lock-pill">D-{days}</span>
+                        )
                       ) : (
                         <>
-                          <span className="letter-lock-pill">D-{days}</span>
                           <button
                             type="button"
-                            className="letter-delete-button"
-                            onClick={() => setDeleteConfirm(letter.id)}
-                            aria-label="편지 삭제"
+                            className={`letter-favorite-button ${letter.favorite ? 'active' : ''}`}
+                            onClick={event => toggleFavorite(letter, event)}
+                            aria-label={letter.favorite ? '즐겨찾기 해제' : '즐겨찾기'}
                           >
-                            ×
+                            ★
                           </button>
+                          {unlocked ? (
+                            <button type="button" className="letter-open-arrow" onClick={() => openLetter(letter)} aria-label="편지 열기">▶</button>
+                          ) : (
+                            <>
+                              <span className="letter-lock-pill">D-{days}</span>
+                              <button
+                                type="button"
+                                className="letter-delete-button"
+                                onClick={() => setDeleteConfirm(letter.id)}
+                                aria-label="편지 삭제"
+                              >
+                                ×
+                              </button>
+                            </>
+                          )}
                         </>
                       )}
                     </div>

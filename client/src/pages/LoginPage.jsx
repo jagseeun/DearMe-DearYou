@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
+import { useAuth } from '../auth.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.16 } } };
@@ -11,9 +12,12 @@ const PASSWORD_MAX_LENGTH = 128;
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { refresh } = useAuth();
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
   const [notice, setNotice] = useState(null);
+  const returnTo = typeof location.state?.from === 'string' ? location.state.from : '/hello';
 
   async function handleLogin() {
     const nextUserid = userid.trim();
@@ -28,7 +32,10 @@ export default function LoginPage() {
         body: JSON.stringify({ userid: nextUserid, password }),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.ok) navigate('/hello');
+      if (res.ok) {
+        await refresh();
+        navigate(returnTo, { replace: true });
+      }
       else setNotice({ title: '로그인 실패', message: data.message || '로그인에 실패했습니다.' });
     } catch {
       setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.' });

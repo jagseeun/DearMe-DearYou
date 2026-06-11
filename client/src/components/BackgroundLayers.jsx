@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Stars from './Stars.jsx';
 import PinkStars from './PinkStars.jsx';
 
-export const PINK_ROUTES = ['/letters', '/view-letter', '/pink-letters', '/letter-login'];
+export const PINK_ROUTES = ['/letters', '/view-letter', '/pink-letters'];
 const ease = [0.22, 1, 0.36, 1];
 
 const DARK_GRADIENT = `
@@ -46,23 +46,39 @@ export default function BackgroundLayers() {
 
     let frame = 0;
     let latestPointer = null;
+    let active = false;
+    let drawing = false;
+    let lastX = -9999;
+    let lastY = -9999;
 
     const applyGlow = () => {
       frame = 0;
       if (!latestPointer) return;
       const x = latestPointer.clientX;
       const y = latestPointer.clientY;
-      if (cursorGlowRef.current) {
-        cursorGlowRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+      const moved = Math.abs(x - lastX) > 0.75 || Math.abs(y - lastY) > 0.75;
+
+      if (moved) {
+        lastX = x;
+        lastY = y;
+        if (cursorGlowRef.current) {
+          cursorGlowRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+        }
+        if (cursorHeartRef.current) {
+          cursorHeartRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-38%, -42%)`;
+        }
       }
-      if (cursorHeartRef.current) {
-        cursorHeartRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-38%, -42%)`;
+
+      if (!active) {
+        active = true;
+        document.body.classList.add('dream-cursor-active');
       }
-      document.body.classList.add('dream-cursor-active');
-      document.body.classList.toggle(
-        'dream-cursor-drawing',
-        Boolean(latestPointer.target?.closest?.('.draw-canvas, .open-draw-canvas'))
-      );
+
+      const nextDrawing = Boolean(latestPointer.target?.closest?.('.draw-canvas, .open-draw-canvas'));
+      if (nextDrawing !== drawing) {
+        drawing = nextDrawing;
+        document.body.classList.toggle('dream-cursor-drawing', drawing);
+      }
     };
 
     const moveGlow = event => {
