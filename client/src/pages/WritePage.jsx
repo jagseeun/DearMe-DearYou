@@ -32,6 +32,64 @@ function dataUrlToBlob(dataUrl) {
   return new Blob([bytes], { type: mime });
 }
 
+function WriteIcon({ name }) {
+  const paths = {
+    text: (
+      <>
+        <rect x="5" y="4.5" width="14" height="15" rx="2.2" />
+        <path d="M8.5 9h7" />
+        <path d="M8.5 12h7" />
+        <path d="M8.5 15h4.5" />
+      </>
+    ),
+    video: (
+      <>
+        <rect x="4" y="6" width="12" height="12" rx="2.5" />
+        <path d="m16 10 4-2.2v8.4L16 14" />
+      </>
+    ),
+    draw: (
+      <>
+        <path d="M15.8 5.2 18.8 8.2" />
+        <path d="M17.3 3.7a2.1 2.1 0 0 1 3 3L8.8 18.2 4.6 19.4l1.2-4.2L17.3 3.7Z" />
+        <path d="m6 15 3 3" />
+      </>
+    ),
+    camera: (
+      <>
+        <path d="M8.5 7.5 10 5.5h4l1.5 2h2.2A2.3 2.3 0 0 1 20 9.8v6.4a2.3 2.3 0 0 1-2.3 2.3H6.3A2.3 2.3 0 0 1 4 16.2V9.8a2.3 2.3 0 0 1 2.3-2.3h2.2Z" />
+        <circle cx="12" cy="13" r="3.2" />
+      </>
+    ),
+    signature: (
+      <>
+        <path d="M4 17.6c2.3 1 4.3.7 6-.9l6.7-6.7a2.2 2.2 0 0 0-3.1-3.1l-6.7 6.7" />
+        <path d="m12.4 8.1 3.1 3.1" />
+        <path d="M14.5 18h5" />
+      </>
+    ),
+    save: (
+      <>
+        <path d="M6 4.5h10.2L19 7.3v12.2H5V4.5h1Z" />
+        <path d="M8 4.5v5h7v-5" />
+        <path d="M8 19.5v-6h8v6" />
+      </>
+    ),
+    send: (
+      <>
+        <path d="M4 12 20 4l-5 16-3.2-6.8L4 12Z" />
+        <path d="m11.8 13.2 4.4-4.4" />
+      </>
+    ),
+  };
+
+  return (
+    <svg className="write-icon" viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
+
 function LetterTextarea({ value, onChange, placeholder }) {
   return (
     <textarea
@@ -129,6 +187,7 @@ function SignatureCanvas({ onSave, onClose, existing }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const pendingData = useRef(null);
+  const hasInk = useRef(false);
   const [hasDrawn, setHasDrawn] = useState(false);
   const [locked, setLocked] = useState(false);
 
@@ -140,6 +199,7 @@ function SignatureCanvas({ onSave, onClose, existing }) {
       const canvas = canvasRef.current;
       if (!canvas) return;
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      hasInk.current = true;
       setHasDrawn(true);
       setLocked(true);
     };
@@ -179,15 +239,17 @@ function SignatureCanvas({ onSave, onClose, existing }) {
     const pos = getPos(e, canvas);
     ctx.lineTo(pos.x, pos.y);
     ctx.stroke();
+    hasInk.current = true;
     setHasDrawn(true);
   }
 
   function onUp() {
     if (!drawing.current) return;
     drawing.current = false;
-    if (hasDrawn) {
+    if (hasInk.current) {
       pendingData.current = canvasRef.current.toDataURL('image/png');
       setLocked(true);
+      setHasDrawn(true);
     }
   }
 
@@ -204,9 +266,18 @@ function SignatureCanvas({ onSave, onClose, existing }) {
     const canvas = canvasRef.current;
     canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     pendingData.current = null;
+    hasInk.current = false;
     setHasDrawn(false);
     setLocked(false);
     onSave(null);
+  }
+
+  function confirm() {
+    if (!hasDrawn) return;
+    const data = pendingData.current || (existing && !existing.startsWith('data:') ? existing : canvasRef.current?.toDataURL('image/png'));
+    if (!data) return;
+    onSave(data);
+    onClose();
   }
 
   return (
@@ -264,7 +335,7 @@ function SignatureCanvas({ onSave, onClose, existing }) {
         )}
         <button onClick={clear} style={sigBtnStyle}>지우기</button>
         <motion.button
-          onClick={() => { if (hasDrawn && pendingData.current) { onSave(pendingData.current); onClose(); } }}
+          onClick={confirm}
           disabled={!hasDrawn}
           whileHover={hasDrawn ? { translateY: -1 } : {}}
           style={{
@@ -556,6 +627,11 @@ export default function WritePage() {
       if (mode === 'draw' && drawHasDrawn && drawCanvasEl) {
         draftImageUrl = await uploadCanvas();
       }
+      let draftSignatureData = mode === 'text' ? signatureData : undefined;
+      if (mode === 'text' && draftSignatureData?.startsWith('data:')) {
+        draftSignatureData = await uploadSignature(draftSignatureData);
+        setSignatureData(draftSignatureData);
+      }
 
       const res = await fetch('/letter-draft', {
         method: 'PUT',
@@ -565,7 +641,7 @@ export default function WritePage() {
           content: mode === 'text' ? text : '',
           videoUrl: mode === 'video' ? videoUrl || undefined : undefined,
           imageUrl: mode === 'text' ? imageUrl || undefined : mode === 'draw' ? draftImageUrl : undefined,
-          signatureData: mode === 'text' ? signatureData || undefined : undefined,
+          signatureData: mode === 'text' ? draftSignatureData || undefined : undefined,
           openDate,
           emailTheme,
           deliveryEmail: email.trim().toLowerCase(),
@@ -852,11 +928,11 @@ export default function WritePage() {
           </div>
           <div className="mode-tabs">
             {[
-              { key: 'text', label: '✉ 텍스트' },
-              { key: 'video', label: '🎥 영상' },
-              { key: 'draw', label: '🎨 그림' },
-            ].map(({ key, label }) => (
-              <button key={key} onClick={() => handleModeSwitch(key)} style={{
+              { key: 'text', label: '텍스트', icon: 'text' },
+              { key: 'video', label: '영상', icon: 'video' },
+              { key: 'draw', label: '그림', icon: 'draw' },
+            ].map(({ key, label, icon }) => (
+              <button key={key} type="button" className="write-mode-button" onClick={() => handleModeSwitch(key)} style={{
                 padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
                 border: '1px solid', transition: 'all 0.25s',
                 borderColor: mode === key ? 'rgba(255,220,160,0.45)' : 'rgba(255,255,255,0.15)',
@@ -864,7 +940,8 @@ export default function WritePage() {
                 color: mode === key ? '#ffeacd' : 'rgba(255,252,223,0.4)',
                 boxShadow: mode === key ? '0 0 8px rgba(255,220,160,0.12)' : 'none',
               }}>
-                {label}
+                <WriteIcon name={icon} />
+                <span>{label}</span>
               </button>
             ))}
           </div>
@@ -892,9 +969,14 @@ export default function WritePage() {
 
                 {/* 사진 촬영 */}
                 <div className="write-tools-row">
-                  <button onClick={imageUploading ? undefined : openPhotoCamera} disabled={imageUploading}
+                  <button onClick={imageUploading ? undefined : openPhotoCamera} disabled={imageUploading} className="write-tool-button-inline"
                     style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: imageUploading ? 'default' : 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.65)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, opacity: imageUploading ? 0.6 : 1 }}>
-                    {imageUploading ? '업로드 중...' : '📷 사진 촬영'}
+                    {imageUploading ? '업로드 중...' : (
+                      <>
+                        <WriteIcon name="camera" />
+                        <span>사진 촬영</span>
+                      </>
+                    )}
                   </button>
                   {imageUrl && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -902,9 +984,10 @@ export default function WritePage() {
                       <button onClick={() => setImageUrl('')} style={{ background: 'none', border: 'none', color: 'rgba(255,100,100,0.7)', cursor: 'pointer', fontSize: 16 }}>×</button>
                     </div>
                   )}
-                  <button onClick={() => setShowSig(s => !s)}
+                  <button onClick={() => setShowSig(s => !s)} className="write-tool-button-inline"
                     style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid', transition: 'all 0.2s', borderColor: showSig ? 'rgba(205,154,99,0.5)' : 'rgba(255,255,255,0.2)', background: showSig ? 'rgba(72,56,41,0.6)' : 'rgba(255,255,255,0.07)', color: showSig ? '#ffeacd' : 'rgba(255,252,223,0.65)' }}>
-                    ✍ 서명 {signatureData ? '✓' : ''}
+                    <WriteIcon name="signature" />
+                    <span>{signatureData ? '서명 완료' : '서명'}</span>
                   </button>
                 </div>
 
@@ -944,17 +1027,23 @@ export default function WritePage() {
           <button
             type="button"
             onClick={saveDraft}
-            disabled={draftSaving || drawUploading}
+            disabled={draftSaving || drawUploading || imageUploading}
             className="write-draft-save"
           >
-            {draftSaving ? '저장 중...' : '임시 저장'}
+            {draftSaving ? '저장 중...' : (
+              <>
+                <WriteIcon name="save" />
+                <span>임시 저장</span>
+              </>
+            )}
           </button>
           <motion.button
             whileHover={{ translateY: -2, boxShadow: '0 0 28px rgba(232,194,138,0.32), 0 18px 42px rgba(0,0,0,0.24)' }}
             onClick={handleFromMe}
             className="write-submit"
           >
-            보내기
+            <WriteIcon name="send" />
+            <span>보내기</span>
           </motion.button>
         </motion.div>
       </div>
