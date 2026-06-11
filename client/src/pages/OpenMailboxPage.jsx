@@ -23,7 +23,7 @@ function formatDate(value) {
 
 function wasEdited(letter) {
   if (!letter?.createdAt || !letter?.updatedAt) return false;
-  return new Date(letter.updatedAt).getTime() - new Date(letter.createdAt).getTime() > 1000;
+  return new Date(letter.updatedAt).getTime() - new Date(letter.createdAt).getTime() > 5000;
 }
 
 function OpenMailboxLogo() {
@@ -533,7 +533,10 @@ export default function OpenMailboxPage() {
                   {letter.content && <p>{letter.content}</p>}
                   <footer>
                     <span>{letter.nickname}</span>
-                    <time>{wasEdited(letter) ? '수정됨' : formatDate(letter.createdAt)}</time>
+                    <span className="open-letter-date-stack">
+                      <time>{formatDate(letter.createdAt)}</time>
+                      {wasEdited(letter) && <em>수정됨</em>}
+                    </span>
                   </footer>
                 </button>
               ))}

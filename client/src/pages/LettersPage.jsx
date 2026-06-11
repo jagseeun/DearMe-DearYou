@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
+import NoticeModal from '../components/NoticeModal.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -69,6 +70,7 @@ export default function LettersPage() {
   const [name, setName] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [favoriteOnly, setFavoriteOnly] = useState(false);
+  const [notice, setNotice] = useState(null);
 
   useEffect(() => {
     fetch('/get-user-info')
@@ -109,7 +111,7 @@ export default function LettersPage() {
       if (!res.ok) throw new Error(data.message || '즐겨찾기를 변경하지 못했습니다.');
     } catch (err) {
       setLetters(prev => prev.map(item => item.id === letter.id ? { ...item, favorite: letter.favorite } : item));
-      alert(err.message || '즐겨찾기를 변경하지 못했습니다.');
+      setNotice({ title: '변경 실패', message: err.message || '즐겨찾기를 변경하지 못했습니다.' });
     }
   }
 
@@ -120,10 +122,10 @@ export default function LettersPage() {
         setLetters(prev => prev.filter(l => l.id !== id));
       } else {
         const data = await res.json();
-        alert(data.message || '삭제에 실패했습니다.');
+        setNotice({ title: '삭제 실패', message: data.message || '삭제에 실패했습니다.' });
       }
     } catch {
-      alert('서버 연결 오류');
+      setNotice({ title: '연결 실패', message: '서버 연결 오류' });
     }
     setDeleteConfirm(null);
   }
@@ -158,10 +160,7 @@ export default function LettersPage() {
             <div className="letter-list-kicker">MY LETTERS</div>
             <h2 className="letter-list-title">나의 편지</h2>
           </div>
-        </motion.header>
-
-        {!loading && letters.length > 0 && (
-          <div className="letter-list-controls">
+          {!loading && letters.length > 0 && (
             <div className="letter-list-stats" aria-label="편지 통계">
               <div className="letter-list-stat">
                 <strong>{unlockedCount}</strong>
@@ -173,7 +172,11 @@ export default function LettersPage() {
                 <span>잠김</span>
               </div>
             </div>
+          )}
+        </motion.header>
 
+        {!loading && letters.length > 0 && (
+          <div className="letter-list-controls">
             <div className="letter-list-filters" aria-label="편지 필터">
               <button type="button" className={!favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(false)}>전체</button>
               <button type="button" className={favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(true)}>즐겨찾기 {favoriteCount}</button>
@@ -327,6 +330,13 @@ export default function LettersPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <NoticeModal
+        open={Boolean(notice)}
+        title={notice?.title}
+        message={notice?.message}
+        onClose={() => setNotice(null)}
+        variant="pink"
+      />
     </motion.div>
   );
 }
