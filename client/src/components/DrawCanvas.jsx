@@ -20,6 +20,39 @@ const MAX_HISTORY = 50;
 const DRAW_WIDTH = 1440;
 const DRAW_HEIGHT = 1080;
 
+function DrawToolIcon({ name }) {
+  const paths = {
+    eraser: (
+      <>
+        <path d="m4 15.5 7.8-7.8a2.4 2.4 0 0 1 3.4 0l1.1 1.1a2.4 2.4 0 0 1 0 3.4l-5.3 5.3" />
+        <path d="m8.4 11.1 4.5 4.5" />
+        <path d="M4 15.5 7.5 19H19" />
+      </>
+    ),
+    undo: (
+      <>
+        <path d="M9 7 5 11l4 4" />
+        <path d="M5 11h8a5 5 0 1 1 0 10h-2" />
+      </>
+    ),
+    clear: (
+      <>
+        <path d="M5 7h14" />
+        <path d="M9 7V5h6v2" />
+        <path d="M8 10v9h8v-9" />
+        <path d="M10.5 12.5v4" />
+        <path d="M13.5 12.5v4" />
+      </>
+    ),
+  };
+
+  return (
+    <svg className="draw-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
+
 export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasReady }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
@@ -218,15 +251,18 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
           onClick={() => setTool('eraser')}
           className={`draw-tool-button ${tool === 'eraser' ? 'is-active' : ''}`}
         >
-          지우개
+          <DrawToolIcon name="eraser" />
+          <span>지우개</span>
         </button>
 
         <button type="button" onClick={undo} className="draw-tool-button">
-          되돌리기
+          <DrawToolIcon name="undo" />
+          <span>되돌리기</span>
         </button>
 
         <button type="button" onClick={clear} className="draw-tool-button danger">
-          전체 지우기
+          <DrawToolIcon name="clear" />
+          <span>전체 지우기</span>
         </button>
       </div>
     </div>
