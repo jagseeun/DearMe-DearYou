@@ -8814,6 +8814,59 @@ canvas {
   flex: 0 0 auto !important;
 }
 
+.letters-main-page .letter-mailbox-tabs {
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  padding: 4px !important;
+  border: 1px solid rgba(244, 211, 218, 0.16) !important;
+  border-radius: 999px !important;
+  background: rgba(37, 23, 43, 0.46) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.letters-main-page .letter-mailbox-tabs button {
+  height: 36px !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: rgba(255, 232, 226, 0.62) !important;
+  font-family: inherit !important;
+  font-size: 13px !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+}
+
+.letters-main-page .letter-mailbox-tabs button span {
+  color: rgba(255, 232, 226, 0.44) !important;
+  font-size: 11px !important;
+}
+
+.letters-main-page .letter-mailbox-tabs button.active {
+  border-color: rgba(244, 211, 218, 0.28) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 241, 232, 0.14), rgba(218, 157, 176, 0.12)),
+    rgba(71, 39, 66, 0.48) !important;
+  color: #fff5ef !important;
+}
+
+.letters-main-page .letter-mailbox-tabs button.active span {
+  color: rgba(255, 232, 226, 0.72) !important;
+}
+
+.letters-main-page .letter-card.is-received {
+  border-color: rgba(197, 225, 190, 0.2) !important;
+}
+
+.letters-main-page .letter-card.is-received .letter-date-line {
+  color: rgba(197, 225, 190, 0.9) !important;
+}
+
 .letters-main-page .letter-open-arrow,
 .letters-main-page .letter-delete-button {
   width: 34px !important;
@@ -11184,8 +11237,8 @@ canvas {
   left: 0;
   top: 0;
   z-index: 2147483646;
-  width: 260px;
-  height: 260px;
+  width: 220px;
+  height: 220px;
   pointer-events: none;
   transform: translate3d(-320px, -320px, 0);
   background:
@@ -11195,10 +11248,17 @@ canvas {
       var(--cursor-mid, rgba(226, 155, 94, 0.12)) 14%,
       var(--cursor-edge, rgba(142, 96, 74, 0.07)) 30%,
       transparent 46%
-    );
+  );
   mix-blend-mode: normal;
   will-change: transform, opacity;
-  contain: layout paint style;
+  contain: paint;
+}
+
+.auth-route-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .dream-cursor-glow-pink {
@@ -11222,12 +11282,10 @@ canvas {
   height: 40px;
   pointer-events: none;
   transform: translate3d(-80px, -80px, 0);
-  filter:
-    drop-shadow(0 0 6px var(--cursor-heart-glow, rgba(239, 185, 98, 0.46)))
-    drop-shadow(0 2px 4px rgba(24, 18, 45, 0.34));
+  filter: drop-shadow(0 1px 5px var(--cursor-heart-glow, rgba(239, 185, 98, 0.42)));
   mix-blend-mode: normal;
   will-change: transform, opacity;
-  contain: layout paint style;
+  contain: paint;
 }
 
 .dream-cursor-heart-pink {
@@ -11402,7 +11460,9 @@ canvas {
 }
 
 .pink-letter-list-page .letter-list-action-row,
-.letters-main-page .letter-list-header {
+.letters-main-page .letter-list-header,
+.letters-main-page .letter-mailbox-tabs,
+.letters-main-page .letter-list-controls {
   flex: 0 0 auto !important;
 }
 

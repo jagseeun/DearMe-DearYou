@@ -863,8 +863,8 @@ export default function LetterViewPage() {
   const isPink = letter.emailTheme === 'pink' || returnTo === '/pink-letters';
   const d = daysSince(letter.openDate);
   const dChars = ['D', '+', ...String(d).split('')];
-  const senderName = name || '나';
-  const recipientName = letter.recipientName || name || '나';
+  const senderName = letter.senderName || name || '나';
+  const recipientName = letter.recipientName || (letter.mailbox === 'received' ? name : '') || name || '나';
 
   // 핑크 테마 색상 시스템
   const textMain        = isPink ? '#fff1e8'                  : '#fff1f2';

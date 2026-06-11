@@ -1439,7 +1439,9 @@ app.get("/support-info", (_req, res) => {
 });
 
 app.post("/support-messages", writeLimiter, async (req, res) => {
-  const sessionUser = req.session.user || null;
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
+
+  const sessionUser = req.session.user;
   const content = normalizePublicText(req.body.content || "");
 
   if (!content) return res.status(400).json({ message: "남기고 싶은 마음을 입력해주세요." });
@@ -2031,6 +2033,80 @@ app.get("/my-letters", async (req, res) => {
       };
     }));
   } catch { res.status(500).json({ message: "서버 오류" }); }
+});
+
+app.get("/received-letters", async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+
+  try {
+    const member = await prisma.member.findUnique({
+      where: { id: req.session.user.id },
+      select: { email: true },
+    });
+    const recipientEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
+    if (recipientEmail && req.session.user.email !== recipientEmail) req.session.user.email = recipientEmail;
+    if (!recipientEmail) return res.json([]);
+
+    const now = new Date();
+    const letters = await prisma.letter.findMany({
+      where: {
+        authorId: { not: req.session.user.id },
+        type: { not: "call" },
+        OR: [
+          { recipientEmail },
+          { deliveryEmail: recipientEmail },
+        ],
+      },
+      orderBy: [
+        { openDate: "desc" },
+        { createdAt: "desc" },
+      ],
+      select: {
+        id: true, type: true, content: true, videoUrl: true,
+        imageUrl: true, signatureData: true,
+        recipientEmail: true, recipientName: true, deliveryEmail: true,
+        emailTheme: true,
+        openDate: true, createdAt: true, sentAt: true,
+        author: { select: { name: true } },
+      },
+    });
+
+    res.json(letters.map(letter => {
+      const unlocked = new Date(letter.openDate) <= now;
+      const senderName = letter.author?.name || "누군가";
+      const payload = {
+        id: letter.id,
+        type: letter.type,
+        content: letter.content,
+        videoUrl: letter.videoUrl,
+        imageUrl: letter.imageUrl,
+        signatureData: letter.signatureData,
+        recipientEmail: letter.recipientEmail,
+        recipientName: letter.recipientName,
+        emailTheme: letter.emailTheme,
+        openDate: letter.openDate,
+        createdAt: letter.createdAt,
+        sentAt: letter.sentAt,
+        arrivedAt: letter.sentAt || letter.openDate,
+        senderName,
+        mailbox: "received",
+        favorite: false,
+      };
+
+      if (unlocked) return { ...payload, locked: false };
+      return {
+        ...payload,
+        locked: true,
+        content: null,
+        videoUrl: null,
+        imageUrl: null,
+        signatureData: null,
+      };
+    }));
+  } catch (err) {
+    console.error("received letters error:", err);
+    res.status(500).json({ message: "받은 편지를 불러오지 못했습니다." });
+  }
 });
 
 app.patch("/letters/:id/favorite", writeLimiter, async (req, res) => {
