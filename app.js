@@ -197,6 +197,33 @@ function textToHtml(value = "") {
   return `<div style="white-space:pre-wrap;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;line-height:1.7">${escapeHtml(value)}</div>`;
 }
 
+function letterKindLabel(type) {
+  if (type === "video") return "영상 편지";
+  if (type === "draw") return "그림 편지";
+  return "편지";
+}
+
+function plainArrivalLine({ type, isToOther, senderName }) {
+  const kind = letterKindLabel(type);
+  return isToOther
+    ? `${senderName}님이 남긴 ${kind}가 도착했어요.`
+    : `나에게 남긴 ${kind}가 도착했어요.`;
+}
+
+function htmlArrivalLine({ type, isToOther, safeSenderName }) {
+  const kind = letterKindLabel(type);
+  return isToOther
+    ? `<strong>${safeSenderName}</strong>님이 남긴 ${kind}가 도착했어요.`
+    : `나에게 남긴 ${kind}가 도착했어요.`;
+}
+
+function recipientArrivalSubject({ type, isToOther, senderName }) {
+  const kind = letterKindLabel(type);
+  return isToOther
+    ? `${senderName}님의 ${kind}가 도착했어요`
+    : `나에게 남긴 ${kind}가 도착했어요`;
+}
+
 async function sendBrevoMail(options) {
   if (!brevoApiKey || !isValidEmail(emailFromAddress)) {
     throw new Error("brevo config missing");
@@ -414,20 +441,19 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
 
       const metaText = buildLetterMetaText(emailMeta);
 
+      const arrivalLine = plainArrivalLine({ type: letter.type, isToOther, senderName });
       const text = isVideo
-        ? `안녕, ${recipientName}.\n${isToOther ? senderName + '이(가) 보낸' : '과거의 네가 보낸'} 영상 편지야.\n\n${metaText}\n\n영상 보기: ${letter.videoUrl}`
+        ? `안녕, ${recipientName}.\n${arrivalLine}\n\n${metaText}\n\n영상 보기: ${letter.videoUrl}`
         : isDraw
-          ? `안녕, ${recipientName}.\n${isToOther ? senderName + '이(가) 보낸' : '과거의 네가 보낸'} 그림 편지야.\n\n${metaText}\n\n그림 보기: ${letter.imageUrl}`
-          : `안녕, ${recipientName}.\n${isToOther ? senderName + '이(가) 보낸' : '과거의 네가 보낸'} 편지야.\n\n${metaText}\n\n${letter.content}`;
+          ? `안녕, ${recipientName}.\n${arrivalLine}\n\n${metaText}\n\n그림 보기: ${letter.imageUrl}`
+          : `안녕, ${recipientName}.\n${arrivalLine}\n\n${metaText}\n\n${letter.content}`;
       try {
         // 수신자에게 발송
         const recipientResult = await sendMail({
           from: emailFromHeader,
           replyTo: emailReplyTo,
           to: email,
-          subject: mailHeader(isToOther
-            ? `${senderName}이(가) 보낸 편지가 도착했어요`
-            : "과거의 내가 보낸 편지가 도착했어요"),
+          subject: mailHeader(recipientArrivalSubject({ type: letter.type, isToOther, senderName })),
           text,
           html,
         });
@@ -454,7 +480,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
               replyTo: emailReplyTo,
               to: letter.author.email,
               subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었어요`),
-              text: `안녕, ${senderName}.\n네가 ${recipientName}에게 보낸 편지가 오늘 전달되었어.\n\n${metaText}`,
+              text: `안녕, ${senderName}.\n${recipientName}에게 보낸 편지가 오늘 전달되었어요.\n\n${metaText}`,
               html: senderHtml,
             });
           } catch (notifyErr) {
@@ -557,8 +583,8 @@ function buildLegacySenderNotifyEmail(senderName, recipientName, openDate) {
     <div style="padding:36px 40px">
       <p style="font-size:16px;line-height:1.9;color:#d9cfc0">
         안녕, <strong>${safeSenderName}</strong>.<br><br>
-        네가 <strong>${safeRecipientName}</strong>에게 보낸 편지가 오늘 잘 전달되었어.<br>
-        소중한 마음이 닿았길 바라.
+        <strong>${safeRecipientName}</strong>에게 보낸 편지가 오늘 전달되었어요.<br>
+        소중한 마음이 조용히 닿기를 바랍니다.
       </p>
     </div>
     <div style="padding:20px 40px 36px;text-align:center;color:rgba(255,252,223,0.3);font-size:12px">
@@ -573,9 +599,7 @@ function buildLegacyTextEmail(recipientName, senderName, content, openDate, isTo
   const safeContent = escapeHtml(content || "");
   const safeImageUrl = normalizePublicAssetUrl(imageUrl);
   const safeSignatureUrl = normalizePublicAssetUrl(signatureData);
-  const headerMsg = isToOther
-    ? `<strong>${safeSenderName}</strong>이(가) 보낸 편지야.`
-    : `과거의 네가 보낸 편지야.`;
+  const headerMsg = htmlArrivalLine({ type: "text", isToOther, safeSenderName });
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
@@ -596,9 +620,7 @@ function buildLegacyDrawEmail(recipientName, senderName, imageUrl, openDate, isT
   const safeRecipientName = escapeHtml(recipientName);
   const safeSenderName = escapeHtml(senderName);
   const safeImageUrl = normalizePublicAssetUrl(imageUrl);
-  const headerMsg = isToOther
-    ? `<strong>${safeSenderName}</strong>이(가) 보낸 그림 편지야.`
-    : `과거의 네가 그린 그림 편지야.`;
+  const headerMsg = htmlArrivalLine({ type: "draw", isToOther, safeSenderName });
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
@@ -619,9 +641,7 @@ function buildLegacyVideoEmail(recipientName, senderName, videoUrl, openDate, is
   const safeRecipientName = escapeHtml(recipientName);
   const safeSenderName = escapeHtml(senderName);
   const safeVideoUrl = normalizePublicAssetUrl(videoUrl);
-  const headerMsg = isToOther
-    ? `<strong>${safeSenderName}</strong>이(가) 보낸 영상 편지야.`
-    : `과거의 네가 보낸 영상 편지야.`;
+  const headerMsg = htmlArrivalLine({ type: "video", isToOther, safeSenderName });
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
@@ -756,8 +776,8 @@ function buildSenderNotifyEmail(senderName, recipientName, openDate, emailTheme 
     <div style="padding:36px 40px">
       <p style="font-size:16px;line-height:1.9;color:${themeStyles.soft};margin:0 0 24px">
         안녕, <strong>${safeSenderName}</strong>.<br><br>
-        네가 <strong>${safeRecipientName}</strong>에게 보낸 편지가 오늘 잘 전달되었어.<br>
-        소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두어도 괜찮아.
+        <strong>${safeRecipientName}</strong>에게 보낸 편지가 오늘 전달되었어요.<br>
+        소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두어도 괜찮아요.
       </p>
       ${buildLetterMetaHtml(meta, themeStyles)}
     </div>`,
@@ -770,9 +790,7 @@ function buildTextEmail(recipientName, senderName, content, openDate, isToOther,
   const safeContent = escapeHtml(content || "");
   const safeImageUrl = normalizePublicAssetUrl(imageUrl);
   const safeSignatureUrl = normalizePublicAssetUrl(signatureData);
-  const headerMsg = isToOther
-    ? `<strong>${safeSenderName}</strong>이(가) 보낸 편지야.`
-    : `과거의 네가 보낸 편지야.`;
+  const headerMsg = htmlArrivalLine({ type: "text", isToOther, safeSenderName });
 
   return buildEmailShell({
     theme: emailTheme,
@@ -792,9 +810,7 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
   const safeRecipientName = escapeHtml(recipientName);
   const safeSenderName = escapeHtml(senderName);
   const safeImageUrl = normalizePublicAssetUrl(imageUrl);
-  const headerMsg = isToOther
-    ? `<strong>${safeSenderName}</strong>이(가) 보낸 그림 편지야.`
-    : `과거의 네가 그린 그림 편지야.`;
+  const headerMsg = htmlArrivalLine({ type: "draw", isToOther, safeSenderName });
 
   return buildEmailShell({
     theme: emailTheme,
@@ -814,9 +830,7 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
   const safeRecipientName = escapeHtml(recipientName);
   const safeSenderName = escapeHtml(senderName);
   const safeVideoUrl = normalizePublicAssetUrl(videoUrl);
-  const headerMsg = isToOther
-    ? `<strong>${safeSenderName}</strong>이(가) 보낸 영상 편지야.`
-    : `과거의 네가 보낸 영상 편지야.`;
+  const headerMsg = htmlArrivalLine({ type: "video", isToOther, safeSenderName });
 
   return buildEmailShell({
     theme: emailTheme,
