@@ -361,8 +361,10 @@ const sigBtnStyle = {
 export default function WritePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const initialMode = ['text', 'video', 'draw'].includes(location.state?.mode)
-    ? location.state.mode
+  const queryMode = new URLSearchParams(location.search).get('mode');
+  const requestedMode = location.state?.mode || queryMode;
+  const initialMode = ['text', 'video', 'draw'].includes(requestedMode)
+    ? requestedMode
     : 'text';
   const [mode, setMode] = useState(initialMode);
   const [text, setText] = useState('');

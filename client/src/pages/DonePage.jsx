@@ -35,7 +35,7 @@ export default function DonePage() {
   }, [delivery?.message, deliveryAccepted, deliveryFailed, sentNow]);
 
   useEffect(() => {
-    if (!openDate) navigate('/login', { replace: true });
+    if (!openDate) navigate('/hello', { replace: true });
   }, [openDate, navigate]);
 
   useEffect(() => {

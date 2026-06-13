@@ -52,7 +52,6 @@ export default function IndexPage() {
         <button
           className="glass-btn"
           onClick={openLetterBox}
-          style={{ borderColor: 'rgba(246,177,177,0.4)', color: 'rgba(255,220,210,0.85)' }}
         >
           편지 읽기
         </button>
