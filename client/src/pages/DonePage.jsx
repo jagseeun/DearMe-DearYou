@@ -115,7 +115,7 @@ export default function DonePage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.35, ease }}
               onClick={() => setPhase('envelope')}
-              whileHover={{ translateY: -2 }}
+              whileHover={{ scale: 1.018 }}
             >
               확인
             </motion.button>

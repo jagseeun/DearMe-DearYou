@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 export default function Stars() {
   const stars = useMemo(() =>
-    Array.from({ length: 180 }, (_, i) => ({
+    Array.from({ length: 140 }, (_, i) => ({
       id: i,
       left: Math.random() * 100,
       top: Math.random() * 100,

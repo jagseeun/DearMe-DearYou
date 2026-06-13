@@ -39,7 +39,7 @@ export const listItemMotion = index => ({
 });
 
 export const buttonMotion = {
-  whileHover: { y: -1 },
+  whileHover: { scale: 1.018 },
   whileTap: { scale: 0.985 },
   transition: { duration: 0.18, ease: motionEase },
 };

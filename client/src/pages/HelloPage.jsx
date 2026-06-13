@@ -142,7 +142,7 @@ export default function HelloPage() {
         <motion.button
           variants={item}
           onClick={() => navigate('/write')}
-          whileHover={{ translateY: -3, boxShadow: '0 8px 32px rgba(0,0,0,0.24), 0 0 20px rgba(205,154,99,0.18)' }}
+          whileHover={{ scale: 1.018, boxShadow: '0 8px 32px rgba(0,0,0,0.24), 0 0 20px rgba(205,154,99,0.18)' }}
           className="primary-cta"
         >
           편지 쓰기

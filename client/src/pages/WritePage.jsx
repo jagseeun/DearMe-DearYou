@@ -337,7 +337,7 @@ function SignatureCanvas({ onSave, onClose, existing }) {
         <motion.button
           onClick={confirm}
           disabled={!hasDrawn}
-          whileHover={hasDrawn ? { translateY: -1 } : {}}
+          whileHover={hasDrawn ? { scale: 1.018 } : {}}
           style={{
             ...sigBtnStyle,
             opacity: hasDrawn ? 1 : 0.35,
@@ -870,7 +870,7 @@ export default function WritePage() {
                   style={{ width: 130, height: 50, borderRadius: 50, fontSize: 17, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.25)', background: 'rgba(255,255,255,.08)', color: '#f2efe8', transition: 'all 0.2s' }}>
                   아니요
                 </motion.button>
-                <motion.button whileHover={{ translateY: -2 }}
+                <motion.button whileHover={{ scale: 1.018 }}
                   onClick={() => { setShowRetryConfirm(false); retryVideo(); }}
                   style={{ width: 130, height: 50, borderRadius: 50, fontSize: 17, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.2s' }}>
                   예
@@ -1037,7 +1037,7 @@ export default function WritePage() {
             )}
           </button>
           <motion.button
-            whileHover={{ translateY: -2, boxShadow: '0 0 24px rgba(205,154,99,0.26), 0 18px 42px rgba(0,0,0,0.26)' }}
+            whileHover={{ scale: 1.018, boxShadow: '0 0 24px rgba(205,154,99,0.26), 0 18px 42px rgba(0,0,0,0.26)' }}
             onClick={handleFromMe}
             className="write-submit"
           >
@@ -1166,7 +1166,7 @@ export default function WritePage() {
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', backdropFilter: 'blur(6px)', transition: 'all 0.3s' }}>
                   아니요
                 </motion.button>
-                <motion.button whileHover={{ translateY: -2, boxShadow: '0 0 24px rgba(231,207,161,.7)' }}
+                <motion.button whileHover={{ scale: 1.018, boxShadow: '0 0 24px rgba(231,207,161,.7)' }}
                   onClick={handleSave} disabled={saving}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg, #e7cfa1, #cfa874)', color: '#2b1e10', boxShadow: '0 0 16px rgba(231,207,161,.4)', transition: 'all 0.3s', opacity: saving ? 0.6 : 1 }}>
                   {saving ? '저장 중...' : '저장'}
