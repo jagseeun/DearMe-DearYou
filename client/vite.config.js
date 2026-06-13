@@ -73,6 +73,7 @@ export default defineConfig({
       '/public-image-upload-url': apiProxy(),
       '/teacher-letters': apiProxy(),
       '/my-teacher-letter': apiProxy(),
+      '/admin/public-letters': apiProxy(),
       '/admin/users': apiProxy(),
       '/admin/letters': apiProxy(),
       '/db-test': apiProxy(),

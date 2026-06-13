@@ -117,7 +117,7 @@ export default function PinkLetterViewPage() {
                   initial={{ opacity: 0, y: 18 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.035, ease }}
-                  whileHover={unlocked ? { scale: 1.01, boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
+                  whileHover={unlocked ? { translateY: -2, boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
                 >
                   <div className="letter-card-inner">
                     <div className="letter-icon" aria-hidden="true">{unlocked ? type.icon : '🔒'}</div>

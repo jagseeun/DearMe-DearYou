@@ -88,7 +88,7 @@ export default function SignupPage() {
 
   return (
     <motion.div
-      className="page-center"
+      className="page-center signup-page"
       initial="hidden"
       animate="show"
       exit={{ opacity: 0, transition: { duration: 0.3 } }}

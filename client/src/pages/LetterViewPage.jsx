@@ -856,9 +856,19 @@ export default function LetterViewPage() {
   const { letter, name, returnTo } = useLocation().state || {};
   const [phase, setPhase] = useState('envelope');
 
-  if (!letter) { navigate('/login', { replace: true }); return null; }
-  if (letter.locked) { navigate(returnTo || '/letters', { replace: true }); return null; }
-  if (letter.type === 'call') { navigate(returnTo || '/letters', { replace: true }); return null; }
+  useEffect(() => {
+    if (!letter) {
+      navigate(returnTo || '/letters', { replace: true });
+      return;
+    }
+    if (letter.locked || letter.type === 'call') {
+      navigate(returnTo || '/letters', { replace: true });
+    }
+  }, [letter, navigate, returnTo]);
+
+  if (!letter || letter.locked || letter.type === 'call') {
+    return <div className="auth-route-loading" aria-live="polite" />;
+  }
 
   const isPink = letter.emailTheme === 'pink' || returnTo === '/pink-letters';
   const d = daysSince(letter.openDate);
