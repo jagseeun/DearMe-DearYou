@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
@@ -10,19 +10,28 @@ const container = { hidden: {}, show: { transition: { staggerChildren: 0.16 } } 
 const item = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } };
 const PASSWORD_MAX_LENGTH = 128;
 
-export default function LoginPage() {
+export default function LoginPage({ letterMode = false }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { refresh } = useAuth();
+  const { refresh, status } = useAuth();
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
   const [notice, setNotice] = useState(null);
-  const returnTo = typeof location.state?.from === 'string' ? location.state.from : '/hello';
+  const isLetterMode = letterMode || location.pathname === '/letter-login';
+  const returnTo = typeof location.state?.from === 'string'
+    ? location.state.from
+    : isLetterMode ? '/letters' : '/hello';
+
+  useEffect(() => {
+    if (status === 'authenticated' && isLetterMode) {
+      navigate(returnTo, { replace: true });
+    }
+  }, [status, isLetterMode, navigate, returnTo]);
 
   async function handleLogin() {
     const nextUserid = userid.trim();
     if (!nextUserid || !password) {
-      setNotice({ title: '로그인 확인', message: '아이디와 비밀번호를 입력해주세요.' });
+      setNotice({ title: '로그인 확인', message: '아이디와 비밀번호를 입력해 주세요.' });
       return;
     }
     try {
@@ -38,13 +47,13 @@ export default function LoginPage() {
       }
       else setNotice({ title: '로그인 실패', message: data.message || '로그인에 실패했습니다.' });
     } catch {
-      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.' });
+      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.' });
     }
   }
 
   return (
     <motion.div
-      className="page-center"
+      className={`page-center ${isLetterMode ? 'pink-login-page letter-login-page' : 'auth-page'}`}
       initial="hidden"
       animate="show"
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
@@ -56,7 +65,9 @@ export default function LoginPage() {
         <span className="from">Dear You</span>
       </motion.h1>
 
-      <motion.p variants={item} className="home-subtitle">오늘의 마음을 나와 친구에게 전하는 편지</motion.p>
+      <motion.p variants={item} className="home-subtitle">
+        {isLetterMode ? '도착한 편지를 확인하는 공간입니다' : '소중한 마음을 기록하고 전하는 편지'}
+      </motion.p>
 
       <motion.form
         className="form-container"
@@ -74,6 +85,8 @@ export default function LoginPage() {
         />
         <PasswordField
           variants={item}
+          wrapperClassName={isLetterMode ? 'password-field password-field-pink' : 'password-field'}
+          className={isLetterMode ? 'input-field pink-password-input' : 'input-field'}
           placeholder="비밀번호를 입력하세요"
           maxLength={PASSWORD_MAX_LENGTH}
           value={password}
@@ -86,6 +99,19 @@ export default function LoginPage() {
 
       <motion.button variants={item} className="back-link" onClick={() => navigate('/')}>
         ← 돌아가기
+      </motion.button>
+
+      <motion.button
+        type="button"
+        className="open-mailbox-floating-button"
+        aria-label="열린 편지함"
+        title="열린 편지함"
+        onClick={() => navigate('/open-mailbox')}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9, duration: 0.45, ease }}
+      >
+        💌
       </motion.button>
 
       <NoticeModal

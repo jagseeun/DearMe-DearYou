@@ -30,7 +30,7 @@ export default function SignupPage() {
   async function checkUsername() {
     const nextUserid = userid.trim();
     if (!nextUserid) {
-      setNotice({ title: '아이디 확인', message: '아이디를 입력해주세요.' });
+      setNotice({ title: '아이디 확인', message: '아이디를 입력해 주세요.' });
       return;
     }
     try {
@@ -52,11 +52,11 @@ export default function SignupPage() {
     const nextName = name.trim();
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
-    if (!nextName || !nextUserid || !password || !passwordConfirm || !nextEmail) return setNotice({ title: '회원가입 확인', message: '모든 정보를 입력해주세요.' });
-    if (!idChecked) return setNotice({ title: '아이디 확인', message: '아이디 중복 확인을 해주세요.' });
-    if (password.length < 6) return setNotice({ title: '비밀번호 확인', message: '비밀번호는 6자 이상으로 입력해주세요.' });
+    if (!nextName || !nextUserid || !password || !passwordConfirm || !nextEmail) return setNotice({ title: '회원가입 확인', message: '모든 정보를 입력해 주세요.' });
+    if (!idChecked) return setNotice({ title: '아이디 확인', message: '아이디 중복 확인을 진행해 주세요.' });
+    if (password.length < 6) return setNotice({ title: '비밀번호 확인', message: '비밀번호는 6자 이상으로 입력해 주세요.' });
     if (password.length > PASSWORD_MAX_LENGTH) return setNotice({ title: '비밀번호 확인', message: `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
-    if (password !== passwordConfirm) return setNotice({ title: '비밀번호 확인', message: '비밀번호가 서로 일치하지 않습니다. 다시 확인해주세요.' });
+    if (password !== passwordConfirm) return setNotice({ title: '비밀번호 확인', message: '비밀번호가 서로 일치하지 않습니다. 다시 확인해 주세요.' });
     setConfirmingPasswordNote(true);
   }
 
@@ -100,7 +100,7 @@ export default function SignupPage() {
         <span className="from">Dear You</span>
       </motion.h1>
 
-      <motion.p variants={item} className="home-subtitle">오늘의 마음을 나와 친구에게 전하는 편지</motion.p>
+      <motion.p variants={item} className="home-subtitle">소중한 마음을 기록하고 전하는 편지</motion.p>
 
       <motion.form
         className="form-container"
@@ -158,7 +158,7 @@ export default function SignupPage() {
 
         <PasswordField
           variants={item}
-          placeholder="비밀번호 한 번 더 입력"
+          placeholder="비밀번호 확인"
           maxLength={PASSWORD_MAX_LENGTH}
           value={passwordConfirm}
           onChange={e => setPasswordConfirm(e.target.value)}
@@ -181,6 +181,19 @@ export default function SignupPage() {
 
       <motion.button variants={item} className="back-link" onClick={() => navigate('/')}>
         ← 돌아가기
+      </motion.button>
+
+      <motion.button
+        type="button"
+        className="open-mailbox-floating-button"
+        aria-label="열린 편지함"
+        title="열린 편지함"
+        onClick={() => navigate('/open-mailbox')}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9, duration: 0.45, ease }}
+      >
+        💌
       </motion.button>
 
       <NoticeModal

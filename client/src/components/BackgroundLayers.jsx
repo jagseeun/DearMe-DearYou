@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import Stars from './Stars.jsx';
 import PinkStars from './PinkStars.jsx';
 
-export const PINK_ROUTES = ['/letters', '/view-letter', '/pink-letters'];
+export const PINK_ROUTES = ['/letter-login', '/letters', '/view-letter', '/pink-letters'];
 const ease = [0.22, 1, 0.36, 1];
 
 const DARK_GRADIENT = `
@@ -74,7 +74,8 @@ export default function BackgroundLayers() {
         document.body.classList.add('dream-cursor-active');
       }
 
-      const nextDrawing = Boolean(latestPointer.target?.closest?.('.draw-canvas, .open-draw-canvas'));
+      const hoverTarget = document.elementFromPoint(x, y) || latestPointer.target;
+      const nextDrawing = Boolean(hoverTarget?.closest?.('.draw-canvas, .open-draw-canvas'));
       if (nextDrawing !== drawing) {
         drawing = nextDrawing;
         document.body.classList.toggle('dream-cursor-drawing', drawing);

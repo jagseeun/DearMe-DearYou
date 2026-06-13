@@ -17,6 +17,7 @@ yarn-debug.log*
 yarn-error.log*
 logs/
 *.log
+.codex-dev-server.err
 
 # OS files
 .DS_Store

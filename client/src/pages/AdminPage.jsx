@@ -81,7 +81,7 @@ async function fetchJsonWithTimeout(url, options = {}, timeoutMs = 30000) {
   try {
     return await fetchJson(url, { ...options, signal: controller.signal });
   } catch (err) {
-    if (err.name === 'AbortError') throw new Error('요청 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.');
+    if (err.name === 'AbortError') throw new Error('요청 시간이 초과되었습니다. 잠시 후 다시 시도해 주세요.');
     throw err;
   } finally {
     clearTimeout(timer);
@@ -130,7 +130,7 @@ export default function AdminPage() {
         setAuthorized(true);
         await loadAll();
       } catch {
-        setMessage('서버 연결을 확인해주세요.');
+        setMessage('서버 연결을 확인해 주세요.');
       } finally {
         setChecking(false);
       }
@@ -168,7 +168,7 @@ export default function AdminPage() {
   async function saveTeacherLetter(e) {
     e.preventDefault();
     if (!form.content.trim()) {
-      setMessage('편지 내용을 입력해주세요.');
+      setMessage('편지 내용을 입력해 주세요.');
       return;
     }
 
@@ -313,11 +313,11 @@ export default function AdminPage() {
   async function updateUserPassword(user) {
     const nextPassword = passwordDrafts[user.id] || '';
     if (!nextPassword) {
-      setMessage('새 비밀번호를 입력해주세요.');
+      setMessage('새 비밀번호를 입력해 주세요.');
       return;
     }
     if (nextPassword.length < 6) {
-      setMessage('비밀번호는 6자 이상으로 입력해주세요.');
+      setMessage('비밀번호는 6자 이상으로 입력해 주세요.');
       return;
     }
     if (nextPassword.length > PASSWORD_MAX_LENGTH) {
@@ -346,7 +346,7 @@ export default function AdminPage() {
   async function updateLetterDate(letter) {
     const draft = dateDrafts[letter.id];
     if (!draft) {
-      setMessage('수정할 날짜를 입력해주세요.');
+      setMessage('수정할 날짜를 입력해 주세요.');
       return;
     }
 

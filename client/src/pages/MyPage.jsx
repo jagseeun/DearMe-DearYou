@@ -1,0 +1,295 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import PasswordField from '../components/PasswordField.jsx';
+import NoticeModal from '../components/NoticeModal.jsx';
+import { useAuth } from '../auth.jsx';
+
+const ease = [0.22, 1, 0.36, 1];
+const PASSWORD_MAX_LENGTH = 128;
+
+export default function MyPage() {
+  const navigate = useNavigate();
+  const { refresh } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [nextPassword, setNextPassword] = useState('');
+  const [nextPasswordConfirm, setNextPasswordConfirm] = useState('');
+  const [notice, setNotice] = useState(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadProfile() {
+      try {
+        const response = await fetch('/get-user-info', { cache: 'no-store' });
+        if (response.status === 401) {
+          navigate('/login', { replace: true });
+          return;
+        }
+        const data = await response.json();
+        if (cancelled) return;
+        setName(data?.name || '');
+        setEmail(data?.email || '');
+      } catch {
+        if (!cancelled) {
+          setNotice({ title: '불러오기 실패', message: '계정 정보를 불러오지 못했습니다.' });
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadProfile();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  async function saveProfile(event) {
+    event.preventDefault();
+    const nextName = name.trim();
+    const nextEmail = email.trim().toLowerCase();
+
+    if (!nextName) {
+      setNotice({ title: '이름 확인', message: '이름을 입력해 주세요.' });
+      return;
+    }
+    if (nextName.length > 10) {
+      setNotice({ title: '이름 확인', message: '이름은 10자를 넘을 수 없습니다.' });
+      return;
+    }
+    if (nextEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
+      setNotice({ title: '이메일 확인', message: '이메일 형식이 올바르지 않습니다.' });
+      return;
+    }
+
+    setProfileSaving(true);
+    try {
+      const response = await fetch('/update-profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nextName, email: nextEmail }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || '프로필을 저장하지 못했습니다.');
+      setName(data.name || nextName);
+      setEmail(data.email ?? nextEmail);
+      await refresh();
+      setNotice({ title: '저장 완료', message: '이름과 이메일이 정리되었습니다.' });
+    } catch (error) {
+      setNotice({ title: '저장 실패', message: error.message || '프로필을 저장하지 못했습니다.' });
+    } finally {
+      setProfileSaving(false);
+    }
+  }
+
+  async function changePassword(event) {
+    event.preventDefault();
+
+    if (!currentPassword || !nextPassword || !nextPasswordConfirm) {
+      setNotice({ title: '비밀번호 확인', message: '현재 비밀번호와 새 비밀번호를 모두 입력해 주세요.' });
+      return;
+    }
+    if (nextPassword.length < 6) {
+      setNotice({ title: '비밀번호 확인', message: '새 비밀번호는 6자 이상으로 입력해 주세요.' });
+      return;
+    }
+    if (nextPassword.length > PASSWORD_MAX_LENGTH) {
+      setNotice({ title: '비밀번호 확인', message: `새 비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
+      return;
+    }
+    if (nextPassword !== nextPasswordConfirm) {
+      setNotice({ title: '비밀번호 확인', message: '새 비밀번호가 서로 일치하지 않습니다.' });
+      return;
+    }
+    if (currentPassword === nextPassword) {
+      setNotice({ title: '비밀번호 확인', message: '새 비밀번호는 현재 비밀번호와 다르게 입력해 주세요.' });
+      return;
+    }
+
+    setPasswordSaving(true);
+    try {
+      const response = await fetch('/change-password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, nextPassword, nextPasswordConfirm }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || '비밀번호 변경에 실패했습니다.');
+      setCurrentPassword('');
+      setNextPassword('');
+      setNextPasswordConfirm('');
+      setNotice({ title: '변경 완료', message: '비밀번호가 변경되었습니다.' });
+    } catch (error) {
+      setNotice({ title: '변경 실패', message: error.message || '비밀번호 변경에 실패했습니다.' });
+    } finally {
+      setPasswordSaving(false);
+    }
+  }
+
+  function confirmLogout() {
+    window.location.href = '/logout';
+  }
+
+  return (
+    <motion.main
+      className="mypage-page"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, transition: { duration: 0.25 } }}
+    >
+      <motion.div
+        className="top-title"
+        initial={{ opacity: 0, y: -18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, ease }}
+      >
+        <span className="to">Dear Me</span>
+        <span className="semicolon">;</span>
+        <span className="from">Dear You</span>
+      </motion.div>
+
+      <div className="mypage-top-actions">
+        <button type="button" onClick={() => navigate('/hello')}>홈으로</button>
+        <button type="button" onClick={() => navigate('/letters')}>나의 편지</button>
+        <button type="button" className="mypage-logout-button" onClick={() => setShowLogoutModal(true)}>로그아웃</button>
+      </div>
+
+      <section className="mypage-shell">
+        <motion.header
+          className="mypage-header"
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease }}
+        >
+          <span>MY PAGE</span>
+          <h1>계정 관리</h1>
+          <p>{loading ? '계정 정보를 불러오는 중입니다.' : `${name || '사용자'}님의 계정 정보를 관리할 수 있습니다.`}</p>
+        </motion.header>
+
+        <div className="mypage-grid">
+          <motion.form
+            className="mypage-panel"
+            onSubmit={saveProfile}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.08, ease }}
+          >
+            <div className="mypage-panel-heading">
+              <span>PROFILE</span>
+              <h2>이름과 이메일</h2>
+            </div>
+            <label>
+              <span>이름</span>
+              <input
+                type="text"
+                value={name}
+                maxLength={10}
+                onChange={event => setName(event.target.value)}
+                placeholder="이름"
+                disabled={loading || profileSaving}
+              />
+            </label>
+            <label>
+              <span>이메일</span>
+              <input
+                type="email"
+                value={email}
+                onChange={event => setEmail(event.target.value)}
+                placeholder="이메일"
+                disabled={loading || profileSaving}
+              />
+            </label>
+            <button type="submit" disabled={loading || profileSaving}>
+              {profileSaving ? '저장 중...' : '프로필 저장'}
+            </button>
+          </motion.form>
+
+          <motion.form
+            className="mypage-panel"
+            onSubmit={changePassword}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.14, ease }}
+          >
+            <div className="mypage-panel-heading">
+              <span>SECURITY</span>
+              <h2>비밀번호 변경</h2>
+            </div>
+            <label>
+              <span>현재 비밀번호</span>
+              <PasswordField
+                wrapperClassName="password-field mypage-password-field"
+                className="mypage-password-input"
+                value={currentPassword}
+                maxLength={PASSWORD_MAX_LENGTH}
+                onChange={event => setCurrentPassword(event.target.value)}
+                placeholder="현재 비밀번호"
+                disabled={passwordSaving}
+              />
+            </label>
+            <label>
+              <span>새 비밀번호</span>
+              <PasswordField
+                wrapperClassName="password-field mypage-password-field"
+                className="mypage-password-input"
+                value={nextPassword}
+                maxLength={PASSWORD_MAX_LENGTH}
+                onChange={event => setNextPassword(event.target.value)}
+                placeholder="새 비밀번호"
+                disabled={passwordSaving}
+              />
+            </label>
+            <label>
+              <span>새 비밀번호 확인</span>
+              <PasswordField
+                wrapperClassName="password-field mypage-password-field"
+                className="mypage-password-input"
+                value={nextPasswordConfirm}
+                maxLength={PASSWORD_MAX_LENGTH}
+                onChange={event => setNextPasswordConfirm(event.target.value)}
+                placeholder="새 비밀번호 확인"
+                disabled={passwordSaving}
+              />
+            </label>
+            <button type="submit" disabled={passwordSaving}>
+              {passwordSaving ? '변경 중...' : '비밀번호 변경'}
+            </button>
+          </motion.form>
+        </div>
+
+        <button
+          type="button"
+          className="mypage-support-link"
+          onClick={() => navigate('/support', { state: { from: '/mypage' } })}
+        >
+          개발자에게 응원 메시지 보내기
+        </button>
+      </section>
+
+      <NoticeModal
+        open={Boolean(notice)}
+        title={notice?.title}
+        message={notice?.message}
+        onClose={() => setNotice(null)}
+        variant="brown"
+      />
+      <NoticeModal
+        open={showLogoutModal}
+        title="로그아웃하시겠습니까?"
+        message="계정에서 나가도 편지는 그대로 보관됩니다."
+        cancelLabel="취소"
+        confirmLabel="로그아웃"
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        variant="logout"
+      />
+    </motion.main>
+  );
+}

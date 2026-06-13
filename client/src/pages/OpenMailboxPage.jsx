@@ -299,7 +299,7 @@ export default function OpenMailboxPage() {
         }
       });
     } catch {
-      setMessage('카메라 권한을 허용해주세요.');
+      setMessage('카메라 권한을 허용해 주세요.');
     }
   }
 
@@ -333,7 +333,7 @@ export default function OpenMailboxPage() {
 
   async function uploadDrawing(targetCanvasRef = canvasRef, hasDrawing = drawn) {
     const canvas = targetCanvasRef.current;
-    if (!canvas || !hasDrawing) throw new Error('그림을 그려주세요.');
+    if (!canvas || !hasDrawing) throw new Error('그림을 그려 주세요.');
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     return uploadImageBlob(blob, 'png', 'image/png');
   }
@@ -357,12 +357,12 @@ export default function OpenMailboxPage() {
     const cleanNickname = nickname.trim();
     const cleanContent = content.trim();
 
-    if (!cleanNickname) return setMessage('닉네임을 입력해주세요.');
-    if (!/^\d{4}$/.test(pin)) return setMessage('수정/삭제에 사용할 4자리 PIN을 입력해주세요.');
+    if (!cleanNickname) return setMessage('닉네임을 입력해 주세요.');
+    if (!/^\d{4}$/.test(pin)) return setMessage('수정/삭제에 사용할 4자리 PIN을 입력해 주세요.');
     if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
-    if (mode === 'text' && !cleanContent) return setMessage('내용을 입력해주세요.');
-    if (mode === 'photo' && !photoUrl) return setMessage('사진을 촬영해주세요.');
-    if (mode === 'draw' && !drawn) return setMessage('그림을 그려주세요.');
+    if (mode === 'text' && !cleanContent) return setMessage('내용을 입력해 주세요.');
+    if (mode === 'photo' && !photoUrl) return setMessage('사진을 촬영해 주세요.');
+    if (mode === 'draw' && !drawn) return setMessage('그림을 그려 주세요.');
 
     setSaving(true);
     setMessage('');
@@ -412,13 +412,13 @@ export default function OpenMailboxPage() {
     if (!selected) return;
     const cleanNickname = editNickname.trim();
     const cleanContent = editContent.trim();
-    if (!cleanNickname) return setMessage('닉네임을 입력해주세요.');
-    if (!/^\d{4}$/.test(editPin)) return setMessage('4자리 PIN을 입력해주세요.');
+    if (!cleanNickname) return setMessage('닉네임을 입력해 주세요.');
+    if (!/^\d{4}$/.test(editPin)) return setMessage('4자리 PIN을 입력해 주세요.');
     if (selected.type === 'text') {
       if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
-      if (!cleanContent) return setMessage('내용을 입력해주세요.');
+      if (!cleanContent) return setMessage('내용을 입력해 주세요.');
     }
-    if (selected.type === 'draw' && !editDrawn) return setMessage('수정할 그림을 확인해주세요.');
+    if (selected.type === 'draw' && !editDrawn) return setMessage('수정할 그림을 확인해 주세요.');
 
     setEditSaving(true);
     setMessage('');
@@ -451,14 +451,14 @@ export default function OpenMailboxPage() {
   }
 
   function requestDeleteSelectedLetter() {
-    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해주세요.');
+    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해 주세요.');
     setConfirmingDelete(true);
     setMessage('');
   }
 
   async function deleteSelectedLetter() {
     if (!selected) return;
-    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해주세요.');
+    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해 주세요.');
     setEditSaving(true);
     setMessage('');
     try {
@@ -494,7 +494,7 @@ export default function OpenMailboxPage() {
             <div className="open-board-title-row">
               <span>{total} letters</span>
               <h1 className="open-board-emoji-title" aria-label="열린 편지함">💌</h1>
-              <p>모두에게 보내는 편지</p>
+              <p>모두에게 전하는 편지</p>
             </div>
             <div className="open-board-controls">
               <button type="button" className="open-compose-open-button" onClick={() => setShowComposer(true)}>
@@ -654,7 +654,7 @@ export default function OpenMailboxPage() {
                 <div className="open-compose-footer">
                   <span>{mode === 'text' ? `${content.length}/${CONTENT_MAX_LENGTH}` : mode === 'photo' ? '사진 1장' : '그림 1장'}</span>
                   <button type="submit" disabled={saving || photoUploading}>
-                    {saving ? '저장 중...' : '남기기'}
+                    {saving ? '저장 중...' : '등록하기'}
                   </button>
                 </div>
               </form>
@@ -716,7 +716,7 @@ export default function OpenMailboxPage() {
                   {selected.type === 'photo' && selected.imageUrl && (
                     <div className="open-edit-photo-note">
                       <img src={selected.imageUrl} alt="" />
-                      <span>사진은 그대로 두고 닉네임만 수정할 수 있어요.</span>
+                      <span>사진은 유지되며 닉네임만 수정할 수 있습니다.</span>
                     </div>
                   )}
                   <input

@@ -14,7 +14,7 @@ export default function SupportPage() {
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null);
-  const returnTo = location.state?.from || '/hello';
+  const returnTo = location.state?.from || '/';
 
   function closeNotice() {
     const afterClose = notice?.afterClose;
@@ -27,7 +27,7 @@ export default function SupportPage() {
     const cleanContent = content.trim();
 
     if (!cleanContent) {
-      setMessage('남기고 싶은 마음을 적어주세요.');
+      setMessage('전하고 싶은 내용을 입력해 주세요.');
       return;
     }
     if (cleanContent.length > SUPPORT_MAX_LENGTH) {
@@ -46,7 +46,7 @@ export default function SupportPage() {
       setContent('');
       setNotice({
         title: '전송 완료',
-        message: '개발자에게 편지가 전송되었습니다.',
+        message: '개발자에게 응원 메시지가 전달되었습니다.',
         afterClose: () => navigate(returnTo, { replace: true }),
       });
     } catch (err) {
@@ -81,7 +81,7 @@ export default function SupportPage() {
       <section className="support-compose">
         <div className="support-heading">
           <span>Dear Me ; Dear You를 만든 사람에게</span>
-          <strong>작은 마음 전하기</strong>
+          <strong>응원 메시지 전하기</strong>
         </div>
 
         <motion.form
@@ -95,7 +95,7 @@ export default function SupportPage() {
             <textarea
               value={content}
               onChange={event => setContent(event.target.value.slice(0, SUPPORT_MAX_LENGTH))}
-              placeholder="고마웠던 순간이나 남기고 싶은 말을 적어주세요"
+              placeholder="전하고 싶은 응원이나 감사의 말을 기록해 주세요"
               maxLength={SUPPORT_MAX_LENGTH}
             />
           </label>

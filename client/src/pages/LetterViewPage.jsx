@@ -328,7 +328,7 @@ function CallActive({ letter, name, onHangup }) {
 
   async function handleSend() {
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setSendMsg('이메일 형식을 확인해주세요'); return;
+      setSendMsg('이메일 형식을 확인해 주세요.'); return;
     }
     setUploading(true); setSendMsg('');
     try {
@@ -350,7 +350,7 @@ function CallActive({ letter, name, onHangup }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ letterId: letter.id, presentVideoUrl, compositeVideoUrl, email }),
       }).then(r => r.json()).then(d => { if (d.message) throw new Error(d.message); return d; });
-      setSendMsg('이메일 발송 요청이 접수됐어요.');
+        setSendMsg('이메일 발송 요청이 접수되었습니다.');
       setTimeout(onHangup, 1500);
     } catch (err) {
       setSendMsg(err.message || '발송 실패');
@@ -367,10 +367,10 @@ function CallActive({ letter, name, onHangup }) {
       <motion.div key="confirm"
         style={{ position: 'fixed', inset: 0, zIndex: 20, background: '#0a0a12', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-        <div style={{ fontSize: 32, fontWeight: 300, color: '#fff' }}>통화가 종료됐어요</div>
+        <div style={{ fontSize: 32, fontWeight: 300, color: '#fff' }}>통화가 종료되었습니다</div>
         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 15, textAlign: 'center', lineHeight: 1.9 }}>
           과거와 현재의 영상을 함께 이메일로 보내드릴게요.<br/>
-          <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13 }}>이메일 주소를 꼭 확인해주세요</span>
+          <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13 }}>이메일 주소를 확인해 주세요</span>
         </div>
         <input
           value={email} onChange={e => { setEmail(e.target.value); setSendMsg(''); }}
@@ -429,7 +429,7 @@ function CallActive({ letter, name, onHangup }) {
         {camOk
           ? <video ref={presentVideoRef} autoPlay playsInline muted
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scaleX(-1)' }} />
-          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 14 }}>카메라를 허용해주세요</div>
+          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 14 }}>카메라 권한을 허용해 주세요</div>
         }
         {/* 이름 태그 */}
         <div style={{ position: 'absolute', bottom: 16, left: 16, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '6px 16px' }}>
@@ -491,9 +491,9 @@ function LegacySavedCallView({ letter, name, returnTo }) {
 
       <div style={{ textAlign: 'center' }}>
         <div style={{ color: '#7a4545', fontSize: 13, letterSpacing: 2, marginBottom: 8 }}>통화 기록</div>
-        <div style={{ color: '#2e1414', fontSize: 28, fontWeight: 300 }}>그날의 나와 지금의 내가 만났어요</div>
+        <div style={{ color: '#2e1414', fontSize: 28, fontWeight: 300 }}>그날의 나와 지금의 내가 만났습니다</div>
         <div style={{ color: '#8a5252', fontSize: 14, marginTop: 8 }}>
-          이 편지는 다시 울리지 않고, 남겨진 영상으로만 열려요.
+          이 편지는 다시 울리지 않으며, 남겨진 영상으로만 열람됩니다.
         </div>
         <div style={{ color: '#b07878', fontSize: 12, marginTop: 10 }}>{savedDate}</div>
       </div>

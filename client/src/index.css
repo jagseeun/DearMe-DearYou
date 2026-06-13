@@ -13543,3 +13543,560 @@ canvas {
     min-height: min(440px, calc(100dvh - 360px)) !important;
   }
 }
+
+/* Absolute final action button tone */
+.write-draft-save,
+.write-action-row > .write-submit {
+  border-color: rgba(174, 124, 82, 0.52) !important;
+  background:
+    linear-gradient(135deg, rgba(131, 86, 55, 0.98), rgba(91, 58, 38, 0.98) 55%, rgba(52, 34, 25, 0.98)) !important;
+  color: rgba(255, 240, 219, 0.96) !important;
+  box-shadow:
+    0 14px 30px rgba(28, 18, 12, 0.26),
+    inset 0 1px 0 rgba(255, 231, 202, 0.18) !important;
+}
+
+.write-draft-save:hover,
+.write-action-row > .write-submit:hover {
+  border-color: rgba(210, 159, 105, 0.62) !important;
+  background:
+    linear-gradient(135deg, rgba(148, 98, 62, 0.98), rgba(101, 65, 42, 0.98) 55%, rgba(59, 39, 28, 0.98)) !important;
+  color: rgba(255, 246, 232, 0.98) !important;
+}
+
+.write-draft-save:disabled {
+  cursor: default !important;
+  opacity: 0.58 !important;
+}
+
+.mypage-top-actions .mypage-logout-button {
+  border-color: rgba(255, 118, 128, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(174, 66, 76, 0.24), rgba(255, 255, 255, 0.055)) !important;
+  color: rgba(255, 207, 212, 0.9) !important;
+}
+
+.mypage-top-actions .mypage-logout-button:hover {
+  border-color: rgba(255, 138, 146, 0.48) !important;
+  background:
+    linear-gradient(135deg, rgba(190, 75, 86, 0.34), rgba(255, 255, 255, 0.08)) !important;
+  color: rgba(255, 242, 242, 0.98) !important;
+}
+
+/* Final UI polish */
+.logo-home-link {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.logo-home-link:focus-visible {
+  outline: 1px solid rgba(255, 236, 205, 0.64);
+  outline-offset: 8px;
+  border-radius: 8px;
+}
+
+.write-draft-save,
+.write-action-row > .write-submit {
+  border: 1px solid rgba(205, 154, 99, 0.5) !important;
+  background: rgba(72, 56, 41, 0.72) !important;
+  color: #ffeacd !important;
+  box-shadow:
+    0 12px 28px rgba(22, 15, 10, 0.24),
+    inset 0 1px 0 rgba(232, 201, 154, 0.14) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.write-draft-save:hover,
+.write-action-row > .write-submit:hover {
+  border-color: rgba(205, 154, 99, 0.62) !important;
+  background: rgba(86, 66, 48, 0.78) !important;
+  color: #fff2d8 !important;
+}
+
+.write-draft-save:disabled {
+  cursor: default !important;
+  opacity: 0.58 !important;
+}
+
+.mypage-shell {
+  justify-items: center;
+  align-content: center;
+}
+
+.mypage-header,
+.mypage-grid,
+.mypage-support-link {
+  width: 100%;
+}
+
+.mypage-header,
+.mypage-panel-heading {
+  text-align: center;
+}
+
+.mypage-panel {
+  justify-items: center;
+  text-align: center;
+}
+
+.mypage-panel label {
+  width: min(100%, 380px);
+  text-align: left;
+}
+
+.mypage-panel > button {
+  justify-self: center;
+}
+
+@media (max-width: 760px) {
+  .mypage-shell {
+    align-content: start;
+  }
+}
+
+/* Final button tone correction */
+.write-draft-save,
+.write-action-row > .write-submit {
+  border-color: rgba(174, 124, 82, 0.52) !important;
+  background:
+    linear-gradient(135deg, rgba(131, 86, 55, 0.98), rgba(91, 58, 38, 0.98) 55%, rgba(52, 34, 25, 0.98)) !important;
+  color: rgba(255, 240, 219, 0.96) !important;
+  box-shadow:
+    0 14px 30px rgba(28, 18, 12, 0.26),
+    inset 0 1px 0 rgba(255, 231, 202, 0.18) !important;
+}
+
+.write-draft-save:hover,
+.write-action-row > .write-submit:hover {
+  border-color: rgba(210, 159, 105, 0.62) !important;
+  background:
+    linear-gradient(135deg, rgba(148, 98, 62, 0.98), rgba(101, 65, 42, 0.98) 55%, rgba(59, 39, 28, 0.98)) !important;
+  color: rgba(255, 246, 232, 0.98) !important;
+}
+
+.write-draft-save:disabled {
+  opacity: 0.58 !important;
+}
+
+.mypage-top-actions .mypage-logout-button {
+  border-color: rgba(255, 118, 128, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(174, 66, 76, 0.24), rgba(255, 255, 255, 0.055)) !important;
+  color: rgba(255, 207, 212, 0.9) !important;
+}
+
+.mypage-top-actions .mypage-logout-button:hover {
+  border-color: rgba(255, 138, 146, 0.48) !important;
+  background:
+    linear-gradient(135deg, rgba(190, 75, 86, 0.34), rgba(255, 255, 255, 0.08)) !important;
+  color: rgba(255, 242, 242, 0.98) !important;
+}
+
+/* Final small interaction repairs */
+.letter-login-page .main-title {
+  filter:
+    drop-shadow(0 0 18px rgba(218, 157, 176, 0.26))
+    drop-shadow(0 10px 28px rgba(16, 8, 22, 0.42)) !important;
+}
+
+.letter-login-page .main-title .to {
+  color: #fff1e8 !important;
+  filter: drop-shadow(0 0 18px rgba(218, 157, 176, 0.34)) drop-shadow(0 2px 8px rgba(24, 13, 28, 0.42)) !important;
+}
+
+.letter-login-page .main-title .semicolon {
+  color: rgba(241, 205, 213, 0.62) !important;
+}
+
+.letter-login-page .main-title .from {
+  color: #e0a4b0 !important;
+  filter: drop-shadow(0 0 14px rgba(160, 93, 122, 0.32)) drop-shadow(0 2px 8px rgba(24, 13, 28, 0.38)) !important;
+}
+
+.notice-modal-panel.logout {
+  border-color: rgba(234, 184, 195, 0.26) !important;
+  background:
+    linear-gradient(135deg, rgba(114, 64, 86, 0.18), rgba(70, 87, 112, 0.1)),
+    rgba(20, 24, 34, 0.95) !important;
+  color: rgba(255, 242, 238, 0.95) !important;
+}
+
+.notice-modal-panel.logout .notice-modal-mark {
+  background: linear-gradient(90deg, #e8c28a, #e9a1ab) !important;
+}
+
+.notice-modal-panel.logout p {
+  color: rgba(239, 217, 211, 0.76) !important;
+}
+
+.notice-modal-panel.logout .notice-modal-actions button:last-child {
+  border-color: rgba(255, 129, 139, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(214, 103, 113, 0.94), rgba(148, 60, 74, 0.94)) !important;
+  color: rgba(255, 248, 248, 0.98) !important;
+  box-shadow: 0 12px 30px rgba(118, 36, 52, 0.24) !important;
+}
+
+.notice-modal-panel.logout .notice-modal-actions button.ghost {
+  border-color: rgba(255, 236, 205, 0.18) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(255, 242, 230, 0.78) !important;
+  box-shadow: none !important;
+}
+
+/* MyPage and quiet-entry placement repairs */
+.home-support-floating-button {
+  position: fixed;
+  right: calc(22px + env(safe-area-inset-right));
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  z-index: 8;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(232, 194, 138, 0.3);
+  background:
+    linear-gradient(135deg, rgba(255, 242, 220, 0.15), rgba(168, 200, 181, 0.1)),
+    rgba(25, 27, 31, 0.62);
+  color: rgba(255, 242, 222, 0.84);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.home-support-floating-button:hover,
+.open-mailbox-floating-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 222, 174, 0.48);
+  color: rgba(255, 249, 238, 0.96);
+}
+
+.mypage-page {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  padding: calc(92px + env(safe-area-inset-top)) 40px calc(42px + env(safe-area-inset-bottom));
+  color: #fff3df;
+}
+
+.mypage-top-actions {
+  position: fixed;
+  top: calc(26px + env(safe-area-inset-top));
+  right: calc(32px + env(safe-area-inset-right));
+  z-index: 22;
+  display: flex;
+  gap: 8px;
+}
+
+.mypage-top-actions button {
+  min-height: 36px;
+  padding: 0 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(244, 220, 184, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 243, 222, 0.68);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.mypage-top-actions button:hover {
+  background: rgba(255, 255, 255, 0.11);
+  color: rgba(255, 250, 238, 0.92);
+}
+
+.mypage-shell {
+  width: min(1080px, 100%);
+  min-height: calc(100dvh - 160px);
+  margin: 0 auto;
+  display: grid;
+  align-content: center;
+  gap: 16px;
+}
+
+.mypage-header,
+.mypage-panel {
+  border: 1px solid rgba(244, 220, 184, 0.16);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 246, 226, 0.07), rgba(126, 148, 176, 0.045)),
+    rgba(18, 21, 28, 0.66);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.mypage-header {
+  padding: 26px 30px;
+}
+
+.mypage-header span,
+.mypage-panel-heading span {
+  color: rgba(232, 194, 138, 0.62);
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.mypage-header h1 {
+  margin: 6px 0 8px;
+  color: #fff0d9;
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 300;
+  letter-spacing: 0;
+}
+
+.mypage-header p {
+  margin: 0;
+  color: rgba(255, 239, 210, 0.56);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.mypage-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.mypage-panel {
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.mypage-panel-heading h2 {
+  margin: 6px 0 0;
+  color: #f7ead5;
+  font-size: 24px;
+  font-weight: 300;
+}
+
+.mypage-panel label {
+  display: grid;
+  gap: 8px;
+  color: rgba(255, 239, 210, 0.6);
+  font-size: 13px;
+}
+
+.mypage-panel input,
+.mypage-password-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(244, 220, 184, 0.16);
+  background: rgba(255, 255, 255, 0.075);
+  color: #fff3df;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.mypage-password-input {
+  padding-right: 52px;
+}
+
+.mypage-panel input:focus,
+.mypage-password-input:focus {
+  border-color: rgba(232, 194, 138, 0.42);
+  box-shadow: 0 0 0 3px rgba(232, 194, 138, 0.1);
+}
+
+.mypage-password-field .password-toggle {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 252, 223, 0.62);
+}
+
+.mypage-password-field .password-toggle:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: rgba(255, 252, 223, 0.95);
+}
+
+.mypage-panel > button {
+  justify-self: start;
+  min-width: 148px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(232, 194, 138, 0.38);
+  background: linear-gradient(135deg, rgba(232, 194, 138, 0.22), rgba(255, 255, 255, 0.08));
+  color: #ffe8c4;
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.mypage-panel > button:disabled {
+  cursor: default;
+  opacity: 0.62;
+}
+
+.mypage-support-link {
+  justify-self: center;
+  margin-top: 4px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(232, 194, 138, 0.48);
+  background: transparent;
+  color: rgba(255, 231, 196, 0.72);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.mypage-support-link:hover {
+  color: rgba(255, 245, 230, 0.94);
+}
+
+.write-draft-save,
+.write-action-row > .write-submit {
+  width: 178px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 20px !important;
+  border-radius: 10px !important;
+  border: 1px solid rgba(255, 238, 202, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 238, 202, 0.96), rgba(232, 194, 138, 0.92) 52%, rgba(168, 200, 181, 0.86)) !important;
+  color: #24170d !important;
+  box-shadow: 0 12px 28px rgba(24, 18, 14, 0.2), 0 0 18px rgba(232, 194, 138, 0.16) !important;
+}
+
+.write-draft-save:disabled {
+  cursor: default !important;
+  opacity: 0.62 !important;
+}
+
+@media (max-width: 760px) {
+  .home-support-floating-button {
+    right: calc(14px + env(safe-area-inset-right));
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    min-height: 40px;
+    max-width: calc(100vw - 28px);
+    padding: 0 14px;
+    font-size: 12px;
+  }
+
+  .mypage-page {
+    padding: calc(84px + env(safe-area-inset-top)) 18px calc(30px + env(safe-area-inset-bottom));
+  }
+
+  .mypage-top-actions {
+    top: calc(18px + env(safe-area-inset-top));
+    right: calc(18px + env(safe-area-inset-right));
+  }
+
+  .mypage-shell {
+    min-height: 0;
+    align-content: start;
+  }
+
+  .mypage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mypage-header,
+  .mypage-panel {
+    padding: 20px;
+  }
+
+  .write-draft-save,
+  .write-action-row > .write-submit {
+    width: 100% !important;
+    height: 46px !important;
+    min-height: 46px !important;
+  }
+}
+
+/* Current settled overrides */
+.write-draft-save,
+.write-action-row > .write-submit {
+  border: 1px solid rgba(168, 122, 85, 0.38) !important;
+  background: rgba(104, 72, 50, 0.72) !important;
+  color: rgba(255, 240, 220, 0.96) !important;
+  box-shadow:
+    0 12px 28px rgba(24, 17, 12, 0.24),
+    inset 0 1px 0 rgba(255, 236, 208, 0.14) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.write-draft-save:hover,
+.write-action-row > .write-submit:hover {
+  border-color: rgba(194, 149, 105, 0.48) !important;
+  background: rgba(120, 84, 59, 0.78) !important;
+  color: rgba(255, 246, 232, 0.98) !important;
+}
+
+.write-draft-save:disabled {
+  cursor: default !important;
+  opacity: 0.58 !important;
+}
+
+.mypage-top-actions .mypage-logout-button {
+  border-color: rgba(255, 118, 128, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(174, 66, 76, 0.24), rgba(255, 255, 255, 0.055)) !important;
+  color: rgba(255, 207, 212, 0.9) !important;
+}
+
+.mypage-top-actions .mypage-logout-button:hover {
+  border-color: rgba(255, 138, 146, 0.48) !important;
+  background:
+    linear-gradient(135deg, rgba(190, 75, 86, 0.34), rgba(255, 255, 255, 0.08)) !important;
+  color: rgba(255, 242, 242, 0.98) !important;
+}
+
+.logo-home-link {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.logo-home-link:focus-visible {
+  outline: 1px solid rgba(255, 236, 205, 0.64);
+  outline-offset: 8px;
+  border-radius: 8px;
+}
+
+.mypage-shell {
+  justify-items: center;
+  align-content: center;
+}
+
+.mypage-header,
+.mypage-grid,
+.mypage-support-link {
+  width: 100%;
+}
+
+.mypage-header,
+.mypage-panel-heading {
+  text-align: center;
+}
+
+.mypage-panel {
+  justify-items: center;
+  text-align: center;
+}
+
+.mypage-panel label {
+  width: min(100%, 380px);
+  text-align: left;
+}
+
+.mypage-panel > button {
+  justify-self: center;
+}
+
+@media (max-width: 760px) {
+  .mypage-shell {
+    align-content: start;
+  }
+}

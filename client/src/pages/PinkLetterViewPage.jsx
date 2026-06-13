@@ -46,7 +46,7 @@ export default function PinkLetterViewPage() {
       const res = await fetch('/trigger-send', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || '발송 실패');
-      setSendMsg(data.sent ? '이메일 발송 요청이 접수됐어요. 스팸함이나 프로모션함도 확인해주세요.' : '발송할 편지가 없습니다');
+      setSendMsg(data.sent ? '이메일 발송 요청이 접수되었습니다. 스팸함이나 프로모션함도 확인해 주세요.' : '발송할 편지가 없습니다');
       setTimeout(() => setSendMsg(''), 3000);
     } catch (err) {
       setSendMsg(err.message || '발송 실패');
@@ -87,8 +87,8 @@ export default function PinkLetterViewPage() {
           <div className="letter-empty">불러오는 중...</div>
         ) : letters.length === 0 ? (
           <div className="letter-empty">
-            <strong>아직 개봉할 편지가 없어요.</strong>
-            <span>개봉일이 지나면 이곳에서 읽을 수 있어요.</span>
+            <strong>아직 개봉할 편지가 없습니다.</strong>
+            <span>개봉일이 지나면 이곳에서 읽을 수 있습니다.</span>
           </div>
         ) : (
           <>

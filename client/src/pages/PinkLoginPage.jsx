@@ -19,7 +19,7 @@ export default function PinkLoginPage() {
   async function handleLogin() {
     const nextUserid = userid.trim();
     if (!nextUserid || !password) {
-      setNotice({ title: '로그인 확인', message: '아이디와 비밀번호를 입력해주세요.' });
+      setNotice({ title: '로그인 확인', message: '아이디와 비밀번호를 입력해 주세요.' });
       return;
     }
     try {
@@ -32,7 +32,7 @@ export default function PinkLoginPage() {
       if (res.ok) navigate('/pink-letters');
       else setNotice({ title: '로그인 실패', message: data.message || '로그인에 실패했습니다.' });
     } catch {
-      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.' });
+      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.' });
     }
   }
 
