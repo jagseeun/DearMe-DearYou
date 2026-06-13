@@ -13655,6 +13655,364 @@ canvas {
   }
 }
 
+/* Global motion refinement */
+:root {
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-fast: 160ms;
+  --motion-medium: 280ms;
+  --motion-slow: 520ms;
+}
+
+.motion-ready :where(
+  .page-center,
+  .hello-shell,
+  .write-shell,
+  .done-page,
+  .letter-list-page,
+  .letter-view-root,
+  .open-mailbox-page,
+  .support-page,
+  .mypage-page,
+  .develop-page,
+  .admin-page
+) {
+  animation: pageSoftIn var(--motion-slow) var(--motion-ease) both;
+}
+
+.motion-ready :where(
+  .glass-btn,
+  .submit-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-shutter-button,
+  .open-letter-actions button,
+  .open-letter-pin-actions button,
+  .open-delete-confirm button,
+  .open-page-arrows button,
+  .open-mode-tabs button,
+  .open-compose-footer button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .draw-tool-button,
+  .draw-swatch,
+  .support-submit,
+  .develop-header button,
+  .mypage-top-actions button,
+  .mypage-panel > button,
+  .notice-modal-actions button,
+  .modal-actions button,
+  .letter-delete-modal-button,
+  button
+) {
+  transition:
+    transform var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-medium) var(--motion-ease),
+    background-color var(--motion-medium) var(--motion-ease),
+    border-color var(--motion-medium) var(--motion-ease),
+    color var(--motion-medium) var(--motion-ease),
+    opacity var(--motion-medium) var(--motion-ease);
+  transform-origin: center;
+}
+
+.motion-ready :where(
+  .glass-btn,
+  .submit-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-letter-actions button,
+  .open-letter-pin-actions button,
+  .open-delete-confirm button,
+  .open-page-arrows button:not(:disabled),
+  .open-mode-tabs button,
+  .open-compose-footer button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .draw-tool-button,
+  .support-submit,
+  .develop-header button,
+  .mypage-top-actions button,
+  .mypage-panel > button,
+  .notice-modal-actions button,
+  .modal-actions button,
+  .letter-delete-modal-button
+):not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.motion-ready :where(
+  .glass-btn,
+  .submit-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-shutter-button,
+  .open-letter-actions button,
+  .open-letter-pin-actions button,
+  .open-delete-confirm button,
+  .open-page-arrows button,
+  .open-mode-tabs button,
+  .open-compose-footer button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .draw-tool-button,
+  .draw-swatch,
+  .support-submit,
+  .develop-header button,
+  .mypage-top-actions button,
+  .mypage-panel > button,
+  .notice-modal-actions button,
+  .modal-actions button,
+  .letter-delete-modal-button
+):not(:disabled):active {
+  transform: translateY(0) scale(0.985);
+}
+
+.motion-ready :where(
+  .form-container,
+  .write-layout,
+  .write-paper,
+  .done-card,
+  .letter-list-header,
+  .letter-empty,
+  .support-compose,
+  .mypage-header,
+  .mypage-panel,
+  .develop-panel,
+  .develop-card,
+  .admin-page section,
+  .open-board-panel,
+  .open-empty-letter
+) {
+  animation: panelSoftIn 620ms var(--motion-ease) both;
+}
+
+.motion-ready :where(
+  .letter-card,
+  .open-letter-card,
+  .develop-card,
+  .admin-card,
+  .mypage-panel
+) {
+  transition:
+    transform var(--motion-medium) var(--motion-ease),
+    box-shadow var(--motion-medium) var(--motion-ease),
+    border-color var(--motion-medium) var(--motion-ease),
+    background-color var(--motion-medium) var(--motion-ease),
+    opacity var(--motion-medium) var(--motion-ease);
+}
+
+.motion-ready :where(
+  .letter-card,
+  .open-letter-card,
+  .develop-card,
+  .admin-card,
+  .mypage-panel
+):hover {
+  transform: translateY(-3px);
+}
+
+.motion-ready :where(
+  .modal-backdrop,
+  .notice-modal-backdrop,
+  .open-compose-modal-backdrop,
+  .open-letter-modal-backdrop,
+  .letter-delete-modal-backdrop,
+  .photo-capture-overlay
+) {
+  animation: backdropFadeIn 220ms var(--motion-ease) both;
+}
+
+.motion-ready :where(
+  .modal-panel,
+  .notice-modal-panel,
+  .write-modal-panel,
+  .open-compose-modal,
+  .open-letter-modal,
+  .letter-delete-modal
+) {
+  animation: modalFloatIn 320ms var(--motion-ease) both;
+}
+
+.motion-ready :where(
+  input,
+  textarea,
+  select,
+  .input-field,
+  .open-compose-input,
+  .open-compose-textarea,
+  .mypage-password-input,
+  .write-textarea
+) {
+  transition:
+    border-color var(--motion-medium) var(--motion-ease),
+    box-shadow var(--motion-medium) var(--motion-ease),
+    background-color var(--motion-medium) var(--motion-ease),
+    color var(--motion-medium) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+
+.motion-ready :where(
+  input,
+  textarea,
+  select,
+  .input-field,
+  .open-compose-input,
+  .open-compose-textarea,
+  .mypage-password-input,
+  .write-textarea
+):focus {
+  transform: translateY(-1px);
+}
+
+.motion-ready :where(
+  .home-subtitle,
+  .hello-greeting,
+  .hello-question,
+  .write-heading,
+  .support-heading,
+  .mypage-panel-heading,
+  .open-compose-heading,
+  .done-message,
+  .develop-header
+) {
+  animation: textSoftIn 700ms var(--motion-ease) both;
+}
+
+.motion-ready :where(.top-title, .main-title, .letter-list-logo) {
+  animation: logoBreath 4.8s var(--motion-ease) infinite alternate;
+}
+
+.motion-ready :where(.letter-card:nth-child(2n), .open-letter-card:nth-child(2n), .develop-card:nth-child(2n)) {
+  animation-delay: 35ms;
+}
+
+.motion-ready :where(.letter-card:nth-child(3n), .open-letter-card:nth-child(3n), .develop-card:nth-child(3n)) {
+  animation-delay: 70ms;
+}
+
+@keyframes pageSoftIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes panelSoftIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.965);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes textSoftIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes logoBreath {
+  from {
+    filter: drop-shadow(0 0 10px rgba(255, 236, 205, 0.08));
+  }
+  to {
+    filter: drop-shadow(0 0 20px rgba(255, 236, 205, 0.18));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-ready *,
+  .motion-ready *::before,
+  .motion-ready *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .motion-ready :where(button, [role="button"], input, textarea, select):hover,
+  .motion-ready :where(button, [role="button"], input, textarea, select):active,
+  .motion-ready :where(.letter-card, .open-letter-card, .develop-card, .mypage-panel):hover {
+    transform: none !important;
+  }
+}
+
 /* Final button tone correction */
 .write-draft-save,
 .write-action-row > .write-submit {

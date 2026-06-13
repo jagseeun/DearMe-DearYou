@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { fetchJson } from '../utils/api.js';
+import { listItemMotion } from '../utils/motion.js';
 
 const ease = [0.22, 1, 0.36, 1];
 const CONTENT_MAX_LENGTH = 100;
@@ -520,12 +521,13 @@ export default function OpenMailboxPage() {
             </div>
           ) : (
             <div className="open-letter-grid">
-              {letters.map(letter => (
-                <button
+              {letters.map((letter, index) => (
+                <motion.button
                   type="button"
                   key={letter.id}
                   className={`open-letter-card ${letter.type} ${letter.content ? '' : 'has-no-copy'}`.trim()}
                   onClick={() => { setMessage(''); setSelected(letter); }}
+                  {...listItemMotion(index)}
                 >
                   {(letter.type === 'draw' || letter.type === 'photo') && letter.imageUrl && (
                     <img src={letter.imageUrl} alt="" />
@@ -538,7 +540,7 @@ export default function OpenMailboxPage() {
                       {wasEdited(letter) && <em>수정됨</em>}
                     </span>
                   </footer>
-                </button>
+                </motion.button>
               ))}
               {Array.from({ length: emptySlots }).map((_, index) => (
                 <div key={`empty-${page}-${index}`} className="open-letter-card placeholder" aria-hidden="true" />

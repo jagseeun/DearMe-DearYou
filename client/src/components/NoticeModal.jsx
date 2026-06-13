@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-
-const ease = [0.22, 1, 0.36, 1];
+import { buttonMotion, modalBackdropMotion, modalPanelMotion } from '../utils/motion.js';
 
 export default function NoticeModal({
   open,
@@ -26,17 +25,12 @@ export default function NoticeModal({
       {open && (
         <motion.div
           className="notice-modal-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+          {...modalBackdropMotion}
           onClick={close}
         >
           <motion.section
             className={`notice-modal-panel ${variant}`}
-            initial={{ opacity: 0, y: 22, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 14, scale: 0.96 }}
-            transition={{ duration: 0.28, ease }}
+            {...modalPanelMotion}
             onClick={event => event.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -47,13 +41,13 @@ export default function NoticeModal({
             {message && <p>{message}</p>}
             <div className="notice-modal-actions">
               {cancelLabel && (
-                <button type="button" className="ghost" onClick={close}>
+                <motion.button type="button" className="ghost" onClick={close} {...buttonMotion}>
                   {cancelLabel}
-                </button>
+                </motion.button>
               )}
-              <button type="button" onClick={confirm}>
+              <motion.button type="button" onClick={confirm} {...buttonMotion}>
                 {confirmLabel}
-              </button>
+              </motion.button>
             </div>
           </motion.section>
         </motion.div>
