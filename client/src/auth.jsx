@@ -57,7 +57,9 @@ export function ProtectedRoute({ children, requireAdmin = false, requireDevelope
 
   if (status === 'checking') return <AuthLoading />;
   if (status !== 'authenticated') {
-    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
+    const from = `${location.pathname}${location.search}`;
+    const letterPath = ['/letters', '/pink-letters', '/view-letter'].some(path => location.pathname.startsWith(path));
+    return <Navigate to={letterPath ? '/letter-login' : '/login'} replace state={{ from }} />;
   }
   if (requireAdmin && !user?.isAdmin) return <Navigate to="/" replace />;
   if (requireDeveloper && !user?.isDeveloper) return <Navigate to="/" replace />;

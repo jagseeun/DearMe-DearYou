@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../auth.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -14,6 +15,16 @@ const item = {
 
 export default function IndexPage() {
   const navigate = useNavigate();
+  const { status } = useAuth();
+
+  function openLetterBox() {
+    if (status === 'authenticated') {
+      navigate('/letters');
+      return;
+    }
+    navigate('/letter-login', { state: { from: '/letters' } });
+  }
+
   return (
     <motion.div
       className="page-center home-page"
@@ -29,7 +40,7 @@ export default function IndexPage() {
       </motion.h1>
 
       <motion.p variants={item} className="home-subtitle">
-        나와 너에게 남기는 편지
+        마음을 기록하고 전하는 편지
       </motion.p>
 
       <motion.div
@@ -40,7 +51,7 @@ export default function IndexPage() {
         <button className="glass-btn" onClick={() => navigate('/signup')}>회원가입</button>
         <button
           className="glass-btn"
-          onClick={() => navigate('/letter-login')}
+          onClick={openLetterBox}
           style={{ borderColor: 'rgba(246,177,177,0.4)', color: 'rgba(255,220,210,0.85)' }}
         >
           편지 읽기

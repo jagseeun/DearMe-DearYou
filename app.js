@@ -35,7 +35,6 @@ const URL_MAX_LENGTH = 2048;
 const MAIL_SEND_TIMEOUT_MS = Number(process.env.MAIL_SEND_TIMEOUT_MS || 20000);
 const ALLOWED_LETTER_TYPES = new Set(["text", "video", "draw"]);
 const ALLOWED_PUBLIC_LETTER_TYPES = new Set(["text", "draw", "photo"]);
-const ALLOWED_EMAIL_THEMES = new Set(["dark", "pink"]);
 const PUBLIC_LETTER_BLOCKED_WORDS = [
   "씨발", "시발", "ㅅㅂ", "병신", "ㅂㅅ", "좆", "지랄", "꺼져", "죽어",
   "sex", "porn", "fuck",
@@ -107,8 +106,6 @@ const emailSenderName = process.env.EMAIL_SENDER_NAME || "Dear Me; Dear You";
 const emailFromAddress = process.env.BREVO_SENDER_EMAIL || process.env.GMAIL_USER;
 const emailReplyTo = process.env.BREVO_REPLY_TO || process.env.GMAIL_USER || emailFromAddress;
 const emailFromHeader = `"${emailSenderName}" <${emailFromAddress}>`;
-const appBaseUrl = stripTrailingSlash(process.env.PUBLIC_APP_URL || process.env.APP_URL || "https://dearme-dearyou.onrender.com");
-const appHomeUrl = `${appBaseUrl}/`;
 const developerEmail = process.env.DEVELOPER_EMAIL || TEACHER_TEST_EMAIL;
 
 function serializeMailError(err) {
@@ -163,9 +160,8 @@ function validatePublicLetterPin(pin) {
   return PUBLIC_LETTER_PIN_REGEX.test(String(pin || ""));
 }
 
-function normalizeEmailTheme(value) {
-  const theme = String(value || "dark").trim().toLowerCase();
-  return ALLOWED_EMAIL_THEMES.has(theme) ? theme : "dark";
+function normalizeEmailTheme() {
+  return "dark";
 }
 
 function mailHeader(value, maxLength = 180) {
@@ -423,8 +419,6 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
         : isDraw
           ? `안녕, ${recipientName}.\n${isToOther ? senderName + '이(가) 보낸' : '과거의 네가 보낸'} 그림 편지야.\n\n${metaText}\n\n그림 보기: ${letter.imageUrl}`
           : `안녕, ${recipientName}.\n${isToOther ? senderName + '이(가) 보낸' : '과거의 네가 보낸'} 편지야.\n\n${metaText}\n\n${letter.content}`;
-      const textWithHomeLink = `${text}\n\n${buildEmailHomeText()}`;
-
       try {
         // 수신자에게 발송
         const recipientResult = await sendMail({
@@ -434,7 +428,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
           subject: mailHeader(isToOther
             ? `${senderName}이(가) 보낸 편지가 도착했어요`
             : "과거의 내가 보낸 편지가 도착했어요"),
-          text: textWithHomeLink,
+          text,
           html,
         });
 
@@ -460,7 +454,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
               replyTo: emailReplyTo,
               to: letter.author.email,
               subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었어요`),
-              text: `안녕, ${senderName}.\n네가 ${recipientName}에게 보낸 편지가 오늘 전달되었어.\n\n${metaText}\n\n${buildEmailHomeText()}`,
+              text: `안녕, ${senderName}.\n네가 ${recipientName}에게 보낸 편지가 오늘 전달되었어.\n\n${metaText}`,
               html: senderHtml,
             });
           } catch (notifyErr) {
@@ -736,24 +730,6 @@ function buildLetterMetaHtml(meta = {}, themeStyles) {
     </div>`;
 }
 
-function buildEmailHomeText(label = "Dear Me; Dear You 열기") {
-  return `${label}: ${appHomeUrl}`;
-}
-
-function buildEmailHomeCta(themeStyles, {
-  label = "편지함 열기",
-  note = "Dear Me; Dear You에서 이 마음을 천천히 다시 꺼내볼 수 있어.",
-  showUrl = true,
-} = {}) {
-  const safeUrl = escapeHtml(appHomeUrl);
-  return `
-    <div style="margin-top:26px;padding:20px;background:${themeStyles.metaBg};border:1px solid ${themeStyles.metaBorder};border-radius:16px;text-align:center">
-      <div style="color:${themeStyles.muted};font-size:13px;line-height:1.7;margin-bottom:14px">${escapeHtml(note)}</div>
-      <a href="${safeUrl}" style="display:inline-block;padding:13px 28px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:999px;text-decoration:none;font-size:15px;font-weight:700">${escapeHtml(label)}</a>
-      ${showUrl ? `<div style="margin-top:12px;color:${themeStyles.footer};font-size:11px;line-height:1.5;word-break:break-all">${safeUrl}</div>` : ""}
-    </div>`;
-}
-
 function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 600 }) {
   const themeStyles = getLetterEmailTheme(theme);
   const headerSubtitle = subtitle || `${formatMailDate(openDate)} 개봉`;
@@ -784,10 +760,6 @@ function buildSenderNotifyEmail(senderName, recipientName, openDate, emailTheme 
         소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두어도 괜찮아.
       </p>
       ${buildLetterMetaHtml(meta, themeStyles)}
-      ${buildEmailHomeCta(themeStyles, {
-        label: "Dear Me; Dear You 열기",
-        note: "내가 남긴 편지들을 다시 보고 싶을 때 여기로 돌아오면 돼.",
-      })}
     </div>`,
   });
 }
@@ -812,7 +784,6 @@ function buildTextEmail(recipientName, senderName, content, openDate, isToOther,
       <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:30px;font-size:16px;line-height:1.9;color:${themeStyles.cardText};white-space:pre-wrap">${safeContent}</div>
       ${safeImageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${escapeHtml(safeImageUrl)}" style="max-width:100%;border-radius:14px" /></div>` : ""}
       ${safeSignatureUrl ? `<div style="margin-top:20px;text-align:right"><img src="${escapeHtml(safeSignatureUrl)}" style="max-height:80px" /></div>` : ""}
-      ${buildEmailHomeCta(themeStyles)}
     </div>`,
   });
 }
@@ -835,7 +806,6 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
       <div style="border-radius:16px;overflow:hidden;border:1px solid ${themeStyles.cardBorder};background:${themeStyles.cardBg}">
         ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" style="width:100%;display:block" />` : `<div style="padding:24px;text-align:center;color:${themeStyles.muted}">그림 URL을 확인할 수 없습니다.</div>`}
       </div>
-      ${buildEmailHomeCta(themeStyles)}
     </div>`,
   });
 }
@@ -857,7 +827,6 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
       <div style="text-align:left">${buildLetterMetaHtml(meta, themeStyles)}</div>
       ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>
       <p style="margin-top:20px;color:${themeStyles.muted};font-size:12px;word-break:break-all">버튼이 작동하지 않으면 ${escapeHtml(safeVideoUrl)}</p>` : `<p style="color:${themeStyles.muted}">영상 URL을 확인할 수 없습니다.</p>`}
-      ${buildEmailHomeCta(themeStyles)}
     </div>`,
   });
 }
@@ -923,11 +892,6 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
       <div style="margin-bottom:18px;color:${themeStyles.brandMain};font-size:13px;font-weight:700;letter-spacing:2px">${teacherName || "선생님"}</div>
       <div style="margin-bottom:18px;color:${themeStyles.text};font-size:24px;line-height:1.35;font-weight:300">${title}</div>
       <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:34px 38px;font-size:16px;line-height:1.95;color:${themeStyles.cardText};white-space:pre-wrap">${content}</div>
-      ${buildEmailHomeCta(themeStyles, {
-        label: "Dear Me ; Dear You",
-        note: "오늘의 마음을 너와 나에게 전하는",
-        showUrl: false,
-      })}
     </div>`,
   });
 }
@@ -952,7 +916,7 @@ async function sendTeacherDelivery(delivery) {
       replyTo: emailReplyTo,
       to: member.email,
       subject: mailHeader(teacherIntro),
-      text: `${teacherIntro}\n\n${personalizedTeacherLetter.content}\n\n${buildEmailHomeText()}`,
+      text: `${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
       html: buildTeacherLetterEmail(member.name, personalizedTeacherLetter),
     });
 
@@ -1255,33 +1219,17 @@ app.use(session({
   }
 }));
 
-const defaultAdminUserids = ["jagseeun1", "jeahee"];
-const deprecatedAdminUserids = new Set(["leejeahee"]);
-const adminUserids = new Set(
-  [
-    ...defaultAdminUserids,
-    ...(process.env.ADMIN_USERIDS || process.env.ADMIN_USERID || "")
-      .split(",")
-      .map(userid => userid.trim()),
-  ]
-    .filter(Boolean)
-    .filter(userid => !deprecatedAdminUserids.has(userid))
-);
-const developerUserids = new Set(
-  [
-    "jagseeun1",
-    ...(process.env.DEVELOPER_USERIDS || "")
-      .split(",")
-      .map(userid => userid.trim()),
-  ].filter(Boolean)
-);
+const privilegedUserids = new Set(["leejeahee", "jagseeun1"]);
+const adminUserids = new Set(privilegedUserids);
+const developerUserids = new Set(privilegedUserids);
 
 function isAdminUser(user) {
   return !!user && adminUserids.has(user.userid);
 }
 
 function isDeveloperUser(user) {
-  return !!user && developerUserids.has(user.userid);
+  if (!user) return false;
+  return developerUserids.has(user.userid);
 }
 
 function requireAdmin(req, res, next) {
@@ -1439,9 +1387,7 @@ app.get("/support-info", (_req, res) => {
 });
 
 app.post("/support-messages", writeLimiter, async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
-
-  const sessionUser = req.session.user;
+  const sessionUser = req.session.user || {};
   const content = normalizePublicText(req.body.content || "");
 
   if (!content) return res.status(400).json({ message: "남기고 싶은 마음을 입력해주세요." });
@@ -1556,7 +1502,9 @@ app.put("/change-password", authLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
   const currentPassword = String(req.body.currentPassword || "");
   const nextPassword = String(req.body.nextPassword || "");
-  if (!currentPassword || !nextPassword) return res.status(400).json({ message: "현재 비밀번호와 새 비밀번호를 입력해주세요." });
+  const nextPasswordConfirm = String(req.body.nextPasswordConfirm || "");
+  if (!currentPassword || !nextPassword || !nextPasswordConfirm) return res.status(400).json({ message: "현재 비밀번호와 새 비밀번호를 입력해주세요." });
+  if (nextPassword !== nextPasswordConfirm) return res.status(400).json({ message: "새 비밀번호가 서로 일치하지 않습니다." });
   if (currentPassword.length > PASSWORD_MAX_LENGTH) return res.status(400).json({ message: "현재 비밀번호가 올바르지 않습니다." });
   const passwordError = validatePassword(nextPassword);
   if (passwordError) return res.status(400).json({ message: passwordError });
@@ -2248,7 +2196,7 @@ app.post("/teacher-letters/:id/test-send", requireAdmin, async (req, res) => {
       replyTo: emailReplyTo,
       to: TEACHER_TEST_EMAIL,
       subject: mailHeader(`[테스트] ${teacherIntro}`),
-      text: `[테스트 발송]\n받는 사람: ${testName} <${TEACHER_TEST_EMAIL}>\n\n${teacherIntro}\n\n${personalizedTeacherLetter.content}\n\n${buildEmailHomeText()}`,
+      text: `[테스트 발송]\n받는 사람: ${testName} <${TEACHER_TEST_EMAIL}>\n\n${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
       html: buildTeacherLetterEmail(testName, personalizedTeacherLetter),
     });
 

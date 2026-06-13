@@ -92,7 +92,7 @@ export default function LettersPage() {
       try {
         const userRes = await fetch('/get-user-info');
         if (userRes.status === 401) {
-          navigate('/login');
+          navigate('/letter-login', { replace: true, state: { from: '/letters' } });
           return;
         }
         const userData = await userRes.json();
@@ -105,7 +105,7 @@ export default function LettersPage() {
           fetch('/received-letters'),
         ]);
         if (myRes.status === 401 || receivedRes.status === 401) {
-          navigate('/login');
+          navigate('/letter-login', { replace: true, state: { from: '/letters' } });
           return;
         }
 
@@ -146,6 +146,14 @@ export default function LettersPage() {
 
   function openLetter(letter) {
     navigate('/view-letter', { state: { letter, name, returnTo: '/letters' } });
+  }
+
+  function exitLetters() {
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate('/hello');
   }
 
   async function toggleFavorite(letter, event) {
@@ -256,13 +264,13 @@ export default function LettersPage() {
           >
             {isReceivedBox ? (
               <>
-                <strong>{userEmail ? '아직 받은 편지가 없어요.' : '받은 편지를 찾을 이메일이 없어요.'}</strong>
-                <span>{userEmail ? '도착한 편지가 생기면 여기에 모여요.' : '내 계정 이메일과 일치하는 편지만 보여요.'}</span>
+                <strong>{userEmail ? '아직 받은 편지가 없습니다.' : '받은 편지를 확인할 이메일이 없습니다.'}</strong>
+                <span>{userEmail ? '도착한 편지는 이곳에 모입니다.' : '계정 이메일과 일치하는 편지만 표시됩니다.'}</span>
               </>
             ) : (
               <>
-                <strong>아직 작성한 편지가 없어요.</strong>
-                <span>미래의 나에게 첫 편지를 남겨보세요.</span>
+                <strong>아직 작성한 편지가 없습니다.</strong>
+                <span>미래의 나에게 첫 편지를 남겨 보세요.</span>
                 <button type="button" className="soft-button" onClick={() => navigate('/write')}>첫 편지 쓰기</button>
               </>
             )}
@@ -273,8 +281,8 @@ export default function LettersPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <strong>즐겨찾기한 편지가 아직 없어요</strong>
-            <span>별을 눌러 다시 보고 싶은 편지를 모아둘 수 있어요.</span>
+            <strong>즐겨찾기한 편지가 아직 없습니다</strong>
+            <span>별을 눌러 다시 보고 싶은 편지를 모아둘 수 있습니다.</span>
             <button type="button" className="soft-button" onClick={() => setFavoriteOnly(false)}>전체 보기</button>
           </motion.div>
         ) : (
@@ -377,7 +385,7 @@ export default function LettersPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        onClick={() => navigate('/hello')}
+        onClick={exitLetters}
         whileHover={{ translateY: -1, boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
       >
         나가기
@@ -400,7 +408,7 @@ export default function LettersPage() {
             >
               <div className="letter-delete-modal-title">편지를 삭제할까요?</div>
               <div className="letter-delete-modal-message">
-                아직 개봉하지 않은 편지만 삭제할 수 있어요.
+                아직 개봉하지 않은 편지만 삭제할 수 있습니다.
               </div>
               <div className="modal-actions letter-delete-modal-actions">
                 <button type="button" className="letter-delete-modal-button" onClick={() => setDeleteConfirm(null)}>취소</button>

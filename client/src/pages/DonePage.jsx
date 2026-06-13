@@ -16,21 +16,21 @@ export default function DonePage() {
     if (deliveryFailed) {
       return {
         kind: 'failed',
-        title: '편지는 저장됐지만 이메일 전송은 실패했어요',
-        message: delivery?.message || '관리자 화면에서 다시 전송할 수 있어요.',
+        title: '편지는 저장되었지만 이메일 전송에 실패했습니다',
+        message: delivery?.message || '관리자 화면에서 다시 전송할 수 있습니다.',
       };
     }
     if (deliveryAccepted) {
       return {
         kind: 'success',
-        title: '편지가 이메일로 전송됐어요',
-        message: '받은편지함에서 보이지 않으면 스팸함도 함께 확인해주세요.',
+        title: '편지가 이메일로 전송되었습니다',
+        message: '받은편지함에서 보이지 않으면 스팸함도 함께 확인해 주세요.',
       };
     }
     return {
       kind: 'success',
-      title: '편지가 저장됐어요',
-      message: '오늘의 마음이 조용히 보관됐어요.',
+      title: '편지가 저장되었습니다',
+      message: '작성한 마음이 조용히 보관되었습니다.',
     };
   }, [delivery?.message, deliveryAccepted, deliveryFailed, sentNow]);
 
@@ -104,8 +104,8 @@ export default function DonePage() {
               </div>
 
               <div className="done-message">
-                <strong>편지가 봉인되었어요</strong>
-                <span>약속한 날에 다시 열어볼 수 있어요.</span>
+                <strong>편지가 봉인되었습니다</strong>
+                <span>약속한 날에 다시 열람할 수 있습니다.</span>
               </div>
             </motion.div>
 
@@ -170,18 +170,6 @@ export default function DonePage() {
               </motion.div>
 
               <div className="done-mobile-day">D-{d}</div>
-
-              <motion.button
-                  type="button"
-                  className="done-support-link"
-                  onClick={() => navigate('/support', { state: { from: '/hello' } })}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.7, delay: 0.65, ease }}
-                >
-                  개발자에게 마음 전하기
-                </motion.button>
-
             </div>
           </motion.div>
         )}

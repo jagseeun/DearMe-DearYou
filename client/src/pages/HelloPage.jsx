@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import PasswordField from '../components/PasswordField.jsx';
+import { AnimatePresence, motion } from 'framer-motion';
+import NoticeModal from '../components/NoticeModal.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const container = {
@@ -12,54 +12,46 @@ const item = {
   hidden: { opacity: 0, y: 40 },
   show: { opacity: 1, y: 0, transition: { duration: 1.2, ease } },
 };
-const PASSWORD_MAX_LENGTH = 128;
 
 const questions = [
-  '내년의 나에게 꼭 지키고 싶은 약속 하나는?',
-  '지금의 나에게 해주고 싶은 가장 고마운 말은?',
-  '지금 이 시기를 한 단어로 남긴다면?',
-  '지금의 나에게 가장 필요한 문장은?',
-  '미래의 나에게 해주고 싶은 말은?',
-  '그동안 가장 많이 달라진 건 무엇일까?',
-  '지금의 내가 응원해주고 싶은 말은?',
-  '미래의 내가 과거의 나에게 남기고 싶은 말은?',
-  '미래의 나는 어떻게 변하였을까?',
-  '미래에 나에게 부탁하고 싶은 것은?',
+  '내년의 나에게 남기고 싶은 약속은 무엇인가요?',
+  '지금의 나에게 전하고 싶은 감사의 말은 무엇인가요?',
+  '지금 이 시기를 한 단어로 기록한다면 무엇인가요?',
+  '지금의 나에게 가장 필요한 문장은 무엇인가요?',
+  '미래의 나에게 전하고 싶은 말은 무엇인가요?',
+  '그동안 가장 크게 달라진 것은 무엇인가요?',
+  '지금의 나에게 건네고 싶은 응원의 말은 무엇인가요?',
+  '미래의 내가 과거의 나에게 남기고 싶은 말은 무엇인가요?',
+  '미래의 나는 어떤 모습으로 변해 있을까요?',
+  '미래의 나에게 부탁하고 싶은 것은 무엇인가요?',
 ];
 
 export default function HelloPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
   const [qIdx, setQIdx] = useState(0);
   const [deliveryNotice, setDeliveryNotice] = useState(location.state?.deliveryNotice || null);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [draftName, setDraftName] = useState('');
-  const [draftEmail, setDraftEmail] = useState('');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [nextPassword, setNextPassword] = useState('');
-  const [profileSaving, setProfileSaving] = useState(false);
-  const [profileMsg, setProfileMsg] = useState('');
-  const [passwordSaving, setPasswordSaving] = useState(false);
-  const [passwordMsg, setPasswordMsg] = useState('');
 
   useEffect(() => {
     fetch('/get-user-info')
-      .then(r => { if (r.status === 401) { navigate('/login'); return null; } return r.json(); })
-      .then(d => {
-        if (!d) return;
-        if (d.name) setName(d.name);
-        if (d.email !== undefined) setEmail(d.email);
+      .then(response => {
+        if (response.status === 401) {
+          navigate('/login');
+          return null;
+        }
+        return response.json();
+      })
+      .then(data => {
+        if (data?.name) setName(data.name);
       })
       .catch(() => {});
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
-    const t = setInterval(() => setQIdx(i => (i + 1) % questions.length), 4000);
-    return () => clearInterval(t);
+    const timer = setInterval(() => setQIdx(index => (index + 1) % questions.length), 4000);
+    return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
@@ -74,81 +66,6 @@ export default function HelloPage() {
     return () => clearTimeout(timer);
   }, [deliveryNotice]);
 
-  function openProfileModal() {
-    setDraftName(name || '');
-    setDraftEmail(email || '');
-    setProfileMsg('');
-    setShowProfileModal(true);
-  }
-
-  async function handleProfileSave() {
-    const nextName = draftName.trim();
-    const nextEmail = draftEmail.trim();
-    if (!nextName) { setProfileMsg('이름을 입력해주세요.'); return; }
-    if (nextName.length > 10) { setProfileMsg('이름은 10자를 넘을 수 없습니다.'); return; }
-    if (nextEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) { setProfileMsg('이메일 형식이 올바르지 않습니다.'); return; }
-    setProfileSaving(true);
-    setProfileMsg('');
-    try {
-      const res = await fetch('/update-profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: nextName, email: nextEmail }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setName(data.name || nextName);
-        setEmail(data.email ?? nextEmail);
-        setProfileMsg('저장되었습니다!');
-        setTimeout(() => setShowProfileModal(false), 900);
-      } else {
-        setProfileMsg(data.message || '오류가 발생했습니다.');
-      }
-    } catch { setProfileMsg('서버 연결 오류'); }
-    finally { setProfileSaving(false); }
-  }
-
-  function openPasswordModal() {
-    setCurrentPassword('');
-    setNextPassword('');
-    setPasswordMsg('');
-    setShowPasswordModal(true);
-  }
-
-  async function handlePasswordSave() {
-    if (!currentPassword || !nextPassword) { setPasswordMsg('현재 비밀번호와 새 비밀번호를 입력해주세요.'); return; }
-    if (nextPassword.length < 6) { setPasswordMsg('새 비밀번호는 6자 이상으로 입력해주세요.'); return; }
-    if (nextPassword.length > PASSWORD_MAX_LENGTH) { setPasswordMsg(`새 비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`); return; }
-    if (currentPassword === nextPassword) { setPasswordMsg('새 비밀번호는 현재 비밀번호와 다르게 입력해주세요.'); return; }
-
-    setPasswordSaving(true);
-    setPasswordMsg('');
-    try {
-      const res = await fetch('/change-password', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, nextPassword }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setPasswordMsg(data.message || '비밀번호 변경에 실패했습니다.');
-        return;
-      }
-      setPasswordMsg('비밀번호가 변경되었습니다.');
-      setCurrentPassword('');
-      setNextPassword('');
-      setTimeout(() => setShowPasswordModal(false), 900);
-    } catch {
-      setPasswordMsg('서버 연결 오류');
-    } finally {
-      setPasswordSaving(false);
-    }
-  }
-
-  function handleLogout() {
-    setShowLogoutModal(true);
-  }
-
   function confirmLogout() {
     window.location.href = '/logout';
   }
@@ -161,7 +78,6 @@ export default function HelloPage() {
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
       variants={container}
     >
-      {/* 상단 로고 */}
       <motion.div
         className="top-title"
         variants={{
@@ -174,7 +90,6 @@ export default function HelloPage() {
         <span className="from">Dear You</span>
       </motion.div>
 
-      {/* 우측 상단 버튼 그룹 */}
       <motion.div
         variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 1, delay: 0.5 } } }}
         className="hello-nav"
@@ -184,44 +99,29 @@ export default function HelloPage() {
           whileHover={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,252,223,0.9)' }}
           style={navBtnStyle}
         >
-          나의 편지 ✉
+          나의 편지
         </motion.button>
         <motion.button
-          onClick={openProfileModal}
+          onClick={() => navigate('/mypage')}
           whileHover={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,252,223,0.9)' }}
           style={navBtnStyle}
         >
-          이름/이메일 변경
+          마이페이지
         </motion.button>
         <motion.button
-          onClick={openPasswordModal}
-          whileHover={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,252,223,0.9)' }}
-          style={navBtnStyle}
-        >
-          비밀번호 변경
-        </motion.button>
-        <motion.button
-          onClick={handleLogout}
-          whileHover={{ background: 'rgba(255,80,80,0.15)', color: 'rgba(255,180,180,0.9)', borderColor: 'rgba(255,80,80,0.3)' }}
-          style={navBtnStyle}
+          onClick={() => setShowLogoutModal(true)}
+          whileHover={{ background: 'rgba(174,66,76,0.3)', color: 'rgba(255,238,238,0.96)', borderColor: 'rgba(255,138,146,0.46)' }}
+          style={{ ...navBtnStyle, ...logoutNavBtnStyle }}
         >
           로그아웃
         </motion.button>
       </motion.div>
 
-      {/* 본문 */}
-      <div
-        className="hello-content"
-      >
-        <motion.div
-          variants={item}
-          className="hello-greeting"
-        >
-          반가워요.{' '}
-          <span style={{ color: '#E6C395' }}>{name || 'Guest'}</span>님
+      <div className="hello-content">
+        <motion.div variants={item} className="hello-greeting">
+          반갑습니다. <span style={{ color: '#E6C395' }}>{name || 'Guest'}</span>님
         </motion.div>
 
-        {/* 질문 fade 전환 */}
         <div className="hello-question-wrap">
           <AnimatePresence mode="wait">
             <motion.div
@@ -237,10 +137,7 @@ export default function HelloPage() {
           </AnimatePresence>
         </div>
 
-        <motion.div
-          variants={item}
-          className="hello-divider"
-        />
+        <motion.div variants={item} className="hello-divider" />
 
         <motion.button
           variants={item}
@@ -250,18 +147,7 @@ export default function HelloPage() {
         >
           편지 쓰기
         </motion.button>
-
       </div>
-
-      <motion.button
-        variants={item}
-        type="button"
-        onClick={() => navigate('/support', { state: { from: '/hello' } })}
-        whileHover={{ color: 'rgba(255,247,234,0.86)', borderColor: 'rgba(232,194,138,0.38)' }}
-        className="hello-support-link"
-      >
-        개발자에게 마음 전하기
-      </motion.button>
 
       <AnimatePresence>
         {deliveryNotice && (
@@ -281,159 +167,26 @@ export default function HelloPage() {
         )}
       </AnimatePresence>
 
-      {/* 이름/이메일 변경 모달 */}
-      <AnimatePresence>
-        {showProfileModal && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="modal-backdrop profile-modal-backdrop"
-            onClick={e => { if (e.target === e.currentTarget) setShowProfileModal(false); }}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }}
-              transition={{ duration: 0.35, ease }}
-              className="modal-panel profile-modal-panel"
-            >
-              <div style={{ fontSize: 28, fontWeight: 400, color: '#e9dcc6' }}>이름/이메일 변경</div>
-              <div style={{ color: 'rgba(255,252,223,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 1.7 }}>
-                여기에서 이름과 이메일을<br />편하게 바꿀 수 있어요.
-              </div>
-              <input
-                type="text"
-                placeholder="이름 (최대 10자)"
-                value={draftName}
-                maxLength={10}
-                onChange={e => { setDraftName(e.target.value); setProfileMsg(''); }}
-                onKeyDown={e => { if (e.key === 'Enter') handleProfileSave(); }}
-                style={modalInputStyle}
-              />
-              <input
-                type="email"
-                placeholder="이메일 주소 (선택)"
-                value={draftEmail}
-                onChange={e => { setDraftEmail(e.target.value); setProfileMsg(''); }}
-                onKeyDown={e => { if (e.key === 'Enter') handleProfileSave(); }}
-                style={modalInputStyle}
-              />
-              {profileMsg && (
-                <div style={{ fontSize: 13, color: profileMsg === '저장되었습니다!' ? '#81c784' : 'rgba(255,130,130,0.85)', marginTop: -8 }}>
-                  {profileMsg}
-                </div>
-              )}
-              <div className="modal-actions profile-modal-actions" style={{ marginTop: 4 }}>
-                <motion.button className="profile-modal-button" whileHover={{ background: 'rgba(255,255,255,0.12)' }}
-                  onClick={() => setShowProfileModal(false)}
-                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', transition: 'all 0.25s' }}>
-                  취소
-                </motion.button>
-                <motion.button className="profile-modal-button" whileHover={{ translateY: -2 }}
-                  onClick={handleProfileSave} disabled={profileSaving}
-                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.25s', opacity: profileSaving ? 0.6 : 1 }}>
-                  {profileSaving ? '저장 중...' : '저장'}
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showPasswordModal && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="modal-backdrop"
-            onClick={e => { if (e.target === e.currentTarget) setShowPasswordModal(false); }}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }}
-              transition={{ duration: 0.35, ease }}
-              className="modal-panel"
-            >
-              <div style={{ fontSize: 28, fontWeight: 400, color: '#e9dcc6' }}>비밀번호 변경</div>
-              <div style={{ color: 'rgba(255,252,223,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 1.7 }}>
-                현재 비밀번호를 확인한 뒤<br />새 비밀번호로 바꿉니다.
-              </div>
-              <PasswordField
-                wrapperClassName="password-field password-field-modal"
-                className="modal-password-input"
-                placeholder="현재 비밀번호"
-                value={currentPassword}
-                maxLength={PASSWORD_MAX_LENGTH}
-                onChange={e => { setCurrentPassword(e.target.value); setPasswordMsg(''); }}
-                autoFocus
-                inputStyle={{ ...modalInputStyle, paddingRight: 52 }}
-              />
-              <PasswordField
-                wrapperClassName="password-field password-field-modal"
-                className="modal-password-input"
-                placeholder="새 비밀번호 (6자 이상)"
-                value={nextPassword}
-                maxLength={PASSWORD_MAX_LENGTH}
-                onChange={e => { setNextPassword(e.target.value); setPasswordMsg(''); }}
-                onKeyDown={e => { if (e.key === 'Enter') handlePasswordSave(); }}
-                inputStyle={{ ...modalInputStyle, paddingRight: 52 }}
-              />
-              {passwordMsg && (
-                <div style={{ fontSize: 13, color: passwordMsg === '비밀번호가 변경되었습니다.' ? '#81c784' : 'rgba(255,130,130,0.85)', marginTop: -8 }}>
-                  {passwordMsg}
-                </div>
-              )}
-              <div className="modal-actions" style={{ marginTop: 4 }}>
-                <motion.button whileHover={{ background: 'rgba(255,255,255,0.12)' }}
-                  onClick={() => setShowPasswordModal(false)}
-                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', transition: 'all 0.25s' }}>
-                  취소
-                </motion.button>
-                <motion.button whileHover={{ translateY: -2 }}
-                  onClick={handlePasswordSave} disabled={passwordSaving}
-                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.25s', opacity: passwordSaving ? 0.6 : 1 }}>
-                  {passwordSaving ? '변경 중...' : '변경'}
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showLogoutModal && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="modal-backdrop"
-            onClick={e => { if (e.target === e.currentTarget) setShowLogoutModal(false); }}
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 16, scale: 0.97 }}
-              transition={{ duration: 0.35, ease }}
-              className="modal-panel"
-            >
-              <div style={{ fontSize: 28, fontWeight: 400, color: '#e9dcc6' }}>로그아웃할까요?</div>
-              <div style={{ color: 'rgba(255,252,223,0.4)', fontSize: 13, textAlign: 'center', lineHeight: 1.7 }}>
-                지금 계정에서 나가면<br />다시 로그인해야 편지를 확인할 수 있어요.
-              </div>
-              <div className="modal-actions" style={{ marginTop: 4 }}>
-                <motion.button whileHover={{ background: 'rgba(255,255,255,0.12)' }}
-                  onClick={() => setShowLogoutModal(false)}
-                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', transition: 'all 0.25s' }}>
-                  취소
-                </motion.button>
-                <motion.button whileHover={{ translateY: -2 }}
-                  onClick={confirmLogout}
-                  style={{ width: 150, height: 50, borderRadius: 50, fontSize: 18, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.25s' }}>
-                  로그아웃
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <NoticeModal
+        open={showLogoutModal}
+        title="로그아웃하시겠습니까?"
+        message="다시 로그인하면 편지를 이어서 확인할 수 있습니다."
+        cancelLabel="취소"
+        confirmLabel="로그아웃"
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        variant="logout"
+      />
     </motion.div>
   );
 }
 
 const navBtnStyle = {
-  padding: '8px 16px', borderRadius: 8, fontSize: 13,
-  fontFamily: 'inherit', cursor: 'pointer',
+  padding: '8px 16px',
+  borderRadius: 8,
+  fontSize: 13,
+  fontFamily: 'inherit',
+  cursor: 'pointer',
   border: '1px solid rgba(255,255,255,0.18)',
   background: 'rgba(255,255,255,0.06)',
   color: 'rgba(255,252,223,0.55)',
@@ -441,9 +194,8 @@ const navBtnStyle = {
   transition: 'all 0.25s',
 };
 
-const modalInputStyle = {
-  padding: '13px 14px', borderRadius: 8, width: '100%',
-  border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)',
-  color: '#fffcdf', fontSize: 16, fontFamily: 'inherit', outline: 'none',
-  backdropFilter: 'blur(6px)', colorScheme: 'dark', transition: 'border-color 0.2s',
+const logoutNavBtnStyle = {
+  borderColor: 'rgba(255, 118, 128, 0.3)',
+  background: 'linear-gradient(135deg, rgba(174, 66, 76, 0.22), rgba(255, 255, 255, 0.055))',
+  color: 'rgba(255, 203, 207, 0.88)',
 };

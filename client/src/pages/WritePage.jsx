@@ -395,7 +395,7 @@ export default function WritePage() {
   const [showModal, setShowModal] = useState(false);
   const [openDate, setOpenDate] = useState(defaultOpenDate());
   const [sendNow, setSendNow] = useState(false);
-  const [emailTheme, setEmailTheme] = useState('dark');
+  const emailTheme = 'dark';
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
@@ -414,7 +414,7 @@ export default function WritePage() {
   const recordingStartedAtRef = useRef(0);
   const chunksRef = useRef([]);
 
-  function showNotice(message, title = '확인해주세요') {
+  function showNotice(message, title = '확인이 필요합니다') {
     setNotice({ title, message });
   }
 
@@ -461,7 +461,7 @@ export default function WritePage() {
       setStage('counting');
       setCountdown(3);
       setVideoUrl('');
-    } catch { showNotice('카메라 권한을 허용해주세요.', '카메라 확인'); }
+    } catch { showNotice('카메라 권한을 허용해 주세요.', '카메라 확인'); }
   }
 
   function startRecording() {
@@ -488,7 +488,7 @@ export default function WritePage() {
       const rawBlob = new Blob(chunksRef.current, { type: 'video/webm' });
       const durationMs = Math.max(1, Date.now() - recordingStartedAtRef.current);
       const blob = await fixWebmDuration(rawBlob, durationMs, { logger: false }).catch(() => rawBlob);
-      if (blob.size > MAX_VIDEO_BYTES) throw new Error('영상 파일이 너무 큽니다. 다시 촬영해주세요.');
+      if (blob.size > MAX_VIDEO_BYTES) throw new Error('영상 파일이 너무 큽니다. 다시 촬영해 주세요.');
       const res = await fetch('/get-upload-url');
       if (!res.ok) throw new Error();
       const { uploadUrl, publicUrl } = await res.json();
@@ -497,7 +497,7 @@ export default function WritePage() {
       setVideoUrl(publicUrl);
       setStage('done');
     } catch {
-      showNotice('업로드 실패. 다시 시도해주세요.', '업로드 실패');
+      showNotice('업로드에 실패했습니다. 다시 시도해 주세요.', '업로드 실패');
       setStage('idle');
     }
   }
@@ -536,7 +536,7 @@ export default function WritePage() {
           photoVideoRef.current.play?.().catch(() => {});
         }
       });
-    } catch { showNotice('카메라 권한을 허용해주세요.', '카메라 확인'); }
+    } catch { showNotice('카메라 권한을 허용해 주세요.', '카메라 확인'); }
   }
 
   function closePhotoCamera() {
@@ -564,7 +564,7 @@ export default function WritePage() {
       const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/jpeg' } });
       if (!put.ok) throw new Error();
       setImageUrl(publicUrl);
-    } catch { showNotice('사진 업로드 실패. 다시 시도해주세요.', '업로드 실패'); }
+    } catch { showNotice('사진 업로드에 실패했습니다. 다시 시도해 주세요.', '업로드 실패'); }
     finally { setImageUploading(false); }
   }
 
@@ -609,7 +609,6 @@ export default function WritePage() {
     setDrawDraftImageUrl(nextMode === 'draw' ? (nextDraft.imageUrl || '') : '');
     setSignatureData(nextDraft.signatureData || null);
     setEmail(nextDraft.deliveryEmail || email);
-    setEmailTheme(nextDraft.emailTheme || 'dark');
     setToOther(Boolean(nextDraft.toOther));
     setRecipientName(nextDraft.recipientName || '');
     setRecipientEmail(nextDraft.recipientEmail || '');
@@ -617,7 +616,7 @@ export default function WritePage() {
     setSendNow(false);
     setStage(nextMode === 'video' && nextDraft.videoUrl ? 'done' : 'idle');
     setDrawHasDrawn(Boolean(nextMode === 'draw' && nextDraft.imageUrl));
-    showNotice('임시저장을 불러왔어요.', '초안 불러오기');
+    showNotice('임시 저장된 내용을 불러왔습니다.', '초안 불러오기');
   }
 
   async function saveDraft() {
@@ -653,7 +652,7 @@ export default function WritePage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || '임시저장에 실패했습니다.');
       setDraft(data.draft);
-      showNotice(data.message || '임시저장했습니다.', '임시 저장');
+      showNotice(data.message || '임시 저장이 완료되었습니다.', '임시 저장');
     } catch (err) {
       showNotice(err.message || '임시저장에 실패했습니다.', '임시 저장 실패');
     } finally {
@@ -677,24 +676,24 @@ export default function WritePage() {
   }
 
   async function handleFromMe() {
-    if (mode === 'text' && !text.trim()) return showNotice('내용을 작성해주세요.');
-    if (mode === 'video' && !videoUrl) return showNotice('먼저 영상을 촬영해주세요.');
-    if (mode === 'draw' && !drawHasDrawn) return showNotice('그림을 그려주세요.');
+    if (mode === 'text' && !text.trim()) return showNotice('편지 내용을 입력해 주세요.');
+    if (mode === 'video' && !videoUrl) return showNotice('먼저 영상을 촬영해 주세요.');
+    if (mode === 'draw' && !drawHasDrawn) return showNotice('그림을 그려 주세요.');
     setShowModal(true);
   }
 
   async function handleSave() {
-    if (!openDate) return showNotice('개봉일을 선택해주세요.');
+    if (!openDate) return showNotice('개봉일을 선택해 주세요.');
     const cleanEmail = email.trim().toLowerCase();
     const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
     const cleanRecipientName = recipientName.trim();
     const effectiveOpenDate = sendNow ? new Date().toISOString() : openDate;
     const isImmediateDelivery = sendNow || new Date(effectiveOpenDate) <= new Date();
-    if (isImmediateDelivery && !toOther && !cleanEmail) return showNotice('바로 보내려면 발송 이메일을 입력해주세요.');
+    if (isImmediateDelivery && !toOther && !cleanEmail) return showNotice('바로 보내려면 발송 이메일을 입력해 주세요.');
     if (text.length > LETTER_CONTENT_MAX_LENGTH) return showNotice(`내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
     if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return showNotice('이메일 형식이 올바르지 않습니다.');
     if (toOther) {
-      if (!cleanRecipientEmail) return showNotice('받는 사람 이메일을 입력해주세요.');
+      if (!cleanRecipientEmail) return showNotice('받는 사람 이메일을 입력해 주세요.');
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanRecipientEmail)) return showNotice('받는 사람 이메일 형식이 올바르지 않습니다.');
       if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return showNotice(`받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
     }
@@ -964,7 +963,7 @@ export default function WritePage() {
                 <LetterTextarea
                   value={text}
                   onChange={setText}
-                  placeholder="오늘의 마음을 나와 너에게 조용히 남겨주세요"
+                  placeholder="지금 남기고 싶은 마음을 차분히 기록해 주세요"
                 />
 
                 {/* 사진 촬영 */}
@@ -1038,7 +1037,7 @@ export default function WritePage() {
             )}
           </button>
           <motion.button
-            whileHover={{ translateY: -2, boxShadow: '0 0 28px rgba(232,194,138,0.32), 0 18px 42px rgba(0,0,0,0.24)' }}
+            whileHover={{ translateY: -2, boxShadow: '0 0 24px rgba(205,154,99,0.26), 0 18px 42px rgba(0,0,0,0.26)' }}
             onClick={handleFromMe}
             className="write-submit"
           >
@@ -1101,36 +1100,6 @@ export default function WritePage() {
               transition={{ duration: 0.4, ease }}
               style={{ background: 'rgba(30,40,55,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 28, padding: '44px 52px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22, minWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}
             >
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={labelStyle}>메일 테마</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {[
-                    { value: 'dark', label: '다크', border: 'rgba(255,220,160,0.5)', bg: 'rgba(72,56,41,0.75)', color: '#ffeacd' },
-                    { value: 'pink', label: '핑크', border: 'rgba(255,176,204,0.68)', bg: 'rgba(255,180,204,0.22)', color: '#ffd7e5' },
-                  ].map(theme => {
-                    const active = emailTheme === theme.value;
-                    return (
-                      <button
-                        key={theme.value}
-                        type="button"
-                        onClick={() => setEmailTheme(theme.value)}
-                        style={{
-                          padding: '10px 0',
-                          borderRadius: 12,
-                          border: '1px solid',
-                          borderColor: active ? theme.border : 'rgba(255,255,255,0.2)',
-                          background: active ? theme.bg : 'rgba(255,255,255,0.06)',
-                          color: active ? theme.color : 'rgba(255,252,223,0.55)',
-                          fontFamily: 'inherit',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {theme.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
               <div style={{ order: -1, fontSize: 32, fontWeight: 400, color: '#e9dcc6', textShadow: '0 0 12px rgba(255,252,223,.3)' }}>
                 편지를 저장하시겠습니까?
               </div>
