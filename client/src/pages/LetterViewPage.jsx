@@ -385,7 +385,7 @@ function CallActive({ letter, name, onHangup }) {
             style={{ padding: '14px 32px', borderRadius: 50, fontSize: 16, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.18)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.6)', transition: 'all 0.2s' }}>
             건너뛰기
           </motion.button>
-          <motion.button whileHover={{ translateY: -2 }} onClick={handleSend} disabled={uploading}
+          <motion.button whileHover={{ scale: 1.018 }} onClick={handleSend} disabled={uploading}
             style={{ padding: '14px 40px', borderRadius: 50, fontSize: 16, fontFamily: 'inherit', cursor: uploading ? 'default' : 'pointer', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', border: 'none', color: '#2b1e10', fontWeight: 600, opacity: uploading ? 0.6 : 1, transition: 'all 0.25s' }}>
             {uploading ? '업로드 중…' : '✉ 이메일로 받기'}
           </motion.button>
@@ -521,11 +521,11 @@ function LegacySavedCallView({ letter, name, returnTo }) {
       )}
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <motion.button whileHover={{ translateY: -2 }} onClick={() => navigate(returnTo || '/letters')}
+        <motion.button whileHover={{ scale: 1.018 }} onClick={() => navigate(returnTo || '/letters')}
           style={{ padding: '12px 28px', borderRadius: 14, border: '1px solid rgba(150,80,80,0.25)', background: 'rgba(255,255,255,0.35)', color: '#7a4545', fontSize: 15, fontFamily: 'inherit', cursor: 'pointer' }}>
           편지 목록
         </motion.button>
-        <motion.button whileHover={{ translateY: -2 }} onClick={() => navigate('/')}
+        <motion.button whileHover={{ scale: 1.018 }} onClick={() => navigate('/')}
           style={{ padding: '12px 28px', borderRadius: 14, border: '1px solid rgba(180,110,110,0.28)', background: 'rgba(255,255,255,0.48)', color: '#5a2828', fontSize: 15, fontFamily: 'inherit', cursor: 'pointer' }}>
           처음으로
         </motion.button>
@@ -838,11 +838,11 @@ function SavedCallView({ letter, returnTo }) {
       </div>
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <motion.button whileHover={{ translateY: -2 }} onClick={() => navigate(returnTo || '/letters')}
+        <motion.button whileHover={{ scale: 1.018 }} onClick={() => navigate(returnTo || '/letters')}
           style={{ padding: '12px 28px', borderRadius: 14, border: '1px solid rgba(150,80,80,0.25)', background: 'rgba(255,255,255,0.35)', color: '#7a4545', fontSize: 15, fontFamily: 'inherit', cursor: 'pointer' }}>
           편지 목록
         </motion.button>
-        <motion.button whileHover={{ translateY: -2 }} onClick={() => navigate('/')}
+        <motion.button whileHover={{ scale: 1.018 }} onClick={() => navigate('/')}
           style={{ padding: '12px 28px', borderRadius: 14, border: '1px solid rgba(180,110,110,0.28)', background: 'rgba(255,255,255,0.48)', color: '#5a2828', fontSize: 15, fontFamily: 'inherit', cursor: 'pointer' }}>
           처음으로
         </motion.button>
@@ -995,7 +995,7 @@ export default function LetterViewPage() {
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5, ease }}
                 onClick={() => setPhase('content')}
-                whileHover={{ translateY: -2 }}
+                whileHover={{ scale: 1.018 }}
                 style={{ ...btnStyle, position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)' }}>
                 {letter.type === 'video' ? '영상 열기' : letter.type === 'draw' ? '그림 열기' : '편지 읽기'}
               </motion.button>
@@ -1092,7 +1092,7 @@ export default function LetterViewPage() {
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.35, ease }}
                 onClick={() => setPhase('done')}
-                whileHover={{ translateY: -2 }}
+                whileHover={{ scale: 1.018 }}
                 className="letter-view-button"
                 style={btnStyle}>
                 확인 완료
@@ -1121,19 +1121,19 @@ export default function LetterViewPage() {
                 transition={{ duration: 0.8, delay: 0.18, ease }}
                 style={{ display: 'flex', gap: 18 }}>
                 <motion.button
-                  whileHover={{ translateY: -2 }}
+                  whileHover={{ scale: 1.018 }}
                   onClick={() => navigate(returnTo || '/letters')}
                   style={{ ...btnStyle, background: backBg, border: backBorder, color: backColor }}>
                   편지 목록
                 </motion.button>
                 <motion.button
-                  whileHover={{ translateY: -2 }}
+                  whileHover={{ scale: 1.018 }}
                   onClick={() => navigate('/write')}
                   style={{ ...btnStyle, background: backBg, border: backBorder, color: backColor }}>
                   편지 쓰기
                 </motion.button>
                 <motion.button
-                  whileHover={{ translateY: -2 }}
+                  whileHover={{ scale: 1.018 }}
                   onClick={() => navigate('/')}
                   style={btnStyle}>
                   마무리

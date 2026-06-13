@@ -98,28 +98,32 @@ export default function BackgroundLayers() {
   return (
     <>
       <motion.div
+        initial={{ opacity: isPink ? 0 : 1 }}
         animate={{ opacity: isPink ? 0 : 1 }}
         transition={{ duration: 1.6, ease }}
-        style={{ ...layerStyle, background: DARK_GRADIENT }}
+        style={{ ...layerStyle, background: DARK_GRADIENT, opacity: isPink ? 0 : 1 }}
       />
       <motion.div
+        initial={{ opacity: isPink ? 1 : 0 }}
         animate={{ opacity: isPink ? 1 : 0 }}
         transition={{ duration: 1.6, ease }}
-        style={{ ...layerStyle, background: PINK_GRADIENT }}
+        style={{ ...layerStyle, background: PINK_GRADIENT, opacity: isPink ? 1 : 0 }}
       />
       <motion.div
+        initial={{ opacity: isPink ? 0 : 1 }}
         animate={{ opacity: isPink ? 0 : 1 }}
         transition={{ duration: 1.2, ease }}
-        style={layerStyle}
+        style={{ ...layerStyle, opacity: isPink ? 0 : 1 }}
       >
-        <Stars />
+        {!isPink && <Stars />}
       </motion.div>
       <motion.div
+        initial={{ opacity: isPink ? 1 : 0 }}
         animate={{ opacity: isPink ? 1 : 0 }}
         transition={{ duration: 1.2, ease }}
-        style={layerStyle}
+        style={{ ...layerStyle, opacity: isPink ? 1 : 0 }}
       >
-        <PinkStars />
+        {isPink && <PinkStars />}
       </motion.div>
       <motion.div
         ref={cursorGlowRef}

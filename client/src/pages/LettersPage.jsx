@@ -386,7 +386,7 @@ export default function LettersPage() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
         onClick={exitLetters}
-        whileHover={{ translateY: -1, boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
+        whileHover={{ scale: 1.018, boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
       >
         나가기
       </motion.button>
