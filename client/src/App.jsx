@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, useReducedMotion } from 'framer-motion';
 import BackgroundLayers, { PINK_ROUTES } from './components/BackgroundLayers.jsx';
 import { AuthProvider, ProtectedRoute } from './auth.jsx';
 import IndexPage from './pages/IndexPage.jsx';
@@ -22,8 +22,9 @@ const LOGO_HOME_SELECTOR = '.top-title, .main-title, .letter-list-logo';
 
 function AnimatedRoutes() {
   const location = useLocation();
+  const reducedMotion = useReducedMotion();
   return (
-    <AnimatePresence mode="sync">
+    <AnimatePresence mode={reducedMotion ? 'sync' : 'wait'} initial={false}>
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<IndexPage />} />
         <Route path="/login" element={<LoginPage />} />
@@ -114,10 +115,20 @@ function FaviconSwitcher() {
   return null;
 }
 
+function MotionReadyMarker() {
+  useEffect(() => {
+    document.documentElement.classList.add('motion-ready');
+    return () => document.documentElement.classList.remove('motion-ready');
+  }, []);
+
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <MotionReadyMarker />
         <FaviconSwitcher />
         <LogoHomeNavigator />
         <BackgroundLayers />

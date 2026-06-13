@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { fetchJson } from '../utils/api.js';
+import { listItemMotion } from '../utils/motion.js';
 
 const ease = [0.22, 1, 0.36, 1];
 
@@ -99,8 +100,8 @@ export default function DevelopPage() {
           <div className="develop-empty">아직 도착한 응원이 없습니다.</div>
         ) : (
           <div className="develop-list">
-            {messages.map(item => (
-              <article key={item.id} className="develop-card">
+            {messages.map((item, index) => (
+              <motion.article key={item.id} className="develop-card" {...listItemMotion(index)}>
                 <div className="develop-card-top">
                   <strong>{item.name || item.userid || '익명'}</strong>
                   <span>{formatDate(item.createdAt)}</span>
@@ -113,7 +114,7 @@ export default function DevelopPage() {
                     {item.email || ''}
                   </small>
                 )}
-              </article>
+              </motion.article>
             ))}
           </div>
         )}
