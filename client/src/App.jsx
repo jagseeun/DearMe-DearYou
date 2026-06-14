@@ -18,6 +18,27 @@ import SupportPage from './pages/SupportPage.jsx';
 import DevelopPage from './pages/DevelopPage.jsx';
 
 const LOGO_HOME_SELECTOR = '.top-title, .main-title';
+const ACTION_CLICK_SELECTOR = [
+  'button',
+  'a[href]',
+  '[role="button"]',
+  '[role="link"]',
+  'input[type="button"]',
+  'input[type="submit"]',
+  'input[type="reset"]',
+  '.letter-card.is-open',
+  '.open-letter-card:not(.placeholder)',
+].join(',');
+
+function isActionTarget(target) {
+  return target instanceof Element && Boolean(target.closest(ACTION_CLICK_SELECTOR));
+}
+
+function stopInteraction(event) {
+  event.preventDefault();
+  event.stopPropagation();
+  event.stopImmediatePropagation?.();
+}
 
 function AnimatedRoutes() {
   return (
@@ -122,7 +143,30 @@ function MotionReadyMarker() {
 function RouteClickGuard() {
   const location = useLocation();
   const firstRenderRef = useRef(true);
+  const lockedUntilRef = useRef(0);
+  const submitGraceUntilRef = useRef(0);
+  const timerRef = useRef(null);
   const [blocking, setBlocking] = useState(false);
+
+  function lockFor(duration) {
+    const until = performance.now() + duration;
+    lockedUntilRef.current = Math.max(lockedUntilRef.current, until);
+    setBlocking(true);
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      const remaining = lockedUntilRef.current - performance.now();
+      if (remaining > 8) {
+        lockFor(remaining);
+        return;
+      }
+      setBlocking(false);
+    }, duration);
+  }
+
+  function isLocked() {
+    return performance.now() < lockedUntilRef.current;
+  }
 
   useEffect(() => {
     if (firstRenderRef.current) {
@@ -130,10 +174,56 @@ function RouteClickGuard() {
       return undefined;
     }
 
-    setBlocking(true);
-    const timer = setTimeout(() => setBlocking(false), 620);
-    return () => clearTimeout(timer);
+    lockFor(980);
+    return undefined;
   }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const handleClick = event => {
+      if (!isActionTarget(event.target)) return;
+      if (isLocked()) {
+        stopInteraction(event);
+        return;
+      }
+      if (event.target instanceof Element && event.target.closest('button[type="submit"], input[type="submit"]')) {
+        submitGraceUntilRef.current = performance.now() + 120;
+      }
+      lockFor(820);
+    };
+
+    const handleSubmit = event => {
+      if (performance.now() < submitGraceUntilRef.current) {
+        submitGraceUntilRef.current = 0;
+        lockFor(1200);
+        return;
+      }
+      if (isLocked()) {
+        stopInteraction(event);
+        return;
+      }
+      lockFor(1200);
+    };
+
+    const handleKeyDown = event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (!isActionTarget(event.target)) return;
+      if (isLocked()) {
+        stopInteraction(event);
+        return;
+      }
+      lockFor(820);
+    };
+
+    document.addEventListener('click', handleClick, true);
+    document.addEventListener('submit', handleSubmit, true);
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      document.removeEventListener('click', handleClick, true);
+      document.removeEventListener('submit', handleSubmit, true);
+      document.removeEventListener('keydown', handleKeyDown, true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   if (!blocking) return null;
   return <div className="route-click-guard" aria-hidden="true" />;

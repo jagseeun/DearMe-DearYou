@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import NoticeModal from '../components/NoticeModal.jsx';
+import { useAuth } from '../auth.jsx';
 
 const ease = [0.16, 1, 0.3, 1];
 const container = {
@@ -42,10 +43,16 @@ const helloQuestions = [
 export default function HelloPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const [name, setName] = useState('');
+  const { user } = useAuth();
+  const [name, setName] = useState(user?.name || '');
   const [qIdx, setQIdx] = useState(0);
   const [deliveryNotice, setDeliveryNotice] = useState(location.state?.deliveryNotice || null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const displayName = name || user?.name || '';
+
+  useEffect(() => {
+    if (user?.name) setName(user.name);
+  }, [user?.name]);
 
   useEffect(() => {
     fetch('/get-user-info')
@@ -132,7 +139,7 @@ export default function HelloPage() {
 
       <div className="hello-content">
         <motion.div variants={item} className="hello-greeting">
-          반갑습니다. <span style={{ color: '#E6C395' }}>{name || 'Guest'}</span>님
+          반갑습니다. <span style={{ color: '#E6C395' }}>{displayName}</span>님
         </motion.div>
 
         <div className="hello-question-wrap">
