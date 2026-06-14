@@ -15953,3 +15953,205 @@ select:focus,
 ):not(:disabled):active {
   transform: scale(0.985) !important;
 }
+
+/* Stabilized motion pass: Framer owns entrances; CSS must not fight transforms. */
+:root {
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 260ms;
+  --motion-medium: 420ms;
+}
+
+.motion-ready :where(
+  .page-center,
+  .hello-shell,
+  .write-shell,
+  .done-page,
+  .letter-list-page,
+  .letter-view-root,
+  .open-mailbox-page,
+  .support-page,
+  .mypage-page,
+  .develop-page,
+  .admin-page,
+  .form-container,
+  .write-layout,
+  .write-paper,
+  .done-card,
+  .letter-list-header,
+  .letter-empty,
+  .support-compose,
+  .mypage-header,
+  .mypage-panel,
+  .develop-panel,
+  .develop-card,
+  .admin-page section,
+  .open-board-panel,
+  .open-empty-letter,
+  .letter-card,
+  .open-letter-card,
+  .admin-card,
+  .modal-backdrop,
+  .notice-modal-backdrop,
+  .open-compose-modal-backdrop,
+  .open-letter-modal-backdrop,
+  .letter-delete-modal-backdrop,
+  .photo-capture-overlay,
+  .modal-panel,
+  .notice-modal-panel,
+  .write-modal-panel,
+  .open-compose-modal,
+  .open-letter-modal,
+  .letter-delete-modal,
+  .home-subtitle,
+  .hello-greeting,
+  .hello-question,
+  .write-heading,
+  .support-heading,
+  .mypage-panel-heading,
+  .open-compose-heading,
+  .done-message,
+  .develop-header,
+  .top-title,
+  .main-title,
+  .letter-list-logo
+) {
+  animation: none !important;
+  animation-delay: 0ms !important;
+  will-change: auto !important;
+}
+
+.motion-ready :where(
+  button,
+  [role="button"],
+  .glass-btn,
+  .submit-btn,
+  .check-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-mailbox-floating-button,
+  .home-support-floating-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-shutter-button,
+  .open-letter-actions button,
+  .open-letter-pin-actions button,
+  .open-delete-confirm button,
+  .open-page-arrows button,
+  .open-mode-tabs button,
+  .open-compose-footer button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .draw-tool-button,
+  .draw-size,
+  .draw-swatch,
+  .support-submit,
+  .develop-header button,
+  .mypage-top-actions button,
+  .mypage-panel > button,
+  .notice-modal-actions button,
+  .modal-actions button,
+  .letter-delete-modal-button
+) {
+  transition:
+    border-color var(--motion-medium) var(--motion-ease),
+    background-color var(--motion-medium) var(--motion-ease),
+    color var(--motion-medium) var(--motion-ease),
+    box-shadow var(--motion-medium) var(--motion-ease),
+    opacity var(--motion-medium) var(--motion-ease) !important;
+  transform-origin: center center !important;
+}
+
+.motion-ready :where(
+  button,
+  [role="button"],
+  .letter-card,
+  .open-letter-card,
+  .develop-card,
+  .admin-card,
+  .mypage-panel
+):hover,
+.motion-ready :where(
+  button,
+  [role="button"],
+  .letter-card,
+  .open-letter-card,
+  .develop-card,
+  .admin-card,
+  .mypage-panel
+):active {
+  transform: none !important;
+}
+
+.motion-ready .letter-view-root.letter-view-phase-envelope .letter-open-button,
+.motion-ready .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-open-button {
+  left: 50% !important;
+  right: auto !important;
+  translate: -50% 0 !important;
+  transform: none !important;
+}
+
+/* Open mailbox composer should read as a real window, not a translucent layer. */
+.open-compose-modal-backdrop {
+  background: rgba(6, 7, 10, 0.88) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.open-compose-modal {
+  border-color: rgba(246, 214, 174, 0.2) !important;
+  background:
+    linear-gradient(135deg, rgba(63, 48, 44, 0.96), rgba(28, 29, 38, 0.98) 54%, rgba(16, 18, 25, 0.99)),
+    #171820 !important;
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 241, 220, 0.08) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.open-compose-modal .open-compose-input,
+.open-compose-modal .open-compose-textarea {
+  border-color: rgba(246, 214, 174, 0.18) !important;
+  background: rgba(13, 15, 21, 0.9) !important;
+  color: #fff2dc !important;
+}
+
+.open-compose-modal .open-compose-input::placeholder,
+.open-compose-modal .open-compose-textarea::placeholder {
+  color: rgba(255, 235, 205, 0.38) !important;
+}
+
+.open-compose-modal .open-mode-tabs button,
+.open-compose-modal .open-compose-footer button,
+.open-compose-modal .open-photo-button,
+.open-compose-modal .open-tool-mini-button {
+  border-color: rgba(246, 214, 174, 0.22) !important;
+  background: rgba(255, 245, 230, 0.08) !important;
+  color: rgba(255, 239, 214, 0.74) !important;
+}
+
+.open-compose-modal .open-mode-tabs button.active,
+.open-compose-modal .open-compose-footer button {
+  border-color: rgba(232, 194, 138, 0.46) !important;
+  background: linear-gradient(135deg, rgba(141, 94, 58, 0.82), rgba(82, 58, 43, 0.86)) !important;
+  color: rgba(255, 240, 218, 0.96) !important;
+}
+
+.open-compose-modal .open-compose-media,
+.open-compose-modal .open-photo-tool {
+  border-color: rgba(246, 214, 174, 0.14) !important;
+  background: rgba(10, 12, 17, 0.72) !important;
+}

@@ -2,15 +2,15 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../auth.jsx';
 
-const ease = [0.19, 1, 0.22, 1];
+const ease = [0.16, 1, 0.3, 1];
 
 const container = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.1 } },
+  show: { transition: { staggerChildren: 0.06 } },
 };
 const item = {
-  hidden: { opacity: 0, y: 42 },
-  show: { opacity: 1, y: 0, transition: { duration: 1.16, ease } },
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.98, ease } },
 };
 
 export default function IndexPage() {
