@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
 import NoticeModal from '../components/NoticeModal.jsx';
+import { listItemMotion, modalBackdropMotion, modalPanelMotion, motionEase, pageMotion, panelMotion } from '../utils/motion.js';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = motionEase;
 
 const typeStyles = {
   text: { label: '텍스트', icon: '✉', bg: 'rgba(110,45,45,0.08)', color: '#7a3535', border: 'rgba(110,45,45,0.18)' },
@@ -139,6 +140,7 @@ export default function LettersPage() {
   const visibleLetters = !isReceivedBox && favoriteOnly ? letters.filter(l => l.favorite) : activeLetters;
 
   function switchMailbox(nextBox) {
+    if (nextBox === activeBox) return;
     setActiveBox(nextBox);
     if (nextBox === 'received') setFavoriteOnly(false);
   }
@@ -160,10 +162,6 @@ export default function LettersPage() {
   }
 
   function exitLetters() {
-    if (window.history.length > 1) {
-      navigate(-1);
-      return;
-    }
     navigate('/hello');
   }
 
@@ -203,16 +201,13 @@ export default function LettersPage() {
   return (
     <motion.div
       className="letter-list-page pink-letter-list-page letters-main-page"
-      initial={false}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.3 } }}
-      transition={{ duration: 0.6, ease }}
+      {...pageMotion}
     >
       <motion.div
         className="top-title"
-        initial={false}
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2, ease }}
+        transition={{ duration: 0.96, ease }}
       >
         <span style={{ color: '#fff1e8', filter: 'drop-shadow(0 0 18px rgba(218,157,176,0.34)) drop-shadow(0 2px 8px rgba(24,13,28,0.42))' }}>Dear Me</span>
         <span style={{ color: 'rgba(241,205,213,0.62)', margin: '0 10px' }}>;</span>
@@ -222,9 +217,7 @@ export default function LettersPage() {
       <div className="letter-list-shell letters-main-shell">
         <motion.header
           className="letter-list-header"
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1, ease }}
+          {...panelMotion}
         >
           <div>
             <div className="letter-list-kicker">{isReceivedBox ? 'RECEIVED' : 'MY LETTERS'}</div>
@@ -246,23 +239,23 @@ export default function LettersPage() {
         </motion.header>
 
         {!loading && (
-          <div className="letter-mailbox-tabs" aria-label="편지함 전환">
+          <motion.div className="letter-mailbox-tabs" aria-label="편지함 전환" {...panelMotion}>
             <button type="button" className={!isReceivedBox ? 'active' : ''} onClick={() => switchMailbox('mine')}>
               나의 편지 <span>{letters.length}</span>
             </button>
             <button type="button" className={isReceivedBox ? 'active' : ''} onClick={() => switchMailbox('received')}>
               받은 편지 <span>{receivedLetters.length}</span>
             </button>
-          </div>
+          </motion.div>
         )}
 
         {!loading && !isReceivedBox && letters.length > 0 && (
-          <div className="letter-list-controls">
+          <motion.div className="letter-list-controls" {...panelMotion}>
             <div className="letter-list-filters" aria-label="편지 필터">
               <button type="button" className={!favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(false)}>전체</button>
               <button type="button" className={favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(true)}>즐겨찾기 {favoriteCount}</button>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {loading ? (
@@ -270,8 +263,7 @@ export default function LettersPage() {
         ) : activeLetters.length === 0 ? (
           <motion.div
             className="letter-empty"
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
+            {...panelMotion}
           >
             {isReceivedBox ? (
               <>
@@ -289,8 +281,7 @@ export default function LettersPage() {
         ) : !isReceivedBox && visibleLetters.length === 0 ? (
           <motion.div
             className="letter-empty"
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
+            {...panelMotion}
           >
             <strong>즐겨찾기한 편지가 아직 없습니다</strong>
             <span>별을 눌러 다시 보고 싶은 편지를 모아둘 수 있습니다.</span>
@@ -317,10 +308,8 @@ export default function LettersPage() {
                   tabIndex={unlocked ? 0 : undefined}
                   onClick={event => handleCardClick(letter, unlocked, event)}
                   onKeyDown={event => handleCardKeyDown(letter, unlocked, event)}
-                  initial={false}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.035, ease }}
-                  whileHover={unlocked ? { scale: 1.006, boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
+                  {...listItemMotion(i)}
+                  whileHover={unlocked ? { boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
                 >
                   <div className="letter-card-inner">
                     <div className="letter-icon" aria-hidden="true">
@@ -407,11 +396,11 @@ export default function LettersPage() {
       <motion.button
         type="button"
         className="letter-back-floating pink-letter-exit letters-main-exit"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
+        initial={{ opacity: 0, y: 8, pointerEvents: 'none' }}
+        animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
+        transition={{ duration: 0.52, delay: 0.48, ease }}
         onClick={exitLetters}
-        whileHover={{ scale: 1.018, boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
+        whileHover={{ boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
       >
         나가기
       </motion.button>
@@ -419,17 +408,12 @@ export default function LettersPage() {
       <AnimatePresence>
         {deleteConfirm !== null && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
             className="modal-backdrop letter-delete-modal-backdrop"
+            {...modalBackdropMotion}
           >
             <motion.div
-              initial={{ opacity: 0, y: 24, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 16, scale: 0.96 }}
-              transition={{ duration: 0.35, ease }}
               className="modal-panel letter-delete-modal"
+              {...modalPanelMotion}
             >
               <div className="letter-delete-modal-title">편지를 삭제할까요?</div>
               <div className="letter-delete-modal-message">

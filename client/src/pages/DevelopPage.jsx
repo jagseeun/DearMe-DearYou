@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { fetchJson } from '../utils/api.js';
-import { listItemMotion } from '../utils/motion.js';
+import { listItemMotion, motionEase, pageMotion } from '../utils/motion.js';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = motionEase;
 
 function formatDate(value) {
   return new Date(value).toLocaleString('ko-KR', {
@@ -62,9 +62,7 @@ export default function DevelopPage() {
   return (
     <motion.main
       className="develop-page"
-      initial={false}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.25 } }}
+      {...pageMotion}
     >
       <motion.div
         className="top-title"

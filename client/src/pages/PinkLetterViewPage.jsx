@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
+import { listItemMotion, motionEase, pageMotion, panelMotion } from '../utils/motion.js';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = motionEase;
 
 const typeStyles = {
   text: { label: '텍스트', icon: '✉', bg: 'rgba(110,45,45,0.08)', color: '#7a3535', border: 'rgba(110,45,45,0.18)' },
@@ -91,10 +92,7 @@ export default function PinkLetterViewPage() {
   return (
     <motion.div
       className="letter-list-page pink-letter-list-page"
-      initial={false}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.3 } }}
-      transition={{ duration: 0.6, ease }}
+      {...pageMotion}
     >
       <PinkLetterLogo className="pink-letter-fixed-logo" />
 
@@ -110,9 +108,7 @@ export default function PinkLetterViewPage() {
           <>
           <motion.div
             className="letter-list-action-row"
-            initial={false}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            {...panelMotion}
           >
             <button type="button" className="soft-button pink-send-button" onClick={triggerSend} disabled={sending}>
               {sending ? '발송 중...' : '이메일 지금 받기'}
@@ -134,10 +130,8 @@ export default function PinkLetterViewPage() {
                   tabIndex={unlocked ? 0 : undefined}
                   onClick={event => handleCardClick(letter, unlocked, event)}
                   onKeyDown={event => handleCardKeyDown(letter, unlocked, event)}
-                  initial={false}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.035, ease }}
-                  whileHover={unlocked ? { scale: 1.006, boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
+                  {...listItemMotion(i)}
+                  whileHover={unlocked ? { boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
                 >
                   <div className="letter-card-inner">
                     <div className="letter-icon" aria-hidden="true">{unlocked ? type.icon : '🔒'}</div>
@@ -188,9 +182,9 @@ export default function PinkLetterViewPage() {
         <motion.button
           type="button"
           className="letter-back-floating pink-letter-exit"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          initial={{ opacity: 0, y: 8, pointerEvents: 'none' }}
+          animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
+          transition={{ duration: 0.52, delay: 0.48, ease }}
           onClick={() => navigate('/')}
         >
           ← 나가기

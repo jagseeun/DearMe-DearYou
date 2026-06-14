@@ -16400,3 +16400,12 @@ select:focus,
     justify-content: center !important;
   }
 }
+
+.route-click-guard {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  background: transparent;
+  cursor: inherit;
+  pointer-events: auto;
+}

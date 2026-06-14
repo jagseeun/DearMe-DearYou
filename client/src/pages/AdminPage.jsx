@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import { fetchJson } from '../utils/api.js';
-import { modalBackdropMotion, modalPanelMotion } from '../utils/motion.js';
+import { modalBackdropMotion, modalPanelMotion, motionEase, pageMotion } from '../utils/motion.js';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = motionEase;
 const PASSWORD_MAX_LENGTH = 128;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
@@ -442,10 +442,7 @@ export default function AdminPage() {
     <motion.div
       className="admin-page"
       style={{ position: 'relative', zIndex: 1, minHeight: '100vh', padding: '92px 24px 48px', color: '#fffcdf' }}
-      initial={false}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5, ease }}
+      {...pageMotion}
     >
       <div style={{ maxWidth: 1080, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
