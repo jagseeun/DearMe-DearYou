@@ -16410,3 +16410,14 @@ select:focus,
   pointer-events: auto;
   touch-action: none;
 }
+
+@media (max-width: 760px) {
+  .letter-list-page .letters-main-exit,
+  .pink-letter-list-page .letters-main-exit {
+    top: calc(16px + env(safe-area-inset-top)) !important;
+    left: calc(14px + env(safe-area-inset-left)) !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 620 !important;
+  }
+}

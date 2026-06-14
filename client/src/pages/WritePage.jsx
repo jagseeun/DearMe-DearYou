@@ -418,6 +418,8 @@ export default function WritePage() {
   const chunksRef = useRef([]);
 
   function showNotice(message, title = '확인이 필요합니다') {
+    setShowModal(false);
+    setShowRetryConfirm(false);
     setNotice({ title, message });
   }
 
@@ -687,6 +689,7 @@ export default function WritePage() {
     if (mode === 'text' && !text.trim()) return showNotice('편지 내용을 입력해 주세요.');
     if (mode === 'video' && !videoUrl) return showNotice('먼저 영상을 촬영해 주세요.');
     if (mode === 'draw' && !drawHasDrawn) return showNotice('그림을 그려 주세요.');
+    setNotice(null);
     setShowModal(true);
   }
 
