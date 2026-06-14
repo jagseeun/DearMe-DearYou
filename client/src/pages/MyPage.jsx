@@ -4,8 +4,9 @@ import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
 import { useAuth } from '../auth.jsx';
+import { motionEase, pageMotion } from '../utils/motion.js';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = motionEase;
 const PASSWORD_MAX_LENGTH = 128;
 
 export default function MyPage() {
@@ -140,9 +141,7 @@ export default function MyPage() {
   return (
     <motion.main
       className="mypage-page"
-      initial={false}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.25 } }}
+      {...pageMotion}
     >
       <motion.div
         className="top-title"

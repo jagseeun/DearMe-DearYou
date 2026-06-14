@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
+import { motionEase, pageMotion } from '../utils/motion.js';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = motionEase;
 
 export default function DonePage() {
   const navigate = useNavigate();
@@ -71,9 +72,7 @@ export default function DonePage() {
   return (
     <motion.div
       className={`done-page ${isLeaving ? 'is-leaving' : ''}`}
-      initial={false}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.3 } }}
+      {...pageMotion}
     >
       <motion.div
         className="top-title"

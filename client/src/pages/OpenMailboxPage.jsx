@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { fetchJson } from '../utils/api.js';
-import { listItemMotion, modalBackdropMotion, modalPanelMotion } from '../utils/motion.js';
+import { listItemMotion, modalBackdropMotion, modalPanelMotion, motionEase, pageMotion } from '../utils/motion.js';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = motionEase;
 const CONTENT_MAX_LENGTH = 100;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const OPEN_DRAW_WIDTH = 960;
@@ -480,10 +480,7 @@ export default function OpenMailboxPage() {
   return (
     <motion.div
       className="open-mailbox-page"
-      initial={false}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.3 } }}
-      transition={{ duration: 0.5, ease }}
+      {...pageMotion}
     >
       <button type="button" className="open-mailbox-back" onClick={() => navigate('/')}>돌아가기</button>
 

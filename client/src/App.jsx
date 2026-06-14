@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import BackgroundLayers, { PINK_ROUTES } from './components/BackgroundLayers.jsx';
 import { AuthProvider, ProtectedRoute } from './auth.jsx';
@@ -17,7 +17,7 @@ import OpenMailboxPage from './pages/OpenMailboxPage.jsx';
 import SupportPage from './pages/SupportPage.jsx';
 import DevelopPage from './pages/DevelopPage.jsx';
 
-const LOGO_HOME_SELECTOR = '.top-title, .main-title, .letter-list-logo';
+const LOGO_HOME_SELECTOR = '.top-title, .main-title';
 
 function AnimatedRoutes() {
   return (
@@ -119,11 +119,32 @@ function MotionReadyMarker() {
   return null;
 }
 
+function RouteClickGuard() {
+  const location = useLocation();
+  const firstRenderRef = useRef(true);
+  const [blocking, setBlocking] = useState(false);
+
+  useEffect(() => {
+    if (firstRenderRef.current) {
+      firstRenderRef.current = false;
+      return undefined;
+    }
+
+    setBlocking(true);
+    const timer = setTimeout(() => setBlocking(false), 620);
+    return () => clearTimeout(timer);
+  }, [location.pathname, location.search]);
+
+  if (!blocking) return null;
+  return <div className="route-click-guard" aria-hidden="true" />;
+}
+
 export default function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <MotionReadyMarker />
+        <RouteClickGuard />
         <FaviconSwitcher />
         <LogoHomeNavigator />
         <BackgroundLayers />

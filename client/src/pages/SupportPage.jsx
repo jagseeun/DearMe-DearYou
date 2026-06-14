@@ -3,8 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { fetchJson } from '../utils/api.js';
 import NoticeModal from '../components/NoticeModal.jsx';
+import { motionEase, pageMotion } from '../utils/motion.js';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = motionEase;
 const SUPPORT_MAX_LENGTH = 200;
 
 export default function SupportPage() {
@@ -59,9 +60,7 @@ export default function SupportPage() {
   return (
     <motion.main
       className="support-page"
-      initial={false}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.25 } }}
+      {...pageMotion}
     >
       <motion.div
         className="top-title"
