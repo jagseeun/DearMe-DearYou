@@ -349,8 +349,32 @@ export default function OpenMailboxPage() {
   }
 
   function closeComposer() {
+    closePhotoCamera();
     setShowComposer(false);
     setMessage('');
+  }
+
+  function openComposer() {
+    closePhotoCamera();
+    setSelected(null);
+    setEditingSelected(false);
+    setConfirmingDelete(false);
+    setMessage('');
+    setShowComposer(true);
+  }
+
+  function openLetter(letter) {
+    closePhotoCamera();
+    setShowComposer(false);
+    setMessage('');
+    setSelected(letter);
+  }
+
+  function closeSelectedLetter() {
+    setMessage('');
+    setEditingSelected(false);
+    setConfirmingDelete(false);
+    setSelected(null);
   }
 
   async function submitLetter(event) {
@@ -468,7 +492,7 @@ export default function OpenMailboxPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin: editPin }),
       });
-      setSelected(null);
+      closeSelectedLetter();
       await loadLetters(page);
     } catch (err) {
       setMessage(err.message || '열린 편지를 삭제하지 못했습니다.');
@@ -495,7 +519,7 @@ export default function OpenMailboxPage() {
               <p>모두에게 전하는 편지</p>
             </div>
             <div className="open-board-controls">
-              <button type="button" className="open-compose-open-button" onClick={() => setShowComposer(true)}>
+              <button type="button" className="open-compose-open-button" onClick={openComposer}>
                 작성하기
               </button>
               <div className="open-page-arrows">
@@ -512,7 +536,7 @@ export default function OpenMailboxPage() {
             <div className="open-empty-letter">
               <strong>첫 편지를 기다리는 중</strong>
               <span>아무도 안 하면 우리가 첫 장을 열면 됩니다.</span>
-              <button type="button" className="open-compose-open-button" onClick={() => setShowComposer(true)}>
+              <button type="button" className="open-compose-open-button" onClick={openComposer}>
                 첫 편지 남기기
               </button>
             </div>
@@ -523,7 +547,7 @@ export default function OpenMailboxPage() {
                   type="button"
                   key={letter.id}
                   className={`open-letter-card ${letter.type} ${letter.content ? '' : 'has-no-copy'}`.trim()}
-                  onClick={() => { setMessage(''); setSelected(letter); }}
+                  onClick={() => openLetter(letter)}
                   {...listItemMotion(index)}
                 >
                   {(letter.type === 'draw' || letter.type === 'photo') && letter.imageUrl && (
@@ -664,14 +688,14 @@ export default function OpenMailboxPage() {
           <motion.div
             className="open-letter-modal-backdrop"
             {...modalBackdropMotion}
-            onClick={() => { setMessage(''); setSelected(null); }}
+            onClick={closeSelectedLetter}
           >
             <motion.article
               className="open-letter-modal"
               {...modalPanelMotion}
               onClick={event => event.stopPropagation()}
             >
-              <button type="button" onClick={() => { setMessage(''); setSelected(null); }}>닫기</button>
+              <button type="button" onClick={closeSelectedLetter}>닫기</button>
               <span>
                 {formatDate(selected.createdAt)}
                 {wasEdited(selected) && <em className="open-edited-label">수정됨</em>}

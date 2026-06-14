@@ -174,7 +174,7 @@ function RouteClickGuard() {
       return undefined;
     }
 
-    lockFor(980);
+    lockFor(1400);
     return undefined;
   }, [location.pathname, location.search]);
 
@@ -188,20 +188,20 @@ function RouteClickGuard() {
       if (event.target instanceof Element && event.target.closest('button[type="submit"], input[type="submit"]')) {
         submitGraceUntilRef.current = performance.now() + 120;
       }
-      lockFor(820);
+      lockFor(1100);
     };
 
     const handleSubmit = event => {
       if (performance.now() < submitGraceUntilRef.current) {
         submitGraceUntilRef.current = 0;
-        lockFor(1200);
+        lockFor(1400);
         return;
       }
       if (isLocked()) {
         stopInteraction(event);
         return;
       }
-      lockFor(1200);
+      lockFor(1400);
     };
 
     const handleKeyDown = event => {
@@ -211,7 +211,7 @@ function RouteClickGuard() {
         stopInteraction(event);
         return;
       }
-      lockFor(820);
+      lockFor(1100);
     };
 
     document.addEventListener('click', handleClick, true);
