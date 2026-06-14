@@ -20,6 +20,10 @@ const MAX_HISTORY = 50;
 const DRAW_WIDTH = 1440;
 const DRAW_HEIGHT = 1080;
 
+function getDrawContext(canvas) {
+  return canvas.getContext('2d', { willReadFrequently: true });
+}
+
 function DrawToolIcon({ name }) {
   const paths = {
     eraser: (
@@ -67,7 +71,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = getDrawContext(canvas);
     ctx.fillStyle = CANVAS_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     function storeHistory() {
@@ -117,7 +121,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = getDrawContext(canvas);
     historyRef.current.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
     if (historyRef.current.length > MAX_HISTORY) historyRef.current.shift();
   }
@@ -128,7 +132,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
 
     historyRef.current.pop();
     const prev = historyRef.current[historyRef.current.length - 1];
-    canvas.getContext('2d').putImageData(prev, 0, 0);
+    getDrawContext(canvas).putImageData(prev, 0, 0);
     if (historyRef.current.length === 1) setDrawn(false);
   }
 
@@ -147,10 +151,11 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     if (!canvas) return;
 
     drawing.current = true;
+    e.currentTarget?.setPointerCapture?.(e.pointerId);
     const pos = getPos(e, canvas);
     lastPos.current = pos;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = getDrawContext(canvas);
     ctx.beginPath();
     ctx.arc(pos.x, pos.y, (tool === 'eraser' ? size * 4 : size) / 2, 0, Math.PI * 2);
     ctx.fillStyle = tool === 'eraser' ? CANVAS_BG : color;
@@ -163,7 +168,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     const canvas = canvasRef.current;
     if (!drawing.current || !canvas || !lastPos.current) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = getDrawContext(canvas);
     const pos = getPos(e, canvas);
     ctx.beginPath();
     ctx.moveTo(lastPos.current.x, lastPos.current.y);
@@ -181,6 +186,9 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     e?.preventDefault();
     if (!drawing.current) return;
     drawing.current = false;
+    if (e?.pointerId !== undefined && e.currentTarget?.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    }
     lastPos.current = null;
     saveHistory();
   }
@@ -189,7 +197,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = getDrawContext(canvas);
     ctx.fillStyle = CANVAS_BG;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     historyRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
@@ -205,13 +213,11 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
           height={DRAW_HEIGHT}
           className="draw-canvas"
           style={{ cursor: tool === 'eraser' ? 'cell' : 'crosshair' }}
-          onMouseDown={onDown}
-          onMouseMove={onMove}
-          onMouseUp={onUp}
-          onMouseLeave={onUp}
-          onTouchStart={onDown}
-          onTouchMove={onMove}
-          onTouchEnd={onUp}
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerLeave={onUp}
+          onPointerCancel={onUp}
         />
       </div>
 

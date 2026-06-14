@@ -72,10 +72,26 @@ export default function PinkLetterViewPage() {
 
   const now = new Date();
 
+  function openLetter(letter) {
+    navigate('/view-letter', { state: { letter, name, returnTo: '/pink-letters' } });
+  }
+
+  function handleCardClick(letter, unlocked, event) {
+    if (!unlocked || event.target.closest('button')) return;
+    openLetter(letter);
+  }
+
+  function handleCardKeyDown(letter, unlocked, event) {
+    if (!unlocked || event.target.closest('button')) return;
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    openLetter(letter);
+  }
+
   return (
     <motion.div
       className="letter-list-page pink-letter-list-page"
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
       transition={{ duration: 0.6, ease }}
@@ -94,7 +110,7 @@ export default function PinkLetterViewPage() {
           <>
           <motion.div
             className="letter-list-action-row"
-            initial={{ opacity: 0 }}
+            initial={false}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
           >
@@ -114,24 +130,20 @@ export default function PinkLetterViewPage() {
                 <motion.article
                   key={letter.id}
                   className={`letter-card ${unlocked ? 'is-open' : 'is-locked'}`}
-                  initial={{ opacity: 0, y: 18 }}
+                  role={unlocked ? 'button' : undefined}
+                  tabIndex={unlocked ? 0 : undefined}
+                  onClick={event => handleCardClick(letter, unlocked, event)}
+                  onKeyDown={event => handleCardKeyDown(letter, unlocked, event)}
+                  initial={false}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: Math.min(i, 8) * 0.035, ease }}
-                  whileHover={unlocked ? { translateY: -2, boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
+                  whileHover={unlocked ? { scale: 1.006, boxShadow: '0 14px 38px rgba(130,70,70,0.12)' } : {}}
                 >
                   <div className="letter-card-inner">
                     <div className="letter-icon" aria-hidden="true">{unlocked ? type.icon : '🔒'}</div>
 
                     <div
                       className={unlocked ? 'letter-card-copy letter-card-click' : 'letter-card-copy'}
-                      role={unlocked ? 'button' : undefined}
-                      tabIndex={unlocked ? 0 : undefined}
-                      onClick={() => unlocked && navigate('/view-letter', { state: { letter, name, returnTo: '/pink-letters' } })}
-                      onKeyDown={e => {
-                        if (unlocked && e.key === 'Enter') {
-                          navigate('/view-letter', { state: { letter, name, returnTo: '/pink-letters' } });
-                        }
-                      }}
                     >
                       <div className="letter-card-title-line">
                         <span className="letter-card-title">
@@ -154,7 +166,7 @@ export default function PinkLetterViewPage() {
                         <button
                           type="button"
                           className="letter-open-arrow"
-                          onClick={() => navigate('/view-letter', { state: { letter, name, returnTo: '/pink-letters' } })}
+                          onClick={event => { event.stopPropagation(); openLetter(letter); }}
                           aria-label="편지 열기"
                         >
                           ▶

@@ -867,7 +867,11 @@ export default function LetterViewPage() {
   }, [letter, navigate, returnTo]);
 
   if (!letter || letter.locked || letter.type === 'call') {
-    return <div className="auth-route-loading" aria-live="polite" />;
+    return (
+      <div className="auth-route-loading auth-route-loading-pink" aria-live="polite">
+        <span className="auth-route-loading-mark" aria-hidden="true">Dear Me ; Dear You</span>
+      </div>
+    );
   }
 
   const isPink = letter.emailTheme === 'pink' || returnTo === '/pink-letters';
@@ -877,10 +881,10 @@ export default function LetterViewPage() {
   const recipientName = letter.recipientName || (letter.mailbox === 'received' ? name : '') || name || '나';
 
   // 핑크 테마 색상 시스템
-  const textMain        = isPink ? '#fff1e8'                  : '#fff1f2';
-  const textSub         = isPink ? 'rgba(241,205,213,0.86)'   : 'rgba(241,205,224,0.72)';
-  const textHint        = isPink ? 'rgba(232,190,202,0.76)'   : 'rgba(232,190,216,0.66)';
-  const textBtn         = isPink ? '#fff1e8'                  : '#fff0f6';
+  const textMain        = isPink ? '#ffe4ec'                  : '#ffe2ef';
+  const textSub         = isPink ? 'rgba(255,210,224,0.82)'   : 'rgba(255,207,228,0.72)';
+  const textHint        = isPink ? 'rgba(246,190,209,0.74)'   : 'rgba(245,188,220,0.66)';
+  const textBtn         = isPink ? '#ffe4ec'                  : '#ffe2ef';
   const btnBg           = isPink ? 'linear-gradient(135deg, rgba(138,74,104,0.82), rgba(72,42,76,0.82)), rgba(232,190,202,0.1)' : 'linear-gradient(135deg, rgba(146,74,126,0.84), rgba(86,50,104,0.8)), rgba(232,190,216,0.1)';
   const btnBorder       = isPink ? '1px solid rgba(244,211,218,0.38)'        : '1px solid rgba(244,190,218,0.34)';
   const backColor       = isPink ? 'rgba(255,239,232,0.9)'    : 'rgba(255,236,246,0.88)';
@@ -919,10 +923,10 @@ export default function LetterViewPage() {
         position: 'fixed', inset: 0, zIndex: 10, width: '100%', height: '100vh',
         background: isPink ? 'linear-gradient(180deg, rgba(255,241,232,0.035), rgba(218,157,176,0.04))' : undefined,
       }}
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+      initial={false} animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
     >
-      <AnimatePresence mode="sync">
+      <AnimatePresence mode="sync" initial={false}>
 
         {/* ── 봉투 화면 ── */}
         {phase === 'envelope' && (
@@ -1003,10 +1007,10 @@ export default function LetterViewPage() {
               <motion.button
                 className="letter-view-button letter-open-button"
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5, ease }}
+                transition={{ duration: 0.95, delay: 0.42, ease }}
                 onClick={() => setPhase('content')}
                 whileHover={{ scale: 1.018 }}
-                style={{ ...btnStyle, position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)' }}>
+                style={{ ...btnStyle, position: 'absolute', bottom: 40, left: '50%', translate: '-50% 0', transformOrigin: 'center center' }}>
                 {letter.type === 'video' ? '영상 열기' : letter.type === 'draw' ? '그림 열기' : '편지 읽기'}
               </motion.button>
             </div>

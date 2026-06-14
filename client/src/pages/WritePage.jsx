@@ -5,9 +5,9 @@ import fixWebmDuration from 'fix-webm-duration';
 import DrawCanvas from '../components/DrawCanvas.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
 
-const ease = [0.22, 1, 0.36, 1];
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.18 } } };
-const item = { hidden: { opacity: 0, y: 30 }, show: { opacity: 1, y: 0, transition: { duration: 1.2, ease } } };
+const ease = [0.19, 1, 0.22, 1];
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
+const item = { hidden: { opacity: 0, y: 36 }, show: { opacity: 1, y: 0, transition: { duration: 1.08, ease } } };
 const LETTER_CONTENT_MAX_LENGTH = 5000;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -368,6 +368,7 @@ export default function WritePage() {
     : 'text';
   const [mode, setMode] = useState(initialMode);
   const [text, setText] = useState('');
+  const [textBorderTone, setTextBorderTone] = useState(0);
 
   // 영상 상태
   const [stage, setStage] = useState('idle');
@@ -418,6 +419,11 @@ export default function WritePage() {
 
   function showNotice(message, title = '확인이 필요합니다') {
     setNotice({ title, message });
+  }
+
+  function handleTextChange(nextText) {
+    setText(nextText);
+    setTextBorderTone(prev => (prev + 1) % 5);
   }
 
   useEffect(() => {
@@ -754,7 +760,7 @@ export default function WritePage() {
   const cameraUI = (
     <motion.div key="camera"
       className="write-stage write-camera-stage"
-      initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+      initial={{ opacity: 0.82, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.35, ease }}
       style={{ width: 'min(1320px, calc(100vw - 64px))', marginBottom: 24 }}
     >
@@ -894,14 +900,14 @@ export default function WritePage() {
     >
       {/* 상단 로고 */}
       <motion.div className="top-title"
-        variants={{ hidden: { opacity: 0, y: -20 }, show: { opacity: 1, y: 0, transition: { duration: 1.4, ease } } }}
+        variants={{ hidden: { opacity: 0, y: -18 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } }}
       >
         <span className="to">Dear Me</span><span className="semicolon">;</span><span className="from">Dear You</span>
       </motion.div>
 
       {/* 돌아가기 */}
       <motion.button
-        variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 1, delay: 0.4 } } }}
+        variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: { duration: 1.02, ease } } }}
         onClick={() => navigate(-1)}
         className="back-link"
       >
@@ -949,22 +955,22 @@ export default function WritePage() {
         </motion.div>
 
         {/* 모드 콘텐츠 */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           {mode === 'text' ? (
             <motion.div key="text"
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0.82, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35, ease }}
               className="write-stage write-stage-text"
               style={{ marginBottom: 20 }}
             >
               {/* 텍스트 입력 */}
               <div
-                className={`write-paper ${showSig ? 'is-signing' : ''}`}
+                className={`write-paper write-paper-tone-${textBorderTone} ${showSig ? 'is-signing' : ''}`}
                 onClick={() => document.getElementById('textInput')?.focus()}
               >
                 <LetterTextarea
                   value={text}
-                  onChange={setText}
+                  onChange={handleTextChange}
                   placeholder="지금 남기고 싶은 마음을 차분히 기록해 주세요"
                 />
 
@@ -1011,7 +1017,7 @@ export default function WritePage() {
             </motion.div>
           ) : mode === 'draw' ? (
             <motion.div key="draw"
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+              initial={{ opacity: 0.82, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.35, ease }}
               className="write-stage write-stage-draw"
               style={{ marginBottom: 20 }}

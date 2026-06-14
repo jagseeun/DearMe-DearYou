@@ -140,13 +140,13 @@ export default function MyPage() {
   return (
     <motion.main
       className="mypage-page"
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.25 } }}
     >
       <motion.div
         className="top-title"
-        initial={{ opacity: 0, y: -18 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, ease }}
       >
@@ -164,7 +164,7 @@ export default function MyPage() {
       <section className="mypage-shell">
         <motion.header
           className="mypage-header"
-          initial={{ opacity: 0, y: 14 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease }}
         >
@@ -177,7 +177,7 @@ export default function MyPage() {
           <motion.form
             className="mypage-panel"
             onSubmit={saveProfile}
-            initial={{ opacity: 0, y: 16 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.08, ease }}
           >
@@ -214,7 +214,7 @@ export default function MyPage() {
           <motion.form
             className="mypage-panel"
             onSubmit={changePassword}
-            initial={{ opacity: 0, y: 16 }}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.14, ease }}
           >

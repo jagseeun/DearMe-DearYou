@@ -1,6 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { AnimatePresence, useReducedMotion } from 'framer-motion';
 import BackgroundLayers, { PINK_ROUTES } from './components/BackgroundLayers.jsx';
 import { AuthProvider, ProtectedRoute } from './auth.jsx';
 import IndexPage from './pages/IndexPage.jsx';
@@ -21,29 +20,25 @@ import DevelopPage from './pages/DevelopPage.jsx';
 const LOGO_HOME_SELECTOR = '.top-title, .main-title, .letter-list-logo';
 
 function AnimatedRoutes() {
-  const location = useLocation();
-  const reducedMotion = useReducedMotion();
   return (
-    <AnimatePresence mode={reducedMotion ? 'sync' : 'wait'} initial={false}>
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<IndexPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/open-mailbox" element={<OpenMailboxPage />} />
-        <Route path="/letter-login" element={<LoginPage letterMode />} />
-        <Route path="/hello" element={<ProtectedRoute><HelloPage /></ProtectedRoute>} />
-        <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
-        <Route path="/write" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
-        <Route path="/done" element={<ProtectedRoute><DonePage /></ProtectedRoute>} />
-        <Route path="/letters" element={<ProtectedRoute><LettersPage /></ProtectedRoute>} />
-        <Route path="/pink-letters" element={<ProtectedRoute><PinkLetterViewPage /></ProtectedRoute>} />
-        <Route path="/view-letter" element={<ProtectedRoute><LetterViewPage /></ProtectedRoute>} />
-        <Route path="/support" element={<SupportPage />} />
-        <Route path="/develop" element={<ProtectedRoute requireDeveloper><DevelopPage /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </AnimatePresence>
+    <Routes>
+      <Route path="/" element={<IndexPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/open-mailbox" element={<OpenMailboxPage />} />
+      <Route path="/letter-login" element={<LoginPage letterMode />} />
+      <Route path="/hello" element={<ProtectedRoute><HelloPage /></ProtectedRoute>} />
+      <Route path="/mypage" element={<ProtectedRoute><MyPage /></ProtectedRoute>} />
+      <Route path="/write" element={<ProtectedRoute><WritePage /></ProtectedRoute>} />
+      <Route path="/done" element={<ProtectedRoute><DonePage /></ProtectedRoute>} />
+      <Route path="/letters" element={<ProtectedRoute><LettersPage /></ProtectedRoute>} />
+      <Route path="/pink-letters" element={<ProtectedRoute><PinkLetterViewPage /></ProtectedRoute>} />
+      <Route path="/view-letter" element={<ProtectedRoute><LetterViewPage /></ProtectedRoute>} />
+      <Route path="/support" element={<SupportPage />} />
+      <Route path="/develop" element={<ProtectedRoute requireDeveloper><DevelopPage /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminPage /></ProtectedRoute>} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
@@ -116,7 +111,7 @@ function FaviconSwitcher() {
 }
 
 function MotionReadyMarker() {
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.classList.add('motion-ready');
     return () => document.documentElement.classList.remove('motion-ready');
   }, []);
@@ -126,7 +121,7 @@ function MotionReadyMarker() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <MotionReadyMarker />
         <FaviconSwitcher />
