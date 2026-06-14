@@ -59,13 +59,13 @@ export default function SupportPage() {
   return (
     <motion.main
       className="support-page"
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.25 } }}
     >
       <motion.div
         className="top-title"
-        initial={{ opacity: 0, y: -18 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, ease }}
       >
@@ -87,7 +87,7 @@ export default function SupportPage() {
         <motion.form
           className="support-form"
           onSubmit={submitSupport}
-          initial={{ opacity: 0, y: 14 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease }}
         >

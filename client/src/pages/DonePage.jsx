@@ -9,6 +9,7 @@ export default function DonePage() {
   const navigate = useNavigate();
   const { openDate, name, recipientName, recipientEmail, sentNow, delivery } = useLocation().state || {};
   const [phase, setPhase] = useState(sentNow ? 'envelope' : 'seal');
+  const [isLeaving, setIsLeaving] = useState(false);
   const deliveryFailed = Boolean(sentNow && delivery && delivery.sent === 0);
   const deliveryAccepted = Boolean(sentNow && delivery && delivery.sent > 0);
   const deliveryNotice = useMemo(() => {
@@ -40,13 +41,19 @@ export default function DonePage() {
 
   useEffect(() => {
     if (phase !== 'envelope') return undefined;
+    const fadeTimer = setTimeout(() => {
+      setIsLeaving(true);
+    }, 5600);
     const timer = setTimeout(() => {
       navigate('/hello', {
         replace: true,
         state: deliveryNotice ? { deliveryNotice } : undefined,
       });
     }, 6200);
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(timer);
+    };
   }, [deliveryNotice, phase, navigate]);
 
   if (!openDate) return null;
@@ -63,8 +70,8 @@ export default function DonePage() {
 
   return (
     <motion.div
-      className="done-page"
-      initial={{ opacity: 0 }}
+      className={`done-page ${isLeaving ? 'is-leaving' : ''}`}
+      initial={false}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
     >

@@ -53,7 +53,12 @@
 }
 
 html {
-  background: #111214;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(211, 169, 116, 0.16) 0%, rgba(211, 169, 116, 0) 30%),
+    radial-gradient(circle at 78% 28%, rgba(126, 148, 176, 0.14) 0%, rgba(126, 148, 176, 0) 36%),
+    radial-gradient(circle at 54% 92%, rgba(196, 163, 116, 0.18) 0%, rgba(196, 163, 116, 0) 42%),
+    linear-gradient(to bottom, #101114 0%, #171820 22%, #20292a 42%, #3a3647 64%, #7b655f 84%, #c4a374 100%);
+  background-attachment: fixed;
   min-height: 100%;
 }
 
@@ -62,11 +67,32 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   overflow-y: auto;
-  background: transparent;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(211, 169, 116, 0.16) 0%, rgba(211, 169, 116, 0) 30%),
+    radial-gradient(circle at 78% 28%, rgba(126, 148, 176, 0.14) 0%, rgba(126, 148, 176, 0) 36%),
+    radial-gradient(circle at 54% 92%, rgba(196, 163, 116, 0.18) 0%, rgba(196, 163, 116, 0) 42%),
+    linear-gradient(to bottom, #101114 0%, #171820 22%, #20292a 42%, #3a3647 64%, #7b655f 84%, #c4a374 100%);
+  background-attachment: fixed;
   position: relative;
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
+}
+
+body.dark-cursor-active {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(211, 169, 116, 0.16) 0%, rgba(211, 169, 116, 0) 30%),
+    radial-gradient(circle at 78% 28%, rgba(126, 148, 176, 0.14) 0%, rgba(126, 148, 176, 0) 36%),
+    radial-gradient(circle at 54% 92%, rgba(196, 163, 116, 0.18) 0%, rgba(196, 163, 116, 0) 42%),
+    linear-gradient(to bottom, #101114 0%, #171820 22%, #20292a 42%, #3a3647 64%, #7b655f 84%, #c4a374 100%);
+}
+
+body.pink-cursor-active {
+  background:
+    radial-gradient(circle at 18% 16%, rgba(226, 158, 186, 0.24) 0%, rgba(226, 158, 186, 0) 31%),
+    radial-gradient(circle at 82% 24%, rgba(156, 112, 166, 0.22) 0%, rgba(156, 112, 166, 0) 34%),
+    radial-gradient(circle at 50% 84%, rgba(202, 120, 136, 0.18) 0%, rgba(202, 120, 136, 0) 42%),
+    linear-gradient(180deg, #201629 0%, #3c2946 42%, #74465f 72%, #a76c76 100%);
 }
 
 button,
@@ -124,6 +150,7 @@ h3 {
   width: 100%;
   min-height: 100dvh;
   position: relative;
+  background: transparent;
 }
 
 img,
@@ -278,7 +305,6 @@ canvas {
 
 .input-field:focus {
   background: rgba(255,251,240,0.9);
-  transform: translateY(-1px);
   border-color: rgba(237,205,162,0.62);
   box-shadow:
     0 16px 34px rgba(0,0,0,0.16),
@@ -4720,13 +4746,6 @@ canvas {
   animation: buttonGleam 1.25s ease-out;
 }
 
-.input-field:focus,
-.write-textarea:focus,
-.modal-panel input:focus,
-.modal-panel textarea:focus {
-  animation: inputFocusGlow 1.4s ease-out;
-}
-
 .draw-swatch.is-active,
 .draw-size.is-active span {
   animation: selectedPulse 2.8s ease-in-out infinite;
@@ -4734,10 +4753,10 @@ canvas {
 
 @keyframes titleBreath {
   0%, 100% {
-    filter: drop-shadow(0 0 0 rgba(232, 194, 138, 0));
+    text-shadow: 0 0 0 rgba(232, 194, 138, 0);
   }
   48% {
-    filter: drop-shadow(0 0 12px rgba(232, 194, 138, 0.16));
+    text-shadow: 0 0 14px rgba(232, 194, 138, 0.16);
   }
 }
 
@@ -4775,24 +4794,12 @@ canvas {
   }
 }
 
-@keyframes inputFocusGlow {
-  0% {
-    box-shadow: 0 0 0 rgba(232, 194, 138, 0);
-  }
-  45% {
-    box-shadow: 0 0 0 3px rgba(232, 194, 138, 0.12);
-  }
-  100% {
-    box-shadow: 0 0 0 rgba(232, 194, 138, 0);
-  }
-}
-
 @keyframes selectedPulse {
   0%, 100% {
-    filter: brightness(1);
+    box-shadow: 0 0 0 2px rgba(255, 231, 189, 0.28), 0 0 8px rgba(232, 194, 138, 0.16);
   }
   50% {
-    filter: brightness(1.14);
+    box-shadow: 0 0 0 2px rgba(255, 231, 189, 0.42), 0 0 16px rgba(232, 194, 138, 0.28);
   }
 }
 
@@ -6540,13 +6547,11 @@ canvas {
   .pink-login-page form > *,
   .write-shell .top-title,
   .write-shell .back-link,
-  .write-layout > *,
   .write-header,
   .write-stage,
   .write-submit,
   .hello-shell .top-title,
   .hello-nav,
-  .hello-content > *,
   .letter-list-shell > *,
   .done-center > * {
     opacity: 1 !important;
@@ -6555,8 +6560,6 @@ canvas {
   .form-container > *,
   .home-actions > *,
   .pink-login-page form > *,
-  .write-layout > *,
-  .hello-content > *,
   .letter-list-shell > *,
   .done-center > * {
     transform: none !important;
@@ -11257,8 +11260,56 @@ canvas {
 .auth-route-loading {
   position: fixed;
   inset: 0;
-  z-index: 2;
+  z-index: 12;
   pointer-events: none;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  color: rgba(255, 240, 214, 0.78);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(211, 169, 116, 0.13) 0%, rgba(211, 169, 116, 0) 30%),
+    radial-gradient(circle at 78% 28%, rgba(126, 148, 176, 0.12) 0%, rgba(126, 148, 176, 0) 36%),
+    linear-gradient(to bottom, rgba(18, 18, 20, 0.62), rgba(44, 45, 54, 0.42), rgba(160, 130, 94, 0.32));
+}
+
+.auth-route-loading-mark {
+  padding: 12px 20px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 240, 214, 0.16);
+  background: rgba(16, 17, 20, 0.16);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.16);
+  font-size: clamp(18px, 4.8vw, 28px);
+  font-weight: 300;
+  letter-spacing: 0;
+  line-height: 1;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: authLoadingBreath 1.8s ease-in-out infinite;
+}
+
+.auth-route-loading-pink .auth-route-loading-mark {
+  color: rgba(255, 228, 236, 0.82);
+  border-color: rgba(255, 216, 230, 0.18);
+  background: rgba(42, 26, 45, 0.16);
+  box-shadow: 0 18px 52px rgba(46, 25, 52, 0.18);
+}
+
+.auth-route-loading-pink {
+  background:
+    radial-gradient(circle at 18% 16%, rgba(226, 158, 186, 0.2) 0%, rgba(226, 158, 186, 0) 31%),
+    radial-gradient(circle at 82% 24%, rgba(156, 112, 166, 0.18) 0%, rgba(156, 112, 166, 0) 34%),
+    linear-gradient(180deg, rgba(32, 22, 41, 0.58) 0%, rgba(60, 41, 70, 0.44) 42%, rgba(167, 108, 118, 0.36) 100%);
+}
+
+@keyframes authLoadingBreath {
+  0%, 100% {
+    opacity: 0.72;
+    transform: scale(0.996);
+  }
+  50% {
+    opacity: 0.96;
+    transform: scale(1);
+  }
 }
 
 .dream-cursor-glow-pink {
@@ -13660,7 +13711,7 @@ canvas {
   --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --motion-fast: 160ms;
   --motion-medium: 280ms;
-  --motion-slow: 520ms;
+  --motion-slow: 560ms;
 }
 
 .motion-ready :where(
@@ -13826,7 +13877,7 @@ canvas {
   .open-board-panel,
   .open-empty-letter
 ) {
-  animation: panelSoftIn 620ms var(--motion-ease) both;
+  animation: panelSoftIn 520ms var(--motion-ease) both;
 }
 
 .motion-ready :where(
@@ -13842,6 +13893,7 @@ canvas {
     border-color var(--motion-medium) var(--motion-ease),
     background-color var(--motion-medium) var(--motion-ease),
     opacity var(--motion-medium) var(--motion-ease);
+  animation: cardSoftIn 500ms var(--motion-ease) both;
 }
 
 .motion-ready :where(
@@ -13852,6 +13904,19 @@ canvas {
   .mypage-panel
 ):hover {
   transform: translateY(-3px);
+}
+
+.letter-card.is-open {
+  cursor: pointer;
+}
+
+.letter-card.is-open:focus-visible {
+  outline: 2px solid rgba(255, 229, 237, 0.72);
+  outline-offset: 4px;
+}
+
+.letter-card.is-locked {
+  cursor: default;
 }
 
 .motion-ready :where(
@@ -13890,8 +13955,7 @@ canvas {
     border-color var(--motion-medium) var(--motion-ease),
     box-shadow var(--motion-medium) var(--motion-ease),
     background-color var(--motion-medium) var(--motion-ease),
-    color var(--motion-medium) var(--motion-ease),
-    transform var(--motion-fast) var(--motion-ease);
+    color var(--motion-medium) var(--motion-ease);
 }
 
 .motion-ready :where(
@@ -13904,7 +13968,7 @@ canvas {
   .mypage-password-input,
   .write-textarea
 ):focus {
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .motion-ready :where(
@@ -13918,7 +13982,7 @@ canvas {
   .done-message,
   .develop-header
 ) {
-  animation: textSoftIn 700ms var(--motion-ease) both;
+  animation: textSoftIn 520ms var(--motion-ease) both;
 }
 
 .motion-ready :where(.top-title, .main-title, .letter-list-logo) {
@@ -13935,8 +13999,19 @@ canvas {
 
 @keyframes pageSoftIn {
   from {
-    opacity: 0;
+    opacity: 0.9;
     transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes panelSoftIn {
+  from {
+    opacity: 0.86;
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -13944,14 +14019,14 @@ canvas {
   }
 }
 
-@keyframes panelSoftIn {
+@keyframes cardSoftIn {
   from {
-    opacity: 0;
-    transform: translateY(16px) scale(0.992);
+    opacity: 0.88;
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
@@ -13977,7 +14052,7 @@ canvas {
 
 @keyframes textSoftIn {
   from {
-    opacity: 0;
+    opacity: 0.84;
     transform: translateY(8px);
   }
   to {
@@ -13988,10 +14063,10 @@ canvas {
 
 @keyframes logoBreath {
   from {
-    filter: drop-shadow(0 0 10px rgba(255, 236, 205, 0.08));
+    text-shadow: 0 0 10px rgba(255, 236, 205, 0.08);
   }
   to {
-    filter: drop-shadow(0 0 20px rgba(255, 236, 205, 0.18));
+    text-shadow: 0 0 18px rgba(255, 236, 205, 0.18);
   }
 }
 
@@ -14721,7 +14796,7 @@ canvas {
 
   .back-link {
     left: calc(14px + env(safe-area-inset-left)) !important;
-    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    bottom: calc(24px + env(safe-area-inset-bottom)) !important;
     padding: 8px 14px !important;
     border-radius: 999px !important;
     font-size: 12px !important;
@@ -15387,4 +15462,494 @@ canvas {
     height: 44px !important;
     min-height: 44px !important;
   }
+}
+
+/* Final write focus, route transition, and letter tone polish. */
+.write-paper {
+  --write-reactive-border: rgba(232, 194, 138, 0.38);
+  --write-reactive-glow: rgba(232, 194, 138, 0.18);
+  border-color: var(--write-reactive-border) !important;
+  box-shadow:
+    0 0 34px var(--write-reactive-glow),
+    0 18px 44px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55) !important;
+  transition:
+    border-color 190ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 190ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.write-paper-tone-0 {
+  --write-reactive-border: rgba(238, 177, 172, 0.52);
+  --write-reactive-glow: rgba(238, 177, 172, 0.22);
+}
+
+.write-paper-tone-1 {
+  --write-reactive-border: rgba(253, 213, 191, 0.56);
+  --write-reactive-glow: rgba(253, 213, 191, 0.22);
+}
+
+.write-paper-tone-2 {
+  --write-reactive-border: rgba(244, 190, 218, 0.5);
+  --write-reactive-glow: rgba(244, 190, 218, 0.2);
+}
+
+.write-paper-tone-3 {
+  --write-reactive-border: rgba(232, 194, 138, 0.56);
+  --write-reactive-glow: rgba(232, 194, 138, 0.22);
+}
+
+.write-paper-tone-4 {
+  --write-reactive-border: rgba(218, 157, 176, 0.54);
+  --write-reactive-glow: rgba(218, 157, 176, 0.21);
+}
+
+.write-paper:focus-within {
+  --write-reactive-border: rgba(255, 204, 220, 0.72);
+  --write-reactive-glow: rgba(255, 204, 220, 0.28);
+}
+
+.write-textarea {
+  scroll-margin-top: 132px;
+}
+
+@media (max-width: 760px) {
+  .write-stage.write-stage-text .write-paper:focus-within .write-textarea {
+    padding-bottom: 104px !important;
+  }
+}
+
+.done-page,
+.write-shell,
+.letter-view-root,
+.letter-list-page,
+.hello-shell {
+  backface-visibility: hidden;
+  will-change: opacity;
+}
+
+.done-page.is-leaving {
+  opacity: 0 !important;
+  transform: scale(0.992) translateZ(0) !important;
+  pointer-events: none !important;
+  transition:
+    opacity 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.done-page.is-leaving .top-title,
+.done-page.is-leaving .done-envelope,
+.done-page.is-leaving .done-center {
+  opacity: 0 !important;
+  transition: opacity 240ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+}
+
+.pink-letter-list-page,
+.pink-letter-view,
+.letter-view-root {
+  --letter-soft-pink: #ffe5ed;
+  --letter-soft-pink-strong: #fff0f5;
+  --letter-soft-pink-muted: rgba(255, 216, 230, 0.72);
+  --letter-soft-pink-faint: rgba(255, 210, 226, 0.52);
+}
+
+.pink-letter-list-page .letter-list-title,
+.pink-letter-list-page .letter-list-stat strong,
+.pink-letter-list-page .letter-card-title,
+.pink-letter-list-page .letter-empty strong,
+.pink-letter-view .letter-envelope-value,
+.pink-letter-view .letter-envelope-person,
+.letter-view-root .letter-envelope-value,
+.letter-view-root .letter-envelope-person,
+.letter-view-root .letter-content-text {
+  color: var(--letter-soft-pink) !important;
+}
+
+.pink-letter-list-page .letter-list-logo span:first-child,
+.pink-letter-list-page .top-title .to,
+.pink-letter-view .top-title .to,
+.letter-view-root .top-title .to {
+  color: var(--letter-soft-pink-strong) !important;
+}
+
+.pink-letter-list-page .letter-list-kicker,
+.pink-letter-list-page .letter-list-stat span,
+.pink-letter-list-page .letter-card-info-line,
+.pink-letter-list-page .letter-date-line,
+.pink-letter-list-page .letter-empty span,
+.pink-letter-view .letter-envelope-label,
+.letter-view-root .letter-envelope-label {
+  color: var(--letter-soft-pink-muted) !important;
+}
+
+.pink-letter-list-page .letter-badge,
+.pink-letter-list-page .letter-recipient,
+.pink-letter-list-page .letter-lock-pill,
+.pink-letter-list-page .letter-open-arrow,
+.pink-letter-list-page .letter-delete-button,
+.pink-letter-list-page .soft-button,
+.pink-letter-list-page .letter-back-floating,
+.pink-letter-view .letter-view-button,
+.letter-view-root .letter-view-button {
+  color: var(--letter-soft-pink) !important;
+}
+
+.pink-letter-list-page .letter-list-stat-divider,
+.pink-letter-view .letter-envelope-divider,
+.letter-view-root .letter-envelope-divider {
+  background: var(--letter-soft-pink-faint) !important;
+}
+
+/* Final no-lift focus repair: inputs should glow in place, never jump upward. */
+input:focus,
+textarea:focus,
+select:focus,
+.input-field:focus,
+.pink-login-page input:focus,
+.letter-login-page input:focus,
+.modal-panel input:focus,
+.modal-panel textarea:focus,
+.write-modal-panel input:focus,
+.write-modal-panel textarea:focus,
+.mypage-panel input:focus,
+.mypage-password-input:focus,
+.open-compose-input:focus,
+.open-compose-textarea:focus,
+.write-textarea:focus {
+  transform: none !important;
+  animation: none !important;
+}
+
+.write-stage.write-stage-text .write-paper:focus-within {
+  transform: none !important;
+}
+
+.motion-ready :where(
+  input,
+  textarea,
+  select,
+  .input-field,
+  .open-compose-input,
+  .open-compose-textarea,
+  .mypage-password-input,
+  .write-textarea
+):focus {
+  transform: none !important;
+}
+
+/* Smooth motion correction: avoid double transforms, keep the slow upward entrance. */
+:root {
+  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-fast: 180ms;
+  --motion-medium: 360ms;
+  --motion-slow: 920ms;
+}
+
+.motion-ready :where(.page-center, .hello-shell, .write-shell) {
+  animation: none !important;
+}
+
+.motion-ready :where(.letter-list-page, .letter-view-root, .open-mailbox-page, .support-page, .mypage-page, .develop-page, .admin-page, .done-page) {
+  animation-duration: 920ms !important;
+  animation-timing-function: var(--motion-ease) !important;
+  will-change: opacity, transform;
+}
+
+.motion-ready :where(.form-container, .write-layout, .write-paper, .done-card, .letter-list-header, .letter-empty, .support-compose, .mypage-header, .mypage-panel, .develop-panel, .develop-card, .admin-page section, .open-board-panel, .open-empty-letter) {
+  animation-duration: 820ms !important;
+  animation-timing-function: var(--motion-ease) !important;
+}
+
+.motion-ready :where(.letter-card, .open-letter-card, .develop-card, .admin-card) {
+  animation-duration: 740ms !important;
+  animation-timing-function: var(--motion-ease) !important;
+}
+
+.motion-ready :where(.hello-question) {
+  animation: none !important;
+}
+
+@keyframes pageSoftIn {
+  from {
+    opacity: 0.74;
+    transform: translate3d(0, 24px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes panelSoftIn {
+  from {
+    opacity: 0.76;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cardSoftIn {
+  from {
+    opacity: 0.78;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes textSoftIn {
+  from {
+    opacity: 0.76;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hello-question-wrap {
+  width: min(720px, 100%);
+  min-height: clamp(138px, 19vw, 214px);
+  display: flex;
+  align-items: flex-start;
+  overflow: visible;
+}
+
+.hello-question {
+  width: min(720px, 100%);
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: keep-all;
+  text-wrap: balance;
+}
+
+@media (max-width: 760px) {
+  .hello-content {
+    width: min(100%, 354px) !important;
+    gap: 24px !important;
+  }
+
+  .hello-question-wrap {
+    width: 100% !important;
+    min-height: clamp(150px, 30svh, 230px) !important;
+    align-items: center;
+  }
+
+  .hello-question {
+    width: 100% !important;
+    font-size: clamp(22px, 7.1vw, 31px) !important;
+    line-height: 1.32 !important;
+    letter-spacing: 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: keep-all !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .page-center > .back-link {
+    position: fixed !important;
+    left: calc(16px + env(safe-area-inset-left)) !important;
+    right: auto !important;
+    bottom: calc(48px + env(safe-area-inset-bottom)) !important;
+    z-index: 500 !important;
+    transform: none !important;
+  }
+
+  .letter-list-page .letters-main-exit,
+  .pink-letter-list-page .letters-main-exit {
+    display: inline-flex !important;
+    position: fixed !important;
+    left: calc(16px + env(safe-area-inset-left)) !important;
+    right: auto !important;
+    bottom: calc(48px + env(safe-area-inset-bottom)) !important;
+    z-index: 500 !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Final motion and click-target correction. Keep controls anchored; hover only scales. */
+:root {
+  --motion-ease: cubic-bezier(0.19, 1, 0.22, 1);
+  --motion-slow: 1160ms;
+}
+
+.motion-ready :where(.letter-list-page, .letter-view-root, .open-mailbox-page, .support-page, .mypage-page, .develop-page, .admin-page, .done-page) {
+  animation-duration: 1100ms !important;
+  animation-timing-function: var(--motion-ease) !important;
+}
+
+.motion-ready :where(.form-container, .write-layout, .write-paper, .done-card, .letter-list-header, .letter-empty, .support-compose, .mypage-header, .mypage-panel, .develop-panel, .develop-card, .admin-page section, .open-board-panel, .open-empty-letter) {
+  animation-duration: 1040ms !important;
+  animation-timing-function: var(--motion-ease) !important;
+}
+
+@keyframes pageSoftIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 36px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes panelSoftIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 30px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cardSoftIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 22px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hello-nav {
+  z-index: 520 !important;
+  pointer-events: auto !important;
+}
+
+.hello-nav button {
+  position: relative !important;
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  transform-origin: center center !important;
+}
+
+.motion-ready .hello-nav button:not(:disabled):hover,
+.motion-ready .hello-nav button:not(:disabled):active {
+  transform: scale(1.018) !important;
+}
+
+.motion-ready .letter-view-root.letter-view-phase-envelope .letter-open-button,
+.motion-ready .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-open-button {
+  left: 50% !important;
+  right: auto !important;
+  translate: -50% 0 !important;
+  transform: none !important;
+  transform-origin: center center !important;
+}
+
+.motion-ready .letter-view-root.letter-view-phase-envelope .letter-open-button:not(:disabled):hover,
+.motion-ready .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-open-button:not(:disabled):hover {
+  transform: scale(1.018) !important;
+}
+
+.motion-ready .letter-view-root.letter-view-phase-envelope .letter-open-button:not(:disabled):active,
+.motion-ready .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-open-button:not(:disabled):active {
+  transform: scale(0.985) !important;
+}
+
+.motion-ready .letter-card.is-open:not(:disabled):hover,
+.motion-ready .open-letter-card:not(:disabled):hover {
+  transform: scale(1.006) !important;
+}
+
+.motion-ready :where(
+  .glass-btn,
+  .submit-btn,
+  .check-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-mailbox-floating-button,
+  .home-support-floating-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-shutter-button,
+  .open-letter-actions button,
+  .open-letter-pin-actions button,
+  .open-delete-confirm button,
+  .open-page-arrows button:not(:disabled),
+  .open-mode-tabs button,
+  .open-compose-footer button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .draw-tool-button,
+  .draw-size,
+  .draw-swatch,
+  .support-submit,
+  .develop-header button,
+  .mypage-top-actions button,
+  .mypage-panel > button,
+  .notice-modal-actions button,
+  .modal-actions button,
+  .letter-delete-modal-button
+):not(:disabled):hover {
+  transform: scale(1.018) !important;
+}
+
+.motion-ready :where(
+  .glass-btn,
+  .submit-btn,
+  .check-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-mailbox-floating-button,
+  .home-support-floating-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-shutter-button,
+  .open-letter-actions button,
+  .open-letter-pin-actions button,
+  .open-delete-confirm button,
+  .open-page-arrows button,
+  .open-mode-tabs button,
+  .open-compose-footer button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .draw-tool-button,
+  .draw-size,
+  .draw-swatch,
+  .support-submit,
+  .develop-header button,
+  .mypage-top-actions button,
+  .mypage-panel > button,
+  .notice-modal-actions button,
+  .modal-actions button,
+  .letter-delete-modal-button
+):not(:disabled):active {
+  transform: scale(0.985) !important;
 }

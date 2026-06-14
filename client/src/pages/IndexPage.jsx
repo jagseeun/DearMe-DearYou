@@ -2,15 +2,15 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../auth.jsx';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = [0.19, 1, 0.22, 1];
 
 const container = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.2 } },
+  show: { transition: { staggerChildren: 0.1 } },
 };
 const item = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 1.2, ease } },
+  hidden: { opacity: 0, y: 42 },
+  show: { opacity: 1, y: 0, transition: { duration: 1.16, ease } },
 };
 
 export default function IndexPage() {
@@ -63,7 +63,7 @@ export default function IndexPage() {
         aria-label="열린 편지함"
         title="열린 편지함"
         onClick={() => navigate('/open-mailbox')}
-        initial={{ opacity: 0, y: 12 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1, duration: 0.5, ease }}
       >

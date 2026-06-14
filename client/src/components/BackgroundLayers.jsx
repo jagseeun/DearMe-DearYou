@@ -1,11 +1,9 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import Stars from './Stars.jsx';
 import PinkStars from './PinkStars.jsx';
 
 export const PINK_ROUTES = ['/letter-login', '/letters', '/view-letter', '/pink-letters'];
-const ease = [0.22, 1, 0.36, 1];
 
 const DARK_GRADIENT = `
   radial-gradient(circle at 18% 18%, rgba(211, 169, 116, 0.16) 0%, rgba(211, 169, 116, 0) 30%),
@@ -24,6 +22,8 @@ const layerStyle = {
   inset: 0,
   zIndex: 0,
   pointerEvents: 'none',
+  transition: 'opacity 980ms cubic-bezier(0.22, 1, 0.36, 1)',
+  willChange: 'opacity',
 };
 
 export default function BackgroundLayers() {
@@ -74,8 +74,7 @@ export default function BackgroundLayers() {
         document.body.classList.add('dream-cursor-active');
       }
 
-      const hoverTarget = document.elementFromPoint(x, y) || latestPointer.target;
-      const nextDrawing = Boolean(hoverTarget?.closest?.('.draw-canvas, .open-draw-canvas'));
+      const nextDrawing = Boolean(latestPointer.target?.closest?.('.draw-canvas, .open-draw-canvas'));
       if (nextDrawing !== drawing) {
         drawing = nextDrawing;
         document.body.classList.toggle('dream-cursor-drawing', drawing);
@@ -97,45 +96,31 @@ export default function BackgroundLayers() {
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: isPink ? 0 : 1 }}
-        animate={{ opacity: isPink ? 0 : 1 }}
-        transition={{ duration: 1.6, ease }}
+      <div
         style={{ ...layerStyle, background: DARK_GRADIENT, opacity: isPink ? 0 : 1 }}
       />
-      <motion.div
-        initial={{ opacity: isPink ? 1 : 0 }}
-        animate={{ opacity: isPink ? 1 : 0 }}
-        transition={{ duration: 1.6, ease }}
+      <div
         style={{ ...layerStyle, background: PINK_GRADIENT, opacity: isPink ? 1 : 0 }}
       />
-      <motion.div
-        initial={{ opacity: isPink ? 0 : 1 }}
-        animate={{ opacity: isPink ? 0 : 1 }}
-        transition={{ duration: 1.2, ease }}
+      <div
         style={{ ...layerStyle, opacity: isPink ? 0 : 1 }}
       >
         {!isPink && <Stars />}
-      </motion.div>
-      <motion.div
-        initial={{ opacity: isPink ? 1 : 0 }}
-        animate={{ opacity: isPink ? 1 : 0 }}
-        transition={{ duration: 1.2, ease }}
+      </div>
+      <div
         style={{ ...layerStyle, opacity: isPink ? 1 : 0 }}
       >
         {isPink && <PinkStars />}
-      </motion.div>
-      <motion.div
+      </div>
+      <div
         ref={cursorGlowRef}
         className={`dream-cursor-glow ${isPink ? 'dream-cursor-glow-pink' : 'dream-cursor-glow-dark'}`}
-        animate={{ opacity: hasDreamCursor ? 1 : 0 }}
-        transition={{ duration: 0.5, ease }}
+        style={{ opacity: hasDreamCursor ? 1 : 0, transition: 'opacity 420ms cubic-bezier(0.22, 1, 0.36, 1)' }}
       />
-      <motion.div
+      <div
         ref={cursorHeartRef}
         className={`dream-cursor-heart ${isPink ? 'dream-cursor-heart-pink' : 'dream-cursor-heart-dark'}`}
-        animate={{ opacity: hasDreamCursor ? 1 : 0 }}
-        transition={{ duration: 0.35, ease }}
+        style={{ opacity: hasDreamCursor ? 1 : 0, transition: 'opacity 320ms cubic-bezier(0.22, 1, 0.36, 1)' }}
       >
         <svg className="cursor-heart cursor-heart-main" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 21.2 10.55 19.9C5.4 15.25 2 12.18 2 8.4 2 5.32 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08A5.9 5.9 0 0 1 16.5 3C19.58 3 22 5.32 22 8.4c0 3.78-3.4 6.85-8.55 11.5L12 21.2Z" />
@@ -143,7 +128,7 @@ export default function BackgroundLayers() {
         <svg className="cursor-heart cursor-heart-small" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 21.2 10.55 19.9C5.4 15.25 2 12.18 2 8.4 2 5.32 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.08A5.9 5.9 0 0 1 16.5 3C19.58 3 22 5.32 22 8.4c0 3.78-3.4 6.85-8.55 11.5L12 21.2Z" />
         </svg>
-      </motion.div>
+      </div>
     </>
   );
 }

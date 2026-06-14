@@ -5,9 +5,9 @@ import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
 import { useAuth } from '../auth.jsx';
 
-const ease = [0.22, 1, 0.36, 1];
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.16 } } };
-const item = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } };
+const ease = [0.19, 1, 0.22, 1];
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } };
+const item = { hidden: { opacity: 0, y: 34 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } };
 const PASSWORD_MAX_LENGTH = 128;
 
 export default function LoginPage({ letterMode = false }) {
@@ -107,7 +107,7 @@ export default function LoginPage({ letterMode = false }) {
         aria-label="열린 편지함"
         title="열린 편지함"
         onClick={() => navigate('/open-mailbox')}
-        initial={{ opacity: 0, y: 12 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9, duration: 0.45, ease }}
       >

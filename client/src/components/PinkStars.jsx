@@ -6,7 +6,7 @@ export default function PinkStars() {
     const el = ref.current;
     if (!el) return;
     el.innerHTML = '';
-    for (let i = 0; i < 220; i++) {
+    for (let i = 0; i < 150; i++) {
       const s = document.createElement('div');
       const large = Math.random() < 0.3;
       const hue = Math.random() < 0.55 ? '255,226,235' : '255,197,212';

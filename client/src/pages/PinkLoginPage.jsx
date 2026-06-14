@@ -6,8 +6,8 @@ import PinkStars from '../components/PinkStars.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.16 } } };
-const item = { hidden: { opacity: 0, y: 28 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } };
+const container = { hidden: {}, show: {} };
+const item = { hidden: { opacity: 1, y: 0 }, show: { opacity: 1, y: 0, transition: { duration: 0.01, ease } } };
 const PASSWORD_MAX_LENGTH = 128;
 
 export default function PinkLoginPage() {
@@ -41,7 +41,7 @@ export default function PinkLoginPage() {
       <PinkStars />
 
       <motion.div
-        initial="hidden"
+        initial={false}
         animate="show"
         exit={{ opacity: 0, transition: { duration: 0.3 } }}
         variants={container}

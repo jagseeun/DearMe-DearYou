@@ -3,14 +3,14 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import NoticeModal from '../components/NoticeModal.jsx';
 
-const ease = [0.22, 1, 0.36, 1];
+const ease = [0.19, 1, 0.22, 1];
 const container = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.25 } },
+  show: { transition: { staggerChildren: 0.1 } },
 };
 const item = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 1.2, ease } },
+  hidden: { opacity: 0, y: 42 },
+  show: { opacity: 1, y: 0, transition: { duration: 1.16, ease } },
 };
 
 const questions = [
@@ -24,6 +24,19 @@ const questions = [
   '미래의 내가 과거의 나에게 남기고 싶은 말은 무엇인가요?',
   '미래의 나는 어떤 모습으로 변해 있을까요?',
   '미래의 나에게 부탁하고 싶은 것은 무엇인가요?',
+];
+
+const helloQuestions = [
+  '오늘의 마음은 어떤 색으로 남기고 싶나요?',
+  '지금의 나에게 가장 먼저 건네고 싶은 말은 무엇인가요?',
+  '작은 안부 하나를 남긴다면 어떤 문장이 좋을까요?',
+  '고마웠던 순간 하나를 떠올리면 무엇이 보이나요?',
+  '미래의 내가 잊지 않았으면 하는 마음은 무엇인가요?',
+  '오늘 가장 오래 머문 생각은 무엇인가요?',
+  '나에게 조금 다정해질 수 있는 말은 무엇인가요?',
+  '언젠가 다시 읽을 나에게 남기고 싶은 약속은 무엇인가요?',
+  '지금 붙잡고 싶은 장면은 어떤 모습인가요?',
+  '내일의 나에게 조용히 전하고 싶은 말은 무엇인가요?',
 ];
 
 export default function HelloPage() {
@@ -50,7 +63,7 @@ export default function HelloPage() {
   }, [navigate]);
 
   useEffect(() => {
-    const timer = setInterval(() => setQIdx(index => (index + 1) % questions.length), 4000);
+    const timer = setInterval(() => setQIdx(index => (index + 1) % helloQuestions.length), 5600);
     return () => clearInterval(timer);
   }, []);
 
@@ -81,8 +94,8 @@ export default function HelloPage() {
       <motion.div
         className="top-title"
         variants={{
-          hidden: { opacity: 0, y: -20 },
-          show: { opacity: 1, y: 0, transition: { duration: 1.4, ease } },
+          hidden: { opacity: 0, y: -18 },
+          show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } },
         }}
       >
         <span className="to">Dear Me</span>
@@ -91,7 +104,7 @@ export default function HelloPage() {
       </motion.div>
 
       <motion.div
-        variants={{ hidden: { opacity: 0 }, show: { opacity: 1, transition: { duration: 1, delay: 0.5 } } }}
+        variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 1.02, delay: 0.05, ease } } }}
         className="hello-nav"
       >
         <motion.button
@@ -110,7 +123,7 @@ export default function HelloPage() {
         </motion.button>
         <motion.button
           onClick={() => setShowLogoutModal(true)}
-          whileHover={{ background: 'rgba(174,66,76,0.3)', color: 'rgba(255,238,238,0.96)', borderColor: 'rgba(255,138,146,0.46)' }}
+          whileHover={{ scale: 1.018, color: 'rgba(255,238,238,0.96)', borderColor: 'rgba(255,138,146,0.46)', boxShadow: '0 8px 24px rgba(174,66,76,0.18)' }}
           style={{ ...navBtnStyle, ...logoutNavBtnStyle }}
         >
           로그아웃
@@ -126,13 +139,13 @@ export default function HelloPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={qIdx}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 28 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.65, ease }}
+              exit={{ opacity: 0, y: -18 }}
+              transition={{ duration: 1.08, ease }}
               className="hello-question"
             >
-              {questions[qIdx]}
+              {helloQuestions[qIdx]}
             </motion.div>
           </AnimatePresence>
         </div>

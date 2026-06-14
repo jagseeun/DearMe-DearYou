@@ -62,13 +62,13 @@ export default function DevelopPage() {
   return (
     <motion.main
       className="develop-page"
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.25 } }}
     >
       <motion.div
         className="top-title"
-        initial={{ opacity: 0, y: -18 }}
+        initial={false}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, ease }}
       >
