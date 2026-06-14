@@ -874,33 +874,33 @@ export default function LetterViewPage() {
     );
   }
 
-  const isPink = letter.emailTheme === 'pink' || returnTo === '/pink-letters';
+  const isPink = letter.emailTheme === 'pink' || returnTo === '/pink-letters' || returnTo === '/letters';
   const d = daysSince(letter.openDate);
   const dChars = ['D', '+', ...String(d).split('')];
   const senderName = letter.senderName || name || '나';
   const recipientName = letter.recipientName || (letter.mailbox === 'received' ? name : '') || name || '나';
 
   // 핑크 테마 색상 시스템
-  const textMain        = isPink ? '#ffe4ec'                  : '#ffe2ef';
-  const textSub         = isPink ? 'rgba(255,210,224,0.82)'   : 'rgba(255,207,228,0.72)';
-  const textHint        = isPink ? 'rgba(246,190,209,0.74)'   : 'rgba(245,188,220,0.66)';
-  const textBtn         = isPink ? '#ffe4ec'                  : '#ffe2ef';
-  const btnBg           = isPink ? 'linear-gradient(135deg, rgba(138,74,104,0.82), rgba(72,42,76,0.82)), rgba(232,190,202,0.1)' : 'linear-gradient(135deg, rgba(146,74,126,0.84), rgba(86,50,104,0.8)), rgba(232,190,216,0.1)';
-  const btnBorder       = isPink ? '1px solid rgba(244,211,218,0.38)'        : '1px solid rgba(244,190,218,0.34)';
-  const backColor       = isPink ? 'rgba(255,239,232,0.9)'    : 'rgba(255,236,246,0.88)';
-  const backBg          = isPink ? 'linear-gradient(135deg, rgba(88,50,84,0.72), rgba(47,29,50,0.68)), rgba(232,190,202,0.08)' : 'linear-gradient(135deg, rgba(94,54,106,0.62), rgba(62,39,78,0.58)), rgba(232,190,216,0.09)';
-  const backBorder      = isPink ? '1px solid rgba(232,190,202,0.3)'         : '1px solid rgba(232,190,216,0.26)';
-  const dividerBg       = isPink ? 'rgba(232,190,202,0.2)'    : 'rgba(232,190,216,0.2)';
-  const sidebarBg       = isPink ? 'linear-gradient(to bottom, rgba(255,241,232,0.12), rgba(128,86,134,0.16)), rgba(42,27,43,0.46)' : 'linear-gradient(to bottom, rgba(170,95,142,0.28), rgba(48,28,64,0.76))';
-  const sidebarBorder   = isPink ? '1px solid rgba(232,190,202,0.22)'        : '1px solid rgba(232,190,216,0.2)';
-  const letterBoxBg     = isPink ? 'linear-gradient(135deg, rgba(255,241,232,0.12), rgba(218,157,176,0.09) 56%, rgba(128,86,134,0.08)), rgba(42,27,43,0.5)' : 'linear-gradient(135deg, rgba(255,220,232,0.09), rgba(156,108,174,0.08)), rgba(40,23,52,0.48)';
-  const letterBoxBorder = isPink ? '1px solid rgba(232,190,202,0.24)'        : '1px solid rgba(232,190,216,0.25)';
+  const textMain        = isPink ? '#fde5ca'                  : '#ffe2ef';
+  const textSub         = isPink ? 'rgba(253,229,202,0.82)'   : 'rgba(255,207,228,0.72)';
+  const textHint        = isPink ? 'rgba(253,229,202,0.72)'   : 'rgba(245,188,220,0.66)';
+  const textBtn         = isPink ? '#fde5ca'                  : '#ffe2ef';
+  const btnBg           = isPink ? 'linear-gradient(135deg, rgba(184,111,106,0.74), rgba(92,52,50,0.78)), rgba(238,177,172,0.12)' : 'linear-gradient(135deg, rgba(146,74,126,0.84), rgba(86,50,104,0.8)), rgba(232,190,216,0.1)';
+  const btnBorder       = isPink ? '1px solid rgba(238,177,172,0.42)'        : '1px solid rgba(244,190,218,0.34)';
+  const backColor       = isPink ? 'rgba(253,229,202,0.92)'    : 'rgba(255,236,246,0.88)';
+  const backBg          = isPink ? 'linear-gradient(135deg, rgba(105,60,57,0.72), rgba(48,30,32,0.68)), rgba(238,177,172,0.08)' : 'linear-gradient(135deg, rgba(94,54,106,0.62), rgba(62,39,78,0.58)), rgba(232,190,216,0.09)';
+  const backBorder      = isPink ? '1px solid rgba(238,177,172,0.3)'         : '1px solid rgba(232,190,216,0.26)';
+  const dividerBg       = isPink ? 'rgba(238,177,172,0.22)'    : 'rgba(232,190,216,0.2)';
+  const sidebarBg       = isPink ? 'linear-gradient(to bottom, rgba(253,229,202,0.12), rgba(238,177,172,0.14)), rgba(48,30,32,0.46)' : 'linear-gradient(to bottom, rgba(170,95,142,0.28), rgba(48,28,64,0.76))';
+  const sidebarBorder   = isPink ? '1px solid rgba(238,177,172,0.24)'        : '1px solid rgba(232,190,216,0.2)';
+  const letterBoxBg     = isPink ? 'linear-gradient(135deg, rgba(253,229,202,0.12), rgba(238,177,172,0.1) 56%, rgba(120,62,58,0.08)), rgba(48,30,32,0.5)' : 'linear-gradient(135deg, rgba(255,220,232,0.09), rgba(156,108,174,0.08)), rgba(40,23,52,0.48)';
+  const letterBoxBorder = isPink ? '1px solid rgba(238,177,172,0.24)'        : '1px solid rgba(232,190,216,0.25)';
 
   const btnStyle = {
     padding: '14px 56px', borderRadius: 50,
     border: btnBorder, background: btnBg,
     color: textBtn, fontSize: 17, fontFamily: 'inherit', cursor: 'pointer',
-    boxShadow: isPink ? '0 0 28px rgba(218,157,176,0.2), 0 16px 38px rgba(21,12,25,0.32), inset 0 1px 0 rgba(255,255,255,0.18)' : '0 0 26px rgba(218,157,196,0.17), 0 16px 38px rgba(21,12,30,0.28), inset 0 1px 0 rgba(255,255,255,0.14)',
+    boxShadow: isPink ? '0 0 28px rgba(238,177,172,0.2), 0 16px 38px rgba(21,12,25,0.32), inset 0 1px 0 rgba(255,255,255,0.18)' : '0 0 26px rgba(218,157,196,0.17), 0 16px 38px rgba(21,12,30,0.28), inset 0 1px 0 rgba(255,255,255,0.14)',
     backdropFilter: 'blur(24px)', whiteSpace: 'nowrap',
     transition: 'all 0.3s cubic-bezier(0.22,1,0.36,1)',
     letterSpacing: 0,
@@ -912,7 +912,7 @@ export default function LetterViewPage() {
     padding: '8px 20px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
     border: backBorder, background: backBg, color: backColor,
     backdropFilter: 'blur(18px)', transition: 'all 0.25s',
-    boxShadow: isPink ? '0 0 22px rgba(218,157,176,0.14), 0 12px 28px rgba(21,12,25,0.24)' : '0 0 20px rgba(218,157,196,0.12), 0 12px 28px rgba(21,12,30,0.24)',
+    boxShadow: isPink ? '0 0 22px rgba(238,177,172,0.14), 0 12px 28px rgba(21,12,25,0.24)' : '0 0 20px rgba(218,157,196,0.12), 0 12px 28px rgba(21,12,30,0.24)',
     textShadow: isPink ? '0 1px 7px rgba(24,13,28,0.38)' : '0 1px 7px rgba(24,13,34,0.36)',
   };
 
@@ -921,7 +921,7 @@ export default function LetterViewPage() {
       className={`letter-view-root letter-view-${letter.type} letter-view-phase-${phase} ${isPink ? 'pink-letter-view' : ''}`.trim()}
       style={{
         position: 'fixed', inset: 0, zIndex: 10, width: '100%', height: '100vh',
-        background: isPink ? 'linear-gradient(180deg, rgba(255,241,232,0.035), rgba(218,157,176,0.04))' : undefined,
+        background: isPink ? 'linear-gradient(180deg, rgba(253,229,202,0.035), rgba(238,177,172,0.04))' : undefined,
       }}
       initial={false} animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.3 } }}
@@ -938,9 +938,9 @@ export default function LetterViewPage() {
               initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.2, ease }}>
               {isPink ? (<>
-                <span style={{ color: '#fff1e8', filter: 'drop-shadow(0 0 18px rgba(218,157,176,0.34)) drop-shadow(0 2px 8px rgba(24,13,28,0.42))' }}>Dear Me</span>
-                <span style={{ color: 'rgba(241,205,213,0.62)', margin: '0 10px' }}>;</span>
-                <span style={{ color: '#e0a4b0', filter: 'drop-shadow(0 0 14px rgba(160,93,122,0.32)) drop-shadow(0 2px 8px rgba(24,13,28,0.38))' }}>Dear You</span>
+                <span style={{ color: '#fff2dc', filter: 'drop-shadow(0 0 16px rgba(238,177,172,0.28)) drop-shadow(0 2px 8px rgba(34,18,22,0.36))' }}>Dear Me</span>
+                <span style={{ color: 'rgba(253,229,202,0.6)', margin: '0 10px' }}>;</span>
+                <span style={{ color: '#eeb1ac', filter: 'drop-shadow(0 0 14px rgba(238,177,172,0.22)) drop-shadow(0 2px 8px rgba(34,18,22,0.32))' }}>Dear You</span>
               </>) : (<>
                 <span className="to">Dear Me</span>
                 <span className="semicolon">;</span>
@@ -1027,9 +1027,9 @@ export default function LetterViewPage() {
               initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.2, ease }}>
               {isPink ? (<>
-                <span style={{ color: '#fff1e8', filter: 'drop-shadow(0 0 18px rgba(218,157,176,0.34)) drop-shadow(0 2px 8px rgba(24,13,28,0.42))' }}>Dear Me</span>
-                <span style={{ color: 'rgba(241,205,213,0.62)', margin: '0 10px' }}>;</span>
-                <span style={{ color: '#e0a4b0', filter: 'drop-shadow(0 0 14px rgba(160,93,122,0.32)) drop-shadow(0 2px 8px rgba(24,13,28,0.38))' }}>Dear You</span>
+                <span style={{ color: '#fff2dc', filter: 'drop-shadow(0 0 16px rgba(238,177,172,0.28)) drop-shadow(0 2px 8px rgba(34,18,22,0.36))' }}>Dear Me</span>
+                <span style={{ color: 'rgba(253,229,202,0.6)', margin: '0 10px' }}>;</span>
+                <span style={{ color: '#eeb1ac', filter: 'drop-shadow(0 0 14px rgba(238,177,172,0.22)) drop-shadow(0 2px 8px rgba(34,18,22,0.32))' }}>Dear You</span>
               </>) : (<>
                 <span className="to">Dear Me</span>
                 <span className="semicolon">;</span>
@@ -1072,7 +1072,7 @@ export default function LetterViewPage() {
                     border: letterBoxBorder,
                     borderRadius: 24, backdropFilter: 'blur(16px)',
                     padding: '52px 64px', overflowY: 'auto',
-                    boxShadow: isPink ? '0 0 34px rgba(218,157,176,0.14), 0 18px 44px rgba(21,12,25,0.26)' : '0 4px 40px rgba(0,0,0,0.1)',
+                    boxShadow: isPink ? '0 0 34px rgba(238,177,172,0.14), 0 18px 44px rgba(21,12,25,0.26)' : '0 4px 40px rgba(0,0,0,0.1)',
                   }}>
                     <p className="letter-content-text" style={{ color: textMain, fontSize: 24, fontWeight: 300, lineHeight: 2.15, whiteSpace: 'pre-wrap', margin: 0, letterSpacing: 0.4 }}>
                       {letter.content}
