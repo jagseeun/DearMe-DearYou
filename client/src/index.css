@@ -16155,3 +16155,248 @@ select:focus,
   border-color: rgba(246, 214, 174, 0.14) !important;
   background: rgba(10, 12, 17, 0.72) !important;
 }
+
+/* Open mailbox composer polish: denser structure, clearer writing surface. */
+.open-compose-modal {
+  width: min(720px, calc(100vw - 32px)) !important;
+  max-height: min(820px, calc(100dvh - 32px)) !important;
+  padding: 30px !important;
+  display: grid !important;
+  gap: 20px !important;
+  overflow: auto !important;
+  scrollbar-gutter: stable;
+}
+
+.open-compose-close {
+  top: 16px !important;
+  right: 16px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  padding: 0 12px !important;
+  border-radius: 8px !important;
+  border-color: rgba(246, 214, 174, 0.2) !important;
+  background: rgba(255, 245, 230, 0.08) !important;
+  color: rgba(255, 238, 216, 0.72) !important;
+}
+
+.open-compose-heading {
+  display: grid !important;
+  gap: 8px !important;
+  padding-right: 56px !important;
+}
+
+.open-compose-modal .open-compose-heading h2 {
+  margin: 0 !important;
+  color: #fff0d9 !important;
+  font-size: clamp(24px, 3.2vw, 32px) !important;
+  line-height: 1.22 !important;
+  font-weight: 300 !important;
+  letter-spacing: 0 !important;
+}
+
+.open-compose-modal .open-compose-heading span {
+  color: rgba(255, 226, 188, 0.56) !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  letter-spacing: 0 !important;
+}
+
+.open-compose-modal .open-compose-form {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.open-compose-modal .open-mode-tabs,
+.open-compose-modal .open-compose-textarea,
+.open-compose-modal .open-compose-media,
+.open-compose-modal .open-photo-tool,
+.open-compose-modal .open-compose-footer {
+  grid-column: 1 / -1 !important;
+}
+
+.open-compose-modal .open-compose-input,
+.open-compose-modal .open-compose-textarea {
+  border-radius: 8px !important;
+  box-sizing: border-box !important;
+  font-size: 14px !important;
+  transition:
+    border-color 420ms var(--motion-ease),
+    background-color 420ms var(--motion-ease),
+    box-shadow 420ms var(--motion-ease),
+    color 420ms var(--motion-ease) !important;
+}
+
+.open-compose-modal .open-compose-input {
+  height: 48px !important;
+  padding: 0 15px !important;
+}
+
+.open-compose-modal .open-compose-textarea {
+  min-height: 210px !important;
+  max-height: 310px !important;
+  padding: 16px !important;
+  line-height: 1.75 !important;
+  resize: none !important;
+}
+
+.open-compose-modal .open-compose-input:focus,
+.open-compose-modal .open-compose-textarea:focus {
+  border-color: rgba(232, 194, 138, 0.48) !important;
+  background: rgba(12, 14, 20, 0.96) !important;
+  box-shadow: 0 0 0 3px rgba(232, 194, 138, 0.11) !important;
+}
+
+.open-compose-modal .open-mode-tabs {
+  padding: 4px !important;
+  border: 1px solid rgba(246, 214, 174, 0.12) !important;
+  border-radius: 8px !important;
+  background: rgba(8, 10, 15, 0.42) !important;
+  gap: 4px !important;
+}
+
+.open-compose-modal .open-mode-tabs button {
+  height: 42px !important;
+  border-radius: 6px !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  color: rgba(255, 239, 214, 0.58) !important;
+  font-size: 14px !important;
+}
+
+.open-compose-modal .open-mode-tabs button.active {
+  border-color: rgba(232, 194, 138, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(141, 94, 58, 0.74), rgba(65, 49, 41, 0.88)) !important;
+  color: rgba(255, 242, 224, 0.96) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 218, 0.12) !important;
+}
+
+.open-compose-modal .open-compose-media,
+.open-compose-modal .open-photo-tool {
+  min-height: 320px !important;
+  padding: 16px !important;
+  border: 1px solid rgba(246, 214, 174, 0.14) !important;
+  border-radius: 8px !important;
+}
+
+.open-compose-modal .open-draw-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  gap: 10px !important;
+}
+
+.open-compose-modal .open-draw-canvas {
+  width: 100% !important;
+  height: auto !important;
+  max-height: min(360px, 42dvh) !important;
+  aspect-ratio: 4 / 3 !important;
+  border-color: rgba(115, 80, 50, 0.3) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28) !important;
+}
+
+.open-compose-modal .open-photo-tool {
+  min-height: 300px !important;
+}
+
+.open-compose-modal .open-photo-preview {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 4 / 3 !important;
+  border: 1px solid rgba(246, 214, 174, 0.14) !important;
+}
+
+.open-compose-modal .open-photo-button {
+  min-width: 184px !important;
+  min-height: 48px !important;
+  padding: 0 22px !important;
+}
+
+.open-compose-modal .open-compose-footer {
+  min-height: 48px !important;
+  padding-top: 2px !important;
+}
+
+.open-compose-modal .open-compose-footer span {
+  min-height: 32px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(246, 214, 174, 0.12) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 245, 230, 0.055) !important;
+  color: rgba(255, 229, 196, 0.62) !important;
+}
+
+.open-compose-modal .open-compose-footer button {
+  min-width: 136px !important;
+  height: 46px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24) !important;
+}
+
+.open-compose-modal .open-message {
+  margin-top: -4px !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(246, 214, 174, 0.14) !important;
+  border-radius: 8px !important;
+  background: rgba(8, 10, 15, 0.5) !important;
+  color: rgba(255, 229, 196, 0.72) !important;
+  line-height: 1.5 !important;
+}
+
+@media (max-width: 720px) {
+  .open-compose-modal-backdrop {
+    align-items: flex-end !important;
+    padding: 10px !important;
+  }
+
+  .open-compose-modal {
+    width: 100% !important;
+    max-height: calc(100dvh - 20px) !important;
+    padding: 22px 18px !important;
+    gap: 16px !important;
+    border-radius: 8px 8px 0 0 !important;
+  }
+
+  .open-compose-heading {
+    padding-right: 44px !important;
+  }
+
+  .open-compose-modal .open-compose-form {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .open-compose-modal .open-compose-input,
+  .open-compose-modal .open-mode-tabs,
+  .open-compose-modal .open-compose-textarea,
+  .open-compose-modal .open-compose-media,
+  .open-compose-modal .open-photo-tool,
+  .open-compose-modal .open-compose-footer {
+    grid-column: 1 / -1 !important;
+  }
+
+  .open-compose-modal .open-compose-textarea {
+    min-height: 180px !important;
+    max-height: 34dvh !important;
+  }
+
+  .open-compose-modal .open-compose-media,
+  .open-compose-modal .open-photo-tool {
+    min-height: 230px !important;
+    padding: 12px !important;
+  }
+
+  .open-compose-modal .open-compose-footer {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  .open-compose-modal .open-compose-footer span,
+  .open-compose-modal .open-compose-footer button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
