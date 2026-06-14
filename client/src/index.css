@@ -16408,4 +16408,5 @@ select:focus,
   background: transparent;
   cursor: inherit;
   pointer-events: auto;
+  touch-action: none;
 }
