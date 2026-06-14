@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { fetchJson } from '../utils/api.js';
-import { listItemMotion } from '../utils/motion.js';
+import { listItemMotion, modalBackdropMotion, modalPanelMotion } from '../utils/motion.js';
 
 const ease = [0.22, 1, 0.36, 1];
 const CONTENT_MAX_LENGTH = 100;
@@ -554,16 +554,12 @@ export default function OpenMailboxPage() {
         {showComposer && (
           <motion.div
             className="open-compose-modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            {...modalBackdropMotion}
             onClick={closeComposer}
           >
             <motion.section
               className="open-compose-panel open-compose-modal"
-              initial={{ opacity: 0, y: 18, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              {...modalPanelMotion}
               onClick={event => event.stopPropagation()}
             >
               <button type="button" className="open-compose-close" onClick={closeComposer}>닫기</button>
@@ -670,16 +666,12 @@ export default function OpenMailboxPage() {
         {selected && (
           <motion.div
             className="open-letter-modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            {...modalBackdropMotion}
             onClick={() => { setMessage(''); setSelected(null); }}
           >
             <motion.article
               className="open-letter-modal"
-              initial={{ opacity: 0, y: 18, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              {...modalPanelMotion}
               onClick={event => event.stopPropagation()}
             >
               <button type="button" onClick={() => { setMessage(''); setSelected(null); }}>닫기</button>

@@ -5,9 +5,9 @@ import fixWebmDuration from 'fix-webm-duration';
 import DrawCanvas from '../components/DrawCanvas.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
 
-const ease = [0.19, 1, 0.22, 1];
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.1 } } };
-const item = { hidden: { opacity: 0, y: 36 }, show: { opacity: 1, y: 0, transition: { duration: 1.08, ease } } };
+const ease = [0.16, 1, 0.3, 1];
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
+const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.96, ease } } };
 const LETTER_CONTENT_MAX_LENGTH = 5000;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -900,14 +900,14 @@ export default function WritePage() {
     >
       {/* 상단 로고 */}
       <motion.div className="top-title"
-        variants={{ hidden: { opacity: 0, y: -18 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } }}
+        variants={{ hidden: { opacity: 0, y: -10 }, show: { opacity: 1, y: 0, transition: { duration: 0.92, ease } } }}
       >
         <span className="to">Dear Me</span><span className="semicolon">;</span><span className="from">Dear You</span>
       </motion.div>
 
       {/* 돌아가기 */}
       <motion.button
-        variants={{ hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: { duration: 1.02, ease } } }}
+        variants={{ hidden: { opacity: 0, y: 12 }, show: { opacity: 1, y: 0, transition: { duration: 0.88, ease } } }}
         onClick={() => navigate(-1)}
         className="back-link"
       >

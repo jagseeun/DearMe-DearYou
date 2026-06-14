@@ -5,9 +5,9 @@ import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
 import { useAuth } from '../auth.jsx';
 
-const ease = [0.19, 1, 0.22, 1];
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.09 } } };
-const item = { hidden: { opacity: 0, y: 34 }, show: { opacity: 1, y: 0, transition: { duration: 1.05, ease } } };
+const ease = [0.16, 1, 0.3, 1];
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.055 } } };
+const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.92, ease } } };
 const PASSWORD_MAX_LENGTH = 128;
 
 export default function LoginPage({ letterMode = false }) {
