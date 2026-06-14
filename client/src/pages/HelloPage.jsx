@@ -10,34 +10,21 @@ const container = {
   show: { transition: { staggerChildren: 0.06 } },
 };
 const item = {
-  hidden: { opacity: 0, y: 18 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.98, ease } },
+  hidden: { opacity: 0, y: 8 },
+  show: { opacity: 1, y: 0, transition: { duration: 1.08, ease } },
 };
 
-const questions = [
-  '내년의 나에게 남기고 싶은 약속은 무엇인가요?',
-  '지금의 나에게 전하고 싶은 감사의 말은 무엇인가요?',
-  '지금 이 시기를 한 단어로 기록한다면 무엇인가요?',
-  '지금의 나에게 가장 필요한 문장은 무엇인가요?',
-  '미래의 나에게 전하고 싶은 말은 무엇인가요?',
-  '그동안 가장 크게 달라진 것은 무엇인가요?',
-  '지금의 나에게 건네고 싶은 응원의 말은 무엇인가요?',
-  '미래의 내가 과거의 나에게 남기고 싶은 말은 무엇인가요?',
-  '미래의 나는 어떤 모습으로 변해 있을까요?',
-  '미래의 나에게 부탁하고 싶은 것은 무엇인가요?',
-];
-
 const helloQuestions = [
-  '오늘의 마음은 어떤 색으로 남기고 싶나요?',
-  '지금의 나에게 가장 먼저 건네고 싶은 말은 무엇인가요?',
-  '작은 안부 하나를 남긴다면 어떤 문장이 좋을까요?',
-  '고마웠던 순간 하나를 떠올리면 무엇이 보이나요?',
-  '미래의 내가 잊지 않았으면 하는 마음은 무엇인가요?',
-  '오늘 가장 오래 머문 생각은 무엇인가요?',
-  '나에게 조금 다정해질 수 있는 말은 무엇인가요?',
-  '언젠가 다시 읽을 나에게 남기고 싶은 약속은 무엇인가요?',
-  '지금 붙잡고 싶은 장면은 어떤 모습인가요?',
-  '내일의 나에게 조용히 전하고 싶은 말은 무엇인가요?',
+  '오늘 전하고 싶은 마음은 어떤 문장으로 남길까요?',
+  '받는 사람이 오래 기억했으면 하는 말은 무엇인가요?',
+  '작은 안부 하나를 남긴다면 어떤 온도가 좋을까요?',
+  '고마웠던 순간을 떠올리면 가장 먼저 무엇이 보이나요?',
+  '언젠가 다시 읽어도 다정하게 남을 말은 무엇인가요?',
+  '오늘 가장 오래 머문 마음을 누구에게 건네고 싶나요?',
+  '말로 다 하지 못했던 마음이 있다면 어떻게 적어볼까요?',
+  '편지를 받는 사람이 미소 지을 문장은 무엇일까요?',
+  '지금 붙잡아두고 싶은 장면은 어떤 모습인가요?',
+  '조용히 전하고 싶은 진심을 한 줄로 적는다면요?',
 ];
 
 export default function HelloPage() {
@@ -130,7 +117,7 @@ export default function HelloPage() {
         </motion.button>
         <motion.button
           onClick={() => setShowLogoutModal(true)}
-          whileHover={{ scale: 1.018, color: 'rgba(255,238,238,0.96)', borderColor: 'rgba(255,138,146,0.46)', boxShadow: '0 8px 24px rgba(174,66,76,0.18)' }}
+          whileHover={{ color: 'rgba(255,238,238,0.96)', borderColor: 'rgba(255,138,146,0.46)', boxShadow: '0 8px 24px rgba(174,66,76,0.18)' }}
           style={{ ...navBtnStyle, ...logoutNavBtnStyle }}
         >
           로그아웃
@@ -146,10 +133,10 @@ export default function HelloPage() {
           <AnimatePresence mode="wait">
             <motion.div
               key={qIdx}
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.92, ease }}
+              exit={{ opacity: 0, y: -2 }}
+              transition={{ duration: 1.14, ease }}
               className="hello-question"
             >
               {helloQuestions[qIdx]}
@@ -162,7 +149,7 @@ export default function HelloPage() {
         <motion.button
           variants={item}
           onClick={() => navigate('/write')}
-          whileHover={{ scale: 1.018, boxShadow: '0 8px 32px rgba(0,0,0,0.24), 0 0 20px rgba(205,154,99,0.18)' }}
+          whileHover={{ boxShadow: '0 8px 32px rgba(0,0,0,0.24), 0 0 20px rgba(205,154,99,0.18)' }}
           className="primary-cta"
         >
           편지 쓰기

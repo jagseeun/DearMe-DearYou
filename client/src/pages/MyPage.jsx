@@ -138,6 +138,14 @@ export default function MyPage() {
     window.location.href = '/logout';
   }
 
+  function goBack() {
+    if (window.history.state?.idx > 0) {
+      navigate(-1);
+      return;
+    }
+    navigate('/hello');
+  }
+
   return (
     <motion.main
       className="mypage-page"
@@ -155,8 +163,8 @@ export default function MyPage() {
       </motion.div>
 
       <div className="mypage-top-actions">
-        <button type="button" onClick={() => navigate('/hello')}>홈으로</button>
         <button type="button" onClick={() => navigate('/letters')}>나의 편지</button>
+        <button type="button" onClick={goBack}>돌아가기</button>
         <button type="button" className="mypage-logout-button" onClick={() => setShowLogoutModal(true)}>로그아웃</button>
       </div>
 

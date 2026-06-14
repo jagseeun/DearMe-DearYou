@@ -1248,7 +1248,7 @@ canvas {
 }
 
 .pink-login-page input::placeholder {
-  color: rgba(241, 205, 213, 0.7);
+  color: rgba(253, 229, 202, 0.72);
 }
 
 .pink-login-page input:focus {
@@ -1563,7 +1563,7 @@ canvas {
 }
 
 .pink-letter-view .letter-envelope-person {
-  color: rgba(241, 205, 213, 0.72);
+  color: rgba(253, 229, 202, 0.74);
   text-shadow: 0 1px 7px rgba(24, 13, 28, 0.24);
 }
 
@@ -1620,7 +1620,7 @@ canvas {
 }
 
 .pink-letter-view .letter-day-sidebar div {
-  color: rgba(241, 205, 213, 0.86) !important;
+  color: rgba(253, 229, 202, 0.84) !important;
 }
 
 .pink-letter-view .letter-open-button {
@@ -10371,7 +10371,7 @@ canvas {
   }
 
   .pink-letter-view .letter-envelope-person {
-    color: rgba(241, 205, 213, 0.74) !important;
+    color: rgba(253, 229, 202, 0.76) !important;
     text-shadow: 0 1px 7px rgba(24, 13, 28, 0.24) !important;
   }
 
@@ -10430,7 +10430,7 @@ canvas {
   }
 
   .pink-letter-view .letter-envelope-person {
-    color: rgba(241, 205, 213, 0.72) !important;
+    color: rgba(253, 229, 202, 0.74) !important;
     text-shadow: 0 1px 7px rgba(24, 13, 28, 0.22) !important;
   }
 
@@ -11288,8 +11288,8 @@ canvas {
 }
 
 .auth-route-loading-pink .auth-route-loading-mark {
-  color: rgba(255, 228, 236, 0.82);
-  border-color: rgba(255, 216, 230, 0.18);
+  color: rgba(253, 229, 202, 0.82);
+  border-color: rgba(253, 229, 202, 0.18);
   background: rgba(42, 26, 45, 0.16);
   box-shadow: 0 18px 52px rgba(46, 25, 52, 0.18);
 }
@@ -11457,11 +11457,11 @@ canvas {
 }
 
 .letter-view-root .top-title .semicolon {
-  color: rgba(241, 205, 213, 0.62) !important;
+  color: rgba(253, 229, 202, 0.6) !important;
 }
 
 .letter-view-root .top-title .from {
-  color: #e0a4b0 !important;
+  color: #eeb1ac !important;
   filter:
     drop-shadow(0 0 14px rgba(160, 93, 122, 0.32))
     drop-shadow(0 2px 8px rgba(24, 13, 28, 0.38)) !important;
@@ -11667,7 +11667,7 @@ canvas {
 .done-delivery-status span {
   font-size: 12px;
   line-height: 1.45;
-  color: rgba(241, 205, 213, 0.78);
+  color: rgba(253, 229, 202, 0.76);
 }
 
 .done-delivery-status.is-failed {
@@ -11681,10 +11681,10 @@ canvas {
   bottom: clamp(8px, 1.6vh, 16px);
   z-index: 5;
   transform: translateX(-50%);
-  color: rgba(241, 205, 213, 0.74);
+  color: rgba(253, 229, 202, 0.74);
   font-size: 12px;
   text-decoration: none;
-  border-bottom: 1px solid rgba(241, 205, 213, 0.28);
+  border-bottom: 1px solid rgba(238, 177, 172, 0.32);
 }
 
 .write-draft-actions {
@@ -12088,7 +12088,7 @@ canvas {
   transform: none !important;
   padding: 0 !important;
   border: 0 !important;
-  border-bottom: 1px solid rgba(241, 205, 213, 0.28) !important;
+  border-bottom: 1px solid rgba(238, 177, 172, 0.32) !important;
   background: transparent !important;
   font-family: inherit !important;
   cursor: pointer !important;
@@ -13636,11 +13636,16 @@ canvas {
 
 /* Final UI polish */
 .logo-home-link {
+  pointer-events: none !important;
+  cursor: default;
+}
+
+.logo-home-hit {
   pointer-events: auto !important;
   cursor: pointer;
 }
 
-.logo-home-link:focus-visible {
+.logo-home-hit:focus-visible {
   outline: 1px solid rgba(255, 236, 205, 0.64);
   outline-offset: 8px;
   border-radius: 8px;
@@ -14138,11 +14143,11 @@ canvas {
 }
 
 .letter-login-page .main-title .semicolon {
-  color: rgba(241, 205, 213, 0.62) !important;
+  color: rgba(253, 229, 202, 0.6) !important;
 }
 
 .letter-login-page .main-title .from {
-  color: #e0a4b0 !important;
+  color: #eeb1ac !important;
   filter: drop-shadow(0 0 14px rgba(160, 93, 122, 0.32)) drop-shadow(0 2px 8px rgba(24, 13, 28, 0.38)) !important;
 }
 
@@ -14487,11 +14492,16 @@ canvas {
 }
 
 .logo-home-link {
+  pointer-events: none !important;
+  cursor: default;
+}
+
+.logo-home-hit {
   pointer-events: auto !important;
   cursor: pointer;
 }
 
-.logo-home-link:focus-visible {
+.logo-home-hit:focus-visible {
   outline: 1px solid rgba(255, 236, 205, 0.64);
   outline-offset: 8px;
   border-radius: 8px;
@@ -15546,10 +15556,10 @@ canvas {
 .pink-letter-list-page,
 .pink-letter-view,
 .letter-view-root {
-  --letter-soft-pink: #ffe5ed;
-  --letter-soft-pink-strong: #fff0f5;
-  --letter-soft-pink-muted: rgba(255, 216, 230, 0.72);
-  --letter-soft-pink-faint: rgba(255, 210, 226, 0.52);
+  --letter-soft-pink: #fde5ca;
+  --letter-soft-pink-strong: #fff2dc;
+  --letter-soft-pink-muted: rgba(253, 229, 202, 0.76);
+  --letter-soft-pink-faint: rgba(238, 177, 172, 0.36);
 }
 
 .pink-letter-list-page .letter-list-title,
@@ -16401,16 +16411,6 @@ select:focus,
   }
 }
 
-.route-click-guard {
-  position: fixed;
-  inset: 0;
-  z-index: 2147483000;
-  background: transparent;
-  cursor: inherit;
-  pointer-events: auto;
-  touch-action: none;
-}
-
 @media (max-width: 760px) {
   .letter-list-page .letters-main-exit,
   .pink-letter-list-page .letters-main-exit {
@@ -16420,4 +16420,249 @@ select:focus,
     bottom: auto !important;
     z-index: 620 !important;
   }
+}
+
+/* Final peach-pink lock: keep pink routes out of lavender/purple text tones. */
+.pink-login-page,
+.letter-login-page,
+.pink-letter-list-page,
+.pink-letter-view,
+.auth-route-loading-pink {
+  --letter-soft-pink: #fde5ca;
+  --letter-soft-pink-strong: #fff2dc;
+  --letter-soft-pink-muted: rgba(253, 229, 202, 0.78);
+  --letter-soft-pink-faint: rgba(238, 177, 172, 0.36);
+  --letter-peach: #eeb1ac;
+  --letter-peach-deep: #b86f6a;
+  color: var(--letter-soft-pink) !important;
+}
+
+.pink-login-page .main-title .to,
+.letter-login-page .main-title .to,
+.pink-letter-list-page .top-title .to,
+.pink-letter-list-page .pink-letter-fixed-logo span:first-child,
+.pink-letter-view .top-title .to {
+  color: var(--letter-soft-pink-strong) !important;
+  filter: drop-shadow(0 0 14px rgba(238, 177, 172, 0.24)) drop-shadow(0 2px 8px rgba(34, 18, 22, 0.34)) !important;
+}
+
+.pink-login-page .main-title .semicolon,
+.letter-login-page .main-title .semicolon,
+.pink-letter-list-page .top-title .semicolon,
+.pink-letter-list-page .pink-letter-fixed-logo span:nth-child(2),
+.pink-letter-view .top-title .semicolon {
+  color: rgba(253, 229, 202, 0.58) !important;
+}
+
+.pink-login-page .main-title .from,
+.letter-login-page .main-title .from,
+.pink-letter-list-page .top-title .from,
+.pink-letter-list-page .pink-letter-fixed-logo span:last-child,
+.pink-letter-view .top-title .from {
+  color: var(--letter-peach) !important;
+  filter: drop-shadow(0 0 12px rgba(238, 177, 172, 0.22)) drop-shadow(0 2px 8px rgba(34, 18, 22, 0.3)) !important;
+}
+
+.pink-letter-list-page .letter-list-title,
+.pink-letter-list-page .letter-list-stat strong,
+.pink-letter-list-page .letter-card-title,
+.pink-letter-list-page .letter-empty strong,
+.pink-letter-view .letter-envelope-value,
+.pink-letter-view .letter-envelope-person,
+.pink-letter-view .letter-content-text,
+.letter-login-page .form-title,
+.pink-login-page .form-title {
+  color: var(--letter-soft-pink) !important;
+}
+
+.pink-letter-list-page .letter-list-kicker,
+.pink-letter-list-page .letter-list-stat span,
+.pink-letter-list-page .letter-card-info-line,
+.pink-letter-list-page .letter-date-line,
+.pink-letter-list-page .letter-empty span,
+.pink-letter-view .letter-envelope-label,
+.pink-letter-view .letter-day-sidebar div,
+.pink-letter-view .letter-mobile-day,
+.pink-login-page input::placeholder,
+.letter-login-page input::placeholder,
+.pink-password-input::placeholder {
+  color: var(--letter-soft-pink-muted) !important;
+  -webkit-text-fill-color: var(--letter-soft-pink-muted) !important;
+}
+
+.pink-letter-list-page .letter-list-stat-divider,
+.pink-letter-view .letter-envelope-divider {
+  background: var(--letter-soft-pink-faint) !important;
+}
+
+.pink-letter-list-page .letter-badge,
+.pink-letter-list-page .letter-recipient,
+.pink-letter-list-page .letter-lock-pill,
+.pink-letter-list-page .letter-open-arrow,
+.pink-letter-list-page .letter-delete-button,
+.pink-letter-list-page .soft-button,
+.pink-letter-list-page .letter-back-floating,
+.pink-letter-view .letter-view-button,
+.pink-letter-view .letter-open-button {
+  border-color: rgba(238, 177, 172, 0.42) !important;
+  color: var(--letter-soft-pink) !important;
+}
+
+/* Final motion lock: quieter, slower, and never jumpy. */
+:root {
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-fast: 420ms;
+  --motion-medium: 680ms;
+  --motion-slow: 1180ms;
+}
+
+@keyframes pageSoftIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes panelSoftIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes cardSoftIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 5px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes modalFloatIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.997);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.motion-ready :where(
+  button,
+  [role="button"],
+  .glass-btn,
+  .submit-btn,
+  .check-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-shutter-button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .notice-modal-actions button,
+  .modal-actions button
+) {
+  transition:
+    border-color var(--motion-medium) var(--motion-ease),
+    background-color var(--motion-medium) var(--motion-ease),
+    color var(--motion-medium) var(--motion-ease),
+    box-shadow var(--motion-medium) var(--motion-ease),
+    opacity var(--motion-medium) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease) !important;
+}
+
+.motion-ready :where(
+  button,
+  [role="button"],
+  .glass-btn,
+  .submit-btn,
+  .check-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-shutter-button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .notice-modal-actions button,
+  .modal-actions button
+):not(:disabled):hover {
+  transform: scale(1.004) !important;
+}
+
+.motion-ready :where(
+  button,
+  [role="button"],
+  .glass-btn,
+  .submit-btn,
+  .check-btn,
+  .primary-cta,
+  .soft-button,
+  .back-link,
+  .done-button,
+  .letter-view-button,
+  .letter-open-button,
+  .letter-open-arrow,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .open-compose-open-button,
+  .open-compose-close,
+  .open-photo-button,
+  .open-tool-mini-button,
+  .open-shutter-button,
+  .write-mode-button,
+  .write-tool-button-inline,
+  .write-draft-actions button,
+  .write-draft-save,
+  .write-action-row > .write-submit,
+  .write-modal-actions button,
+  .notice-modal-actions button,
+  .modal-actions button
+):not(:disabled):active {
+  transform: scale(0.998) !important;
+}
+
+.motion-ready :where(.letter-card, .open-letter-card, .develop-card, .admin-card, .mypage-panel):hover,
+.motion-ready :where(.letter-card, .open-letter-card, .develop-card, .admin-card, .mypage-panel):active {
+  transform: none !important;
 }

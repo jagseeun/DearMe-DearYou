@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import BackgroundLayers, { PINK_ROUTES } from './components/BackgroundLayers.jsx';
 import { AuthProvider, ProtectedRoute } from './auth.jsx';
@@ -18,6 +18,7 @@ import SupportPage from './pages/SupportPage.jsx';
 import DevelopPage from './pages/DevelopPage.jsx';
 
 const LOGO_HOME_SELECTOR = '.top-title, .main-title';
+const LOGO_HOME_HIT_SELECTOR = '.logo-home-hit';
 const ACTION_CLICK_SELECTOR = [
   'button',
   'a[href]',
@@ -29,10 +30,6 @@ const ACTION_CLICK_SELECTOR = [
   '.letter-card.is-open',
   '.open-letter-card:not(.placeholder)',
 ].join(',');
-
-function isActionTarget(target) {
-  return target instanceof Element && Boolean(target.closest(ACTION_CLICK_SELECTOR));
-}
 
 function stopInteraction(event) {
   event.preventDefault();
@@ -71,9 +68,15 @@ function LogoHomeNavigator() {
     const markLogos = () => {
       document.querySelectorAll(LOGO_HOME_SELECTOR).forEach(logo => {
         logo.classList.add('logo-home-link');
-        logo.setAttribute('role', 'button');
-        logo.setAttribute('tabindex', '0');
-        logo.setAttribute('aria-label', '홈으로 이동');
+        logo.removeAttribute('role');
+        logo.removeAttribute('tabindex');
+        logo.removeAttribute('aria-label');
+        logo.querySelectorAll('span').forEach(part => {
+          part.classList.add('logo-home-hit');
+          part.setAttribute('role', 'button');
+          part.setAttribute('tabindex', '0');
+          part.setAttribute('aria-label', '홈으로 이동');
+        });
       });
     };
 
@@ -83,7 +86,11 @@ function LogoHomeNavigator() {
   }, [location.pathname]);
 
   useEffect(() => {
-    const findLogo = target => target instanceof Element ? target.closest(LOGO_HOME_SELECTOR) : null;
+    const findLogo = target => {
+      if (!(target instanceof Element)) return null;
+      const hit = target.closest(LOGO_HOME_HIT_SELECTOR);
+      return hit?.closest(LOGO_HOME_SELECTOR) || null;
+    };
 
     const handleClick = event => {
       if (!findLogo(event.target)) return;
@@ -142,76 +149,44 @@ function MotionReadyMarker() {
 
 function RouteClickGuard() {
   const location = useLocation();
-  const firstRenderRef = useRef(true);
-  const lockedUntilRef = useRef(0);
-  const submitGraceUntilRef = useRef(0);
-  const timerRef = useRef(null);
-  const [blocking, setBlocking] = useState(false);
+  const lastActionRef = useRef({ element: null, at: 0 });
+  const lastSubmitAtRef = useRef(0);
 
-  function lockFor(duration) {
-    const until = performance.now() + duration;
-    lockedUntilRef.current = Math.max(lockedUntilRef.current, until);
-    setBlocking(true);
-
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      const remaining = lockedUntilRef.current - performance.now();
-      if (remaining > 8) {
-        lockFor(remaining);
-        return;
-      }
-      setBlocking(false);
-    }, duration);
-  }
-
-  function isLocked() {
-    return performance.now() < lockedUntilRef.current;
+  function isDuplicateAction(element, interval = 520) {
+    const now = performance.now();
+    const last = lastActionRef.current;
+    if (last.element === element && now - last.at < interval) return true;
+    lastActionRef.current = { element, at: now };
+    return false;
   }
 
   useEffect(() => {
-    if (firstRenderRef.current) {
-      firstRenderRef.current = false;
-      return undefined;
-    }
-
-    lockFor(1400);
+    lastActionRef.current = { element: null, at: 0 };
+    lastSubmitAtRef.current = 0;
     return undefined;
   }, [location.pathname, location.search]);
 
   useEffect(() => {
     const handleClick = event => {
-      if (!isActionTarget(event.target)) return;
-      if (isLocked()) {
-        stopInteraction(event);
-        return;
-      }
-      if (event.target instanceof Element && event.target.closest('button[type="submit"], input[type="submit"]')) {
-        submitGraceUntilRef.current = performance.now() + 120;
-      }
-      lockFor(1100);
+      const action = event.target instanceof Element ? event.target.closest(ACTION_CLICK_SELECTOR) : null;
+      if (!action) return;
+      if (isDuplicateAction(action)) stopInteraction(event);
     };
 
     const handleSubmit = event => {
-      if (performance.now() < submitGraceUntilRef.current) {
-        submitGraceUntilRef.current = 0;
-        lockFor(1400);
-        return;
-      }
-      if (isLocked()) {
+      const now = performance.now();
+      if (now - lastSubmitAtRef.current < 1200) {
         stopInteraction(event);
         return;
       }
-      lockFor(1400);
+      lastSubmitAtRef.current = now;
     };
 
     const handleKeyDown = event => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
-      if (!isActionTarget(event.target)) return;
-      if (isLocked()) {
-        stopInteraction(event);
-        return;
-      }
-      lockFor(1100);
+      const action = event.target instanceof Element ? event.target.closest(ACTION_CLICK_SELECTOR) : null;
+      if (!action) return;
+      if (isDuplicateAction(action)) stopInteraction(event);
     };
 
     document.addEventListener('click', handleClick, true);
@@ -221,12 +196,10 @@ function RouteClickGuard() {
       document.removeEventListener('click', handleClick, true);
       document.removeEventListener('submit', handleSubmit, true);
       document.removeEventListener('keydown', handleKeyDown, true);
-      if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, []);
 
-  if (!blocking) return null;
-  return <div className="route-click-guard" aria-hidden="true" />;
+  return null;
 }
 
 export default function App() {
