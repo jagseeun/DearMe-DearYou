@@ -16847,12 +16847,12 @@ select:focus,
 /* Letters/view-letter only: remove peach/yellow cast while leaving /letter-login untouched. */
 .pink-letter-list-page,
 .pink-letter-view {
-  --letter-soft-pink: #e0a4b0 !important;
-  --letter-soft-pink-strong: #ffcdda !important;
-  --letter-soft-pink-muted: rgba(255, 205, 220, 0.78) !important;
-  --letter-soft-pink-faint: rgba(224, 164, 176, 0.42) !important;
-  --letter-peach: #eaa8ba !important;
-  --letter-peach-deep: #b76696 !important;
+  --letter-soft-pink: #ffe0e8 !important;
+  --letter-soft-pink-strong: #fff0f5 !important;
+  --letter-soft-pink-muted: rgba(255, 221, 230, 0.74) !important;
+  --letter-soft-pink-faint: rgba(255, 214, 226, 0.3) !important;
+  --letter-peach: #f2b7c8 !important;
+  --letter-peach-deep: #c77fa5 !important;
   color: var(--letter-soft-pink) !important;
 }
 
@@ -16861,14 +16861,14 @@ select:focus,
 .pink-letter-view .top-title .to {
   color: var(--letter-soft-pink-strong) !important;
   filter:
-    drop-shadow(0 0 16px rgba(224, 164, 176, 0.34))
+    drop-shadow(0 0 14px rgba(255, 214, 226, 0.22))
     drop-shadow(0 2px 8px rgba(24, 13, 28, 0.38)) !important;
 }
 
 .pink-letter-list-page .top-title .semicolon,
 .pink-letter-list-page .pink-letter-fixed-logo span:nth-child(2),
 .pink-letter-view .top-title .semicolon {
-  color: rgba(255, 205, 220, 0.64) !important;
+  color: rgba(255, 221, 230, 0.54) !important;
 }
 
 .pink-letter-list-page .top-title .from,
@@ -16876,7 +16876,7 @@ select:focus,
 .pink-letter-view .top-title .from {
   color: var(--letter-peach) !important;
   filter:
-    drop-shadow(0 0 14px rgba(224, 164, 176, 0.3))
+    drop-shadow(0 0 12px rgba(255, 214, 226, 0.2))
     drop-shadow(0 2px 8px rgba(24, 13, 28, 0.34)) !important;
 }
 
@@ -16916,7 +16916,7 @@ select:focus,
 .pink-letter-list-page .letter-back-floating,
 .pink-letter-view .letter-view-button,
 .pink-letter-view .letter-open-button {
-  border-color: rgba(224, 164, 176, 0.46) !important;
+  border-color: rgba(255, 222, 232, 0.34) !important;
   color: var(--letter-soft-pink) !important;
 }
 
