@@ -1,0 +1,2 @@
+ALTER TABLE "Letter" ADD COLUMN IF NOT EXISTS "emailSubject" TEXT;
+ALTER TABLE "LetterDraft" ADD COLUMN IF NOT EXISTS "emailSubject" TEXT;

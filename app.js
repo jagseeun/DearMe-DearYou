@@ -24,6 +24,7 @@ const USERID_MAX_LENGTH = 20;
 const NAME_MAX_LENGTH = 10;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const LETTER_CONTENT_MAX_LENGTH = 500;
+const LETTER_EMAIL_SUBJECT_MAX_LENGTH = 80;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
 const PUBLIC_LETTER_CONTENT_MAX_LENGTH = 100;
@@ -160,12 +161,16 @@ function validatePublicLetterPin(pin) {
   return PUBLIC_LETTER_PIN_REGEX.test(String(pin || ""));
 }
 
-function normalizeEmailTheme() {
-  return "dark";
+function normalizeEmailTheme(value) {
+  return String(value || "").trim().toLowerCase() === "pink" ? "pink" : "dark";
 }
 
 function mailHeader(value, maxLength = 180) {
   return String(value || "").replace(/[\r\n]+/g, " ").slice(0, maxLength);
+}
+
+function normalizeEmailSubject(value) {
+  return String(value || "").replace(/[\r\n]+/g, " ").trim();
 }
 
 function withTimeout(promise, ms, message) {
@@ -206,22 +211,22 @@ function letterKindLabel(type) {
 function plainArrivalLine({ type, isToOther, senderName }) {
   const kind = letterKindLabel(type);
   return isToOther
-    ? `${senderName}님이 남긴 ${kind}가 도착했어요.`
-    : `나에게 남긴 ${kind}가 도착했어요.`;
+    ? `${senderName}님이 남긴 ${kind}가 도착했습니다.`
+    : `나에게 남긴 ${kind}가 도착했습니다.`;
 }
 
 function htmlArrivalLine({ type, isToOther, safeSenderName }) {
   const kind = letterKindLabel(type);
   return isToOther
-    ? `<strong>${safeSenderName}</strong>님이 남긴 ${kind}가 도착했어요.`
-    : `나에게 남긴 ${kind}가 도착했어요.`;
+    ? `<strong>${safeSenderName}</strong>님이 남긴 ${kind}가 도착했습니다.`
+    : `나에게 남긴 ${kind}가 도착했습니다.`;
 }
 
 function recipientArrivalSubject({ type, isToOther, senderName }) {
   const kind = letterKindLabel(type);
   return isToOther
-    ? `${senderName}님의 ${kind}가 도착했어요`
-    : `나에게 남긴 ${kind}가 도착했어요`;
+    ? `${senderName}님의 ${kind}가 도착했습니다`
+    : `나에게 남긴 ${kind}가 도착했습니다`;
 }
 
 async function sendBrevoMail(options) {
@@ -423,7 +428,9 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
       const isVideo = letter.type === "video";
       const isDraw = letter.type === "draw";
       const emailTheme = normalizeEmailTheme(letter.emailTheme);
+      const emailSubject = normalizeEmailSubject(letter.emailSubject);
       const emailMeta = {
+        emailSubject,
         recipientName,
         recipientEmail: email,
         senderName,
@@ -443,17 +450,17 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
 
       const arrivalLine = plainArrivalLine({ type: letter.type, isToOther, senderName });
       const text = isVideo
-        ? `안녕, ${recipientName}.\n${arrivalLine}\n\n${metaText}\n\n영상 보기: ${letter.videoUrl}`
+        ? `안녕하세요, ${recipientName}님.\n${arrivalLine}\n\n${metaText}\n\n영상 보기: ${letter.videoUrl}`
         : isDraw
-          ? `안녕, ${recipientName}.\n${arrivalLine}\n\n${metaText}\n\n그림 보기: ${letter.imageUrl}`
-          : `안녕, ${recipientName}.\n${arrivalLine}\n\n${metaText}\n\n${letter.content}`;
+          ? `안녕하세요, ${recipientName}님.\n${arrivalLine}\n\n${metaText}\n\n그림 보기: ${letter.imageUrl}`
+          : `안녕하세요, ${recipientName}님.\n${arrivalLine}\n\n${metaText}\n\n${letter.content}`;
       try {
         // 수신자에게 발송
         const recipientResult = await sendMail({
           from: emailFromHeader,
           replyTo: emailReplyTo,
           to: email,
-          subject: mailHeader(recipientArrivalSubject({ type: letter.type, isToOther, senderName })),
+          subject: mailHeader(emailSubject || recipientArrivalSubject({ type: letter.type, isToOther, senderName })),
           text,
           html,
         });
@@ -479,8 +486,8 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
               from: emailFromHeader,
               replyTo: emailReplyTo,
               to: letter.author.email,
-              subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었어요`),
-              text: `안녕, ${senderName}.\n${recipientName}에게 보낸 편지가 오늘 전달되었어요.\n\n${metaText}`,
+              subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었습니다`),
+              text: `안녕하세요, ${senderName}님.\n${recipientName}에게 보낸 편지가 오늘 전달되었습니다.\n\n${metaText}`,
               html: senderHtml,
             });
           } catch (notifyErr) {
@@ -577,13 +584,13 @@ function buildLegacySenderNotifyEmail(senderName, recipientName, openDate) {
   return `
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
-      <div style="font-size:13px;letter-spacing:3px;color:rgba(255,252,223,0.5);margin-bottom:10px">DEAR ME; DEAR YOU</div>
-      <div style="font-size:26px;font-weight:300;color:#e9dcc6">편지가 전달되었어요 ✉</div>
+      <div style="font-size:13px;color:rgba(255,252,223,0.5);margin-bottom:10px">DEAR ME; DEAR YOU</div>
+      <div style="font-size:26px;font-weight:300;color:#e9dcc6">편지가 전달되었습니다</div>
     </div>
     <div style="padding:36px 40px">
       <p style="font-size:16px;line-height:1.9;color:#d9cfc0">
-        안녕, <strong>${safeSenderName}</strong>.<br><br>
-        <strong>${safeRecipientName}</strong>에게 보낸 편지가 오늘 전달되었어요.<br>
+        안녕하세요, <strong>${safeSenderName}</strong>님.<br><br>
+        <strong>${safeRecipientName}</strong>님에게 보낸 편지가 오늘 전달되었습니다.<br>
         소중한 마음이 조용히 닿기를 바랍니다.
       </p>
     </div>
@@ -607,7 +614,7 @@ function buildLegacyTextEmail(recipientName, senderName, content, openDate, isTo
       <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
     </div>
     <div style="padding:40px">
-      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
+      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}</p>
       <div style="background:rgba(140,130,115,0.2);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:28px;font-size:16px;line-height:1.8;color:#fffcdf;white-space:pre-wrap">${safeContent}</div>
       ${safeImageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${escapeHtml(safeImageUrl)}" style="max-width:100%;border-radius:10px" /></div>` : ''}
       ${safeSignatureUrl ? `<div style="margin-top:20px;text-align:right"><img src="${escapeHtml(safeSignatureUrl)}" style="max-height:80px" /></div>` : ''}
@@ -628,7 +635,7 @@ function buildLegacyDrawEmail(recipientName, senderName, imageUrl, openDate, isT
       <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
     </div>
     <div style="padding:40px">
-      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
+      <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}</p>
       <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)">
         ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" style="width:100%;display:block" />` : `<div style="padding:24px;text-align:center;color:rgba(255,252,223,0.55)">그림 URL을 확인할 수 없습니다.</div>`}
       </div>
@@ -649,9 +656,8 @@ function buildLegacyVideoEmail(recipientName, senderName, videoUrl, openDate, is
       <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
     </div>
     <div style="padding:40px;text-align:center">
-      <p style="font-size:18px;color:#e9dcc6;margin-bottom:28px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}</p>
-      ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>
-      <p style="margin-top:20px;color:rgba(255,252,223,0.4);font-size:12px">버튼이 작동하지 않으면: ${escapeHtml(safeVideoUrl)}</p>` : `<p style="color:rgba(255,252,223,0.55)">영상 URL을 확인할 수 없습니다.</p>`}
+      <p style="font-size:18px;color:#e9dcc6;margin-bottom:28px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}</p>
+      ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#e7cfa1,#cfa874);color:#2b1e10;border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>` : `<p style="color:rgba(255,252,223,0.55)">영상 URL을 확인할 수 없습니다.</p>`}
     </div>
     <div style="padding:20px 40px 40px;text-align:center;color:rgba(255,252,223,0.4);font-size:12px">Dear Me; Dear You</div>
   </div>`;
@@ -674,48 +680,50 @@ function formatMailDate(value) {
 function getLetterEmailTheme(theme) {
   if (normalizeEmailTheme(theme) === "pink") {
     return {
-      outerBg: "#fff3f7",
-      panelBg: "#fff7f9",
-      text: "#57303c",
-      muted: "#9b6678",
-      soft: "#7b4155",
-      headerBg: "linear-gradient(135deg,#ffe2eb,#f7b6cb)",
-      brandMain: "#9e4260",
-      brandSecond: "#6b3346",
-      semicolon: "#ffffff",
-      cardBg: "#fffdfd",
-      cardBorder: "#f1c7d4",
-      cardText: "#5a2f3d",
-      metaBg: "#fff0f4",
-      metaBorder: "#efc0cf",
-      metaLabel: "#b66c83",
-      buttonBg: "linear-gradient(135deg,#f6a9c2,#e383a4)",
-      buttonText: "#ffffff",
-      footer: "#c07b91",
-      shadow: "0 18px 45px rgba(158,66,96,0.16)",
+      outerBg: "linear-gradient(180deg,#fff7fb 0%,#ffe9f0 48%,#f7d8e5 100%)",
+      panelBg: "#fffaf8",
+      text: "#4f3240",
+      muted: "rgba(119,74,90,0.68)",
+      soft: "#674052",
+      headerBg: "linear-gradient(145deg,#fffaf6 0%,#ffe3ed 52%,#f7cadb 100%)",
+      brandMain: "#df9ab2",
+      brandSecond: "#7a5665",
+      semicolon: "#c98aa1",
+      star: "#d79aac",
+      cardBg: "#fff7ef",
+      cardBorder: "#edd5cf",
+      cardText: "#4f3941",
+      metaBg: "rgba(255,255,255,0.62)",
+      metaBorder: "rgba(190,128,145,0.2)",
+      metaLabel: "rgba(141,86,101,0.64)",
+      buttonBg: "linear-gradient(135deg,#f6bfd1,#d98fa8)",
+      buttonText: "#3d2430",
+      footer: "rgba(116,73,88,0.52)",
+      shadow: "0 22px 54px rgba(168,86,116,0.18)",
     };
   }
 
   return {
-    outerBg: "#eef1f5",
-    panelBg: "#151f2e",
-    text: "#f0ebe0",
-    muted: "rgba(255,252,223,0.58)",
-    soft: "#e9dcc6",
-    headerBg: "linear-gradient(135deg,#2a3a4d,#3d4b5a)",
-    brandMain: "#cd9a63",
-    brandSecond: "#f0ebe0",
-    semicolon: "#ffffff",
-    cardBg: "rgba(140,130,115,0.2)",
-    cardBorder: "rgba(255,255,255,0.15)",
-    cardText: "#fffcdf",
-    metaBg: "rgba(255,255,255,0.06)",
-    metaBorder: "rgba(255,255,255,0.12)",
-    metaLabel: "rgba(255,252,223,0.46)",
-    buttonBg: "linear-gradient(135deg,#e7cfa1,#cfa874)",
-    buttonText: "#2b1e10",
-    footer: "rgba(255,252,223,0.4)",
-    shadow: "0 20px 48px rgba(21,31,46,0.22)",
+    outerBg: "linear-gradient(180deg,#111827 0%,#20192f 48%,#3a2235 100%)",
+    panelBg: "#182033",
+    text: "#fff8ef",
+    muted: "rgba(255,230,239,0.62)",
+    soft: "#f5dce6",
+    headerBg: "linear-gradient(145deg,#19243a 0%,#271d36 54%,#3b2338 100%)",
+    brandMain: "#ffd8e5",
+    brandSecond: "#fff8ec",
+    semicolon: "#f2b8cb",
+    star: "#f4c8d7",
+    cardBg: "#fff8ef",
+    cardBorder: "#f0d5cf",
+    cardText: "#4f3941",
+    metaBg: "rgba(255,255,255,0.075)",
+    metaBorder: "rgba(255,222,233,0.14)",
+    metaLabel: "rgba(255,222,233,0.56)",
+    buttonBg: "linear-gradient(135deg,#ffd8e5,#e8a8be)",
+    buttonText: "#2f2130",
+    footer: "rgba(255,230,239,0.46)",
+    shadow: "0 24px 64px rgba(7,12,24,0.34)",
   };
 }
 
@@ -735,6 +743,7 @@ function formatMailPerson(name, email) {
 
 function buildLetterMetaHtml(meta = {}, themeStyles) {
   const rows = [
+    ...(meta.emailSubject ? [["메일 제목", meta.emailSubject]] : []),
     ["보낸 날", formatMailDate(meta.createdAt)],
     ["개봉일", formatMailDate(meta.openDate)],
   ];
@@ -754,14 +763,15 @@ function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 600 }) {
   const themeStyles = getLetterEmailTheme(theme);
   const headerSubtitle = subtitle || `${formatMailDate(openDate)} 개봉`;
   return `
-  <div style="background:${themeStyles.outerBg};padding:24px 12px">
-    <div style="max-width:${maxWidth}px;margin:0 auto;background:${themeStyles.panelBg};color:${themeStyles.text};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;border-radius:20px;overflow:hidden;box-shadow:${themeStyles.shadow}">
-      <div style="background:${themeStyles.headerBg};padding:42px 32px 38px;text-align:center">
-        <div style="font-size:30px;font-weight:300;color:${themeStyles.brandMain};line-height:1.25">Dear Me<span style="color:${themeStyles.semicolon};margin:0 8px">;</span><span style="color:${themeStyles.brandSecond}">Dear You</span></div>
-        <div style="margin-top:10px;color:${themeStyles.muted};font-size:14px;line-height:1.6">${escapeHtml(headerSubtitle)}</div>
+  <div style="margin:0;background:${themeStyles.outerBg};padding:28px 12px">
+    <div style="max-width:${maxWidth}px;margin:0 auto;background:${themeStyles.panelBg};color:${themeStyles.text};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;border:1px solid ${themeStyles.metaBorder};border-radius:22px;overflow:hidden;box-shadow:${themeStyles.shadow}">
+      <div style="background:${themeStyles.headerBg};padding:44px 34px 36px;text-align:center">
+        <div style="margin-bottom:14px;color:${themeStyles.star};font-size:16px;line-height:1">✦  ✧  ✦</div>
+        <div style="font-size:31px;font-weight:300;color:${themeStyles.brandMain};line-height:1.25">Dear Me<span style="color:${themeStyles.semicolon};margin:0 8px">;</span><span style="color:${themeStyles.brandSecond}">Dear You</span></div>
+        <div style="margin:12px auto 0;max-width:360px;color:${themeStyles.muted};font-size:14px;line-height:1.7">${escapeHtml(headerSubtitle)}</div>
       </div>
       ${body(themeStyles)}
-      <div style="padding:20px 40px 42px;text-align:center;color:${themeStyles.footer};font-size:12px">Dear Me; Dear You</div>
+      <div style="padding:8px 40px 42px;text-align:center;color:${themeStyles.footer};font-size:12px;line-height:1.7">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
     </div>
   </div>`;
 }
@@ -775,9 +785,9 @@ function buildSenderNotifyEmail(senderName, recipientName, openDate, emailTheme 
     body: themeStyles => `
     <div style="padding:36px 40px">
       <p style="font-size:16px;line-height:1.9;color:${themeStyles.soft};margin:0 0 24px">
-        안녕, <strong>${safeSenderName}</strong>.<br><br>
-        <strong>${safeRecipientName}</strong>에게 보낸 편지가 오늘 전달되었어요.<br>
-        소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두어도 괜찮아요.
+        안녕하세요, <strong>${safeSenderName}</strong>님.<br><br>
+        <strong>${safeRecipientName}</strong>님에게 보낸 편지가 오늘 전달되었습니다.<br>
+        소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두셔도 괜찮습니다.
       </p>
       ${buildLetterMetaHtml(meta, themeStyles)}
     </div>`,
@@ -795,9 +805,10 @@ function buildTextEmail(recipientName, senderName, content, openDate, isToOther,
   return buildEmailShell({
     theme: emailTheme,
     openDate,
+    subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
     <div style="padding:40px">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.8;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">천천히 읽어도 괜찮아. 오늘은 이 편지가 네 곁에 도착한 날이야.</span></p>
+      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.85;margin:0 0 24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">천천히 읽어보셔도 괜찮습니다. 오늘의 마음이 조용히 곁에 도착했습니다.</span></p>
       ${buildLetterMetaHtml(meta, themeStyles)}
       <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:30px;font-size:16px;line-height:1.9;color:${themeStyles.cardText};white-space:pre-wrap">${safeContent}</div>
       ${safeImageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${escapeHtml(safeImageUrl)}" style="max-width:100%;border-radius:14px" /></div>` : ""}
@@ -815,9 +826,10 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
   return buildEmailShell({
     theme: emailTheme,
     openDate,
+    subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
     <div style="padding:40px">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.8;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">말보다 먼저 도착한 마음을 조용히 열어봐.</span></p>
+      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.85;margin:0 0 24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">말보다 먼저 도착한 마음을 천천히 열어보세요.</span></p>
       ${buildLetterMetaHtml(meta, themeStyles)}
       <div style="border-radius:16px;overflow:hidden;border:1px solid ${themeStyles.cardBorder};background:${themeStyles.cardBg}">
         ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" style="width:100%;display:block" />` : `<div style="padding:24px;text-align:center;color:${themeStyles.muted}">그림 URL을 확인할 수 없습니다.</div>`}
@@ -835,12 +847,12 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
   return buildEmailShell({
     theme: emailTheme,
     openDate,
+    subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
     <div style="padding:40px;text-align:center">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.8;margin:0 0 24px">안녕, <strong>${safeRecipientName}</strong>.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">목소리와 표정까지 담긴 마음이 도착했어.</span></p>
+      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.85;margin:0 0 24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">목소리와 표정까지 담긴 마음이 도착했습니다.</span></p>
       <div style="text-align:left">${buildLetterMetaHtml(meta, themeStyles)}</div>
-      ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>
-      <p style="margin-top:20px;color:${themeStyles.muted};font-size:12px;word-break:break-all">버튼이 작동하지 않으면 ${escapeHtml(safeVideoUrl)}</p>` : `<p style="color:${themeStyles.muted}">영상 URL을 확인할 수 없습니다.</p>`}
+      ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>` : `<p style="color:${themeStyles.muted}">영상 URL을 확인할 수 없습니다.</p>`}
     </div>`,
   });
 }
@@ -892,18 +904,18 @@ function personalizeTeacherLetterForMember(teacherLetter, memberName) {
 function buildTeacherLetterEmail(memberName, teacherLetter) {
   const personalizedTeacherLetter = personalizeTeacherLetterForMember(teacherLetter, memberName);
   const rawTeacherName = String(personalizedTeacherLetter.teacherName || "").trim();
-  const rawTitle = personalizedTeacherLetter.title || `${memberName}님을 응원하는 ${rawTeacherName}께서 편지를 보냈습니다!`;
+  const rawTitle = personalizedTeacherLetter.title || `${memberName}님을 응원하는 ${rawTeacherName || "선생님"}의 편지입니다`;
   const teacherName = escapeHtml(rawTeacherName);
   const title = escapeHtml(rawTitle);
   const content = escapeHtml(personalizedTeacherLetter.content);
 
   return buildEmailShell({
     theme: "dark",
-    subtitle: `${rawTeacherName || "선생님"}의 편지가 도착했어요`,
+    subtitle: `${rawTeacherName || "선생님"}의 편지가 도착했습니다`,
     maxWidth: 720,
     body: themeStyles => `
     <div style="padding:42px 48px">
-      <div style="margin-bottom:18px;color:${themeStyles.brandMain};font-size:13px;font-weight:700;letter-spacing:2px">${teacherName || "선생님"}</div>
+      <div style="margin-bottom:18px;color:${themeStyles.brandMain};font-size:13px;font-weight:700">${teacherName || "선생님"}</div>
       <div style="margin-bottom:18px;color:${themeStyles.text};font-size:24px;line-height:1.35;font-weight:300">${title}</div>
       <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:34px 38px;font-size:16px;line-height:1.95;color:${themeStyles.cardText};white-space:pre-wrap">${content}</div>
     </div>`,
@@ -1776,6 +1788,7 @@ app.get("/letter-draft", async (req, res) => {
         imageUrl: true,
         signatureData: true,
         deliveryEmail: true,
+        emailSubject: true,
         emailTheme: true,
         recipientEmail: true,
         recipientName: true,
@@ -1799,6 +1812,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
   const deliveryEmail = String(req.body.deliveryEmail || req.body.email || "").trim().toLowerCase();
   const recipientEmail = String(req.body.recipientEmail || "").trim().toLowerCase();
   const recipientName = String(req.body.recipientName || "").trim();
+  const emailSubject = normalizeEmailSubject(req.body.emailSubject);
   const emailTheme = normalizeEmailTheme(req.body.emailTheme);
   const toOther = Boolean(req.body.toOther);
   const parsedOpenDate = req.body.openDate ? parseOpenDate(req.body.openDate) : null;
@@ -1808,6 +1822,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
   if (deliveryEmail && !isValidEmail(deliveryEmail)) return res.status(400).json({ message: "발송 이메일 형식이 올바르지 않습니다." });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받는 사람 이메일 형식이 올바르지 않습니다." });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (req.body.openDate && !parsedOpenDate) return res.status(400).json({ message: "개봉일 형식이 올바르지 않습니다." });
 
   const videoUrl = req.body.videoUrl ? normalizePublicAssetUrl(req.body.videoUrl) : null;
@@ -1829,6 +1844,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
         imageUrl,
         signatureData,
         deliveryEmail: deliveryEmail || null,
+        emailSubject: emailSubject || null,
         emailTheme,
         recipientEmail: toOther ? (recipientEmail || null) : null,
         recipientName: toOther ? (recipientName || null) : null,
@@ -1842,6 +1858,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
         imageUrl,
         signatureData,
         deliveryEmail: deliveryEmail || null,
+        emailSubject: emailSubject || null,
         emailTheme,
         recipientEmail: toOther ? (recipientEmail || null) : null,
         recipientName: toOther ? (recipientName || null) : null,
@@ -1856,6 +1873,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
         imageUrl: true,
         signatureData: true,
         deliveryEmail: true,
+        emailSubject: true,
         emailTheme: true,
         recipientEmail: true,
         recipientName: true,
@@ -1892,6 +1910,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
   const recipientEmail = String(req.body.recipientEmail || "").trim().toLowerCase();
   const recipientName = String(req.body.recipientName || "").trim();
+  const emailSubject = normalizeEmailSubject(req.body.emailSubject);
   const emailTheme = normalizeEmailTheme(req.body.emailTheme);
   const authorId = req.session.user.id;
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
@@ -1919,6 +1938,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
 
   if (email && !isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientName && !recipientEmail) return res.status(400).json({ message: "받는 사람 이메일을 입력해주세요." });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받는 사람 이메일 형식이 올바르지 않습니다." });
 
@@ -1936,6 +1956,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
         imageUrl: cleanImageUrl,
         signatureData: cleanSignatureUrl,
         deliveryEmail: recipientEmail || email || null,
+        emailSubject: emailSubject || null,
         recipientEmail: recipientEmail || null,
         recipientName: recipientName || null,
         emailTheme,

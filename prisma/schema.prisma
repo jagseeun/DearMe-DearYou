@@ -30,6 +30,7 @@ model Letter {
   signatureData         String?
   deliveryEmail         String?
   sentToEmail           String?
+  emailSubject          String?
   emailTheme            String    @default("dark")
   recipientEmail        String?
   recipientName         String?
@@ -54,6 +55,7 @@ model LetterDraft {
   imageUrl       String?
   signatureData  String?
   deliveryEmail  String?
+  emailSubject   String?
   emailTheme     String    @default("dark")
   recipientEmail String?
   recipientName  String?

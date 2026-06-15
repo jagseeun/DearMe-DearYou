@@ -9,6 +9,7 @@ const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.96, ease } } };
 const LETTER_CONTENT_MAX_LENGTH = 500;
+const LETTER_EMAIL_SUBJECT_MAX_LENGTH = 80;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
@@ -404,6 +405,7 @@ export default function WritePage() {
   const [sendNow, setSendNow] = useState(false);
   const emailTheme = 'dark';
   const [email, setEmail] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -623,6 +625,7 @@ export default function WritePage() {
     setDrawDraftImageUrl(nextMode === 'draw' ? (nextDraft.imageUrl || '') : '');
     setSignatureData(nextDraft.signatureData || null);
     setEmail(nextDraft.deliveryEmail || email);
+    setEmailSubject(nextDraft.emailSubject || '');
     setToOther(Boolean(nextDraft.toOther));
     setRecipientName(nextDraft.recipientName || '');
     setRecipientEmail(nextDraft.recipientEmail || '');
@@ -658,6 +661,7 @@ export default function WritePage() {
           imageUrl: mode === 'text' ? imageUrl || undefined : mode === 'draw' ? draftImageUrl : undefined,
           signatureData: mode === 'text' ? draftSignatureData || undefined : undefined,
           openDate,
+          emailSubject: emailSubject.trim(),
           emailTheme,
           deliveryEmail: toOther ? '' : email.trim().toLowerCase(),
           toOther,
@@ -703,12 +707,14 @@ export default function WritePage() {
     const limitedText = clampLetterText(text);
     if (!openDate) return showNotice('개봉일을 선택해 주세요.');
     const cleanEmail = email.trim().toLowerCase();
+    const cleanEmailSubject = emailSubject.trim();
     const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
     const cleanRecipientName = recipientName.trim();
     const effectiveOpenDate = sendNow ? new Date().toISOString() : openDate;
     const isImmediateDelivery = sendNow || new Date(effectiveOpenDate) <= new Date();
     if (isImmediateDelivery && !toOther && !cleanEmail) return showNotice('바로 보내려면 발송 이메일을 입력해 주세요.');
     if (text.length > LETTER_CONTENT_MAX_LENGTH) return showNotice(`내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+    if (cleanEmailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return showNotice(`메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.`);
     if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return showNotice('이메일 형식이 올바르지 않습니다.');
     if (toOther) {
       if (!cleanRecipientEmail) return showNotice('받는 사람 이메일을 입력해 주세요.');
@@ -736,6 +742,7 @@ export default function WritePage() {
         imageUrl: mode === 'text' ? (imageUrl || undefined) : mode === 'draw' ? drawImageUrl : undefined,
         signatureData: mode === 'text' ? (finalSignature || undefined) : undefined,
         openDate: effectiveOpenDate,
+        emailSubject: cleanEmailSubject || undefined,
         emailTheme,
         email: toOther ? undefined : cleanEmail,
         recipientEmail: toOther ? cleanRecipientEmail : undefined,
@@ -1149,6 +1156,20 @@ export default function WritePage() {
                 ) : (
                   <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
                 )}
+              </div>
+
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={labelStyle}>
+                  메일 제목 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(선택)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="비워두면 자동 제목으로 보내집니다"
+                  value={emailSubject}
+                  onChange={e => setEmailSubject(e.target.value.slice(0, LETTER_EMAIL_SUBJECT_MAX_LENGTH))}
+                  maxLength={LETTER_EMAIL_SUBJECT_MAX_LENGTH}
+                  style={inputStyle}
+                />
               </div>
 
               {/* 수신인 토글 */}
