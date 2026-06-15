@@ -16843,3 +16843,79 @@ select:focus,
     max-width: 330px !important;
   }
 }
+
+/* Letters/view-letter only: remove peach/yellow cast while leaving /letter-login untouched. */
+.pink-letter-list-page,
+.pink-letter-view {
+  --letter-soft-pink: #ffd6e4 !important;
+  --letter-soft-pink-strong: #ffdeea !important;
+  --letter-soft-pink-muted: rgba(255, 214, 228, 0.78) !important;
+  --letter-soft-pink-faint: rgba(255, 190, 216, 0.38) !important;
+  --letter-peach: #f4aebe !important;
+  --letter-peach-deep: #b76696 !important;
+  color: var(--letter-soft-pink) !important;
+}
+
+.pink-letter-list-page .top-title .to,
+.pink-letter-list-page .pink-letter-fixed-logo span:first-child,
+.pink-letter-view .top-title .to {
+  color: var(--letter-soft-pink-strong) !important;
+  filter:
+    drop-shadow(0 0 16px rgba(255, 190, 216, 0.32))
+    drop-shadow(0 2px 8px rgba(24, 13, 28, 0.38)) !important;
+}
+
+.pink-letter-list-page .top-title .semicolon,
+.pink-letter-list-page .pink-letter-fixed-logo span:nth-child(2),
+.pink-letter-view .top-title .semicolon {
+  color: rgba(255, 205, 224, 0.62) !important;
+}
+
+.pink-letter-list-page .top-title .from,
+.pink-letter-list-page .pink-letter-fixed-logo span:last-child,
+.pink-letter-view .top-title .from {
+  color: var(--letter-peach) !important;
+  filter:
+    drop-shadow(0 0 14px rgba(255, 176, 208, 0.28))
+    drop-shadow(0 2px 8px rgba(24, 13, 28, 0.34)) !important;
+}
+
+.pink-letter-list-page .letter-list-title,
+.pink-letter-list-page .letter-list-stat strong,
+.pink-letter-list-page .letter-card-title,
+.pink-letter-list-page .letter-empty strong,
+.pink-letter-view .letter-envelope-value,
+.pink-letter-view .letter-envelope-person,
+.pink-letter-view .letter-content-text {
+  color: var(--letter-soft-pink) !important;
+}
+
+.pink-letter-list-page .letter-list-kicker,
+.pink-letter-list-page .letter-list-stat span,
+.pink-letter-list-page .letter-card-info-line,
+.pink-letter-list-page .letter-date-line,
+.pink-letter-list-page .letter-empty span,
+.pink-letter-view .letter-envelope-label,
+.pink-letter-view .letter-day-sidebar div,
+.pink-letter-view .letter-mobile-day {
+  color: var(--letter-soft-pink-muted) !important;
+  -webkit-text-fill-color: var(--letter-soft-pink-muted) !important;
+}
+
+.pink-letter-list-page .letter-list-stat-divider,
+.pink-letter-view .letter-envelope-divider {
+  background: var(--letter-soft-pink-faint) !important;
+}
+
+.pink-letter-list-page .letter-badge,
+.pink-letter-list-page .letter-recipient,
+.pink-letter-list-page .letter-lock-pill,
+.pink-letter-list-page .letter-open-arrow,
+.pink-letter-list-page .letter-delete-button,
+.pink-letter-list-page .soft-button,
+.pink-letter-list-page .letter-back-floating,
+.pink-letter-view .letter-view-button,
+.pink-letter-view .letter-open-button {
+  border-color: rgba(255, 190, 216, 0.42) !important;
+  color: var(--letter-soft-pink) !important;
+}

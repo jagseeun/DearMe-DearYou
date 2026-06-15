@@ -29,6 +29,7 @@ const layerStyle = {
 export default function BackgroundLayers() {
   const location = useLocation();
   const isPink = PINK_ROUTES.some(route => location.pathname.startsWith(route));
+  const emphasizePinkStars = ['/letters', '/view-letter', '/pink-letters'].some(route => location.pathname.startsWith(route));
   const hasDreamCursor = !location.pathname.startsWith('/admin');
   const cursorGlowRef = useRef(null);
   const cursorHeartRef = useRef(null);
@@ -110,7 +111,7 @@ export default function BackgroundLayers() {
       <div
         style={{ ...layerStyle, opacity: isPink ? 1 : 0 }}
       >
-        {isPink && <PinkStars />}
+        {isPink && <PinkStars emphasized={emphasizePinkStars} />}
       </div>
       <div
         ref={cursorGlowRef}

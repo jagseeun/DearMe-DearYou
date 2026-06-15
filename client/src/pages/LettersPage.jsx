@@ -209,9 +209,9 @@ export default function LettersPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.96, ease }}
       >
-        <span style={{ color: '#fff2dc', filter: 'drop-shadow(0 0 16px rgba(238,177,172,0.28)) drop-shadow(0 2px 8px rgba(34,18,22,0.36))' }}>Dear Me</span>
-        <span style={{ color: 'rgba(253,229,202,0.6)', margin: '0 10px' }}>;</span>
-        <span style={{ color: '#eeb1ac', filter: 'drop-shadow(0 0 14px rgba(238,177,172,0.22)) drop-shadow(0 2px 8px rgba(34,18,22,0.32))' }}>Dear You</span>
+        <span className="to">Dear Me</span>
+        <span className="semicolon">;</span>
+        <span className="from">Dear You</span>
       </motion.div>
 
       <div className="letter-list-shell letters-main-shell">
