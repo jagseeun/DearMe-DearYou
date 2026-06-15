@@ -6,6 +6,101 @@ import { formatDate, daysSince } from '../utils/dates.js';
 
 const ease = [0.22, 1, 0.36, 1];
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+const TYPEWRITER_MIN_DURATION = 1400;
+const TYPEWRITER_MAX_DURATION = 7200;
+const TYPEWRITER_START_DELAY = 520;
+
+function TypewriterText({ text = '', motionProps = {}, style }) {
+  const fullText = String(text || '');
+  const [visibleText, setVisibleText] = useState('');
+  const [complete, setComplete] = useState(!fullText);
+  const frameRef = useRef(0);
+  const timeoutRef = useRef(0);
+  const skippedRef = useRef(false);
+
+  function stopAnimation() {
+    window.clearTimeout(timeoutRef.current);
+    if (frameRef.current) window.cancelAnimationFrame(frameRef.current);
+    frameRef.current = 0;
+    timeoutRef.current = 0;
+  }
+
+  useEffect(() => {
+    const characters = Array.from(fullText);
+    stopAnimation();
+    skippedRef.current = false;
+
+    if (!characters.length) {
+      setVisibleText('');
+      setComplete(true);
+      return undefined;
+    }
+
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion) {
+      setVisibleText(fullText);
+      setComplete(true);
+      return undefined;
+    }
+
+    setVisibleText('');
+    setComplete(false);
+
+    const duration = Math.min(
+      Math.max(characters.length * 28, TYPEWRITER_MIN_DURATION),
+      TYPEWRITER_MAX_DURATION,
+    );
+
+    timeoutRef.current = window.setTimeout(() => {
+      const startedAt = performance.now();
+
+      const tick = now => {
+        if (skippedRef.current) return;
+
+        const progress = Math.min((now - startedAt) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 2);
+        const count = Math.min(characters.length, Math.max(1, Math.floor(eased * characters.length)));
+        setVisibleText(characters.slice(0, count).join(''));
+
+        if (progress < 1) {
+          frameRef.current = window.requestAnimationFrame(tick);
+          return;
+        }
+
+        setVisibleText(fullText);
+        setComplete(true);
+      };
+
+      frameRef.current = window.requestAnimationFrame(tick);
+    }, TYPEWRITER_START_DELAY);
+
+    return () => {
+      skippedRef.current = true;
+      stopAnimation();
+    };
+  }, [fullText]);
+
+  function revealAll() {
+    if (complete) return;
+    skippedRef.current = true;
+    stopAnimation();
+    setVisibleText(fullText);
+    setComplete(true);
+  }
+
+  return (
+    <motion.p
+      className={`letter-content-text letter-paper-text-motion ${complete ? 'is-typed' : 'is-typing'}`}
+      {...motionProps}
+      style={style}
+      onClick={revealAll}
+      aria-label={fullText}
+    >
+      {visibleText}
+      {!complete && <span className="letter-type-cursor" aria-hidden="true">|</span>}
+    </motion.p>
+  );
+}
 
 function waitForVideoReady(video) {
   return new Promise((resolve, reject) => {
@@ -1128,9 +1223,11 @@ export default function LetterViewPage() {
                     padding: '52px 64px', overflowY: 'auto',
                     boxShadow: isPink ? '0 0 28px rgba(255,214,226,0.11), 0 18px 44px rgba(21,12,25,0.26)' : '0 4px 40px rgba(0,0,0,0.1)',
                   }}>
-                    <motion.p className="letter-content-text letter-paper-text-motion" {...paperTextMotion} style={{ color: textMain, fontSize: 24, fontWeight: 300, lineHeight: 2.15, whiteSpace: 'pre-wrap', margin: 0, letterSpacing: 0.4 }}>
-                      {letter.content}
-                    </motion.p>
+                    <TypewriterText
+                      text={letter.content}
+                      motionProps={paperTextMotion}
+                      style={{ color: textMain, fontSize: 24, fontWeight: 300, lineHeight: 2.15, whiteSpace: 'pre-wrap', margin: 0, letterSpacing: 0.4 }}
+                    />
 
                     {/* 첨부 이미지 */}
                     {letter.imageUrl && (
