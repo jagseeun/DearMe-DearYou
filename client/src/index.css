@@ -17435,3 +17435,148 @@ select:focus,
     text-wrap: auto !important;
   }
 }
+
+/* Final correction: keep view-letter in the previous layout and only animate entry. */
+.pink-letter-list-page .letter-card-copy,
+.letters-main-page .letter-card-copy {
+  gap: 2px !important;
+}
+
+.pink-letter-list-page .letter-card-info-line,
+.letters-main-page .letter-card-info-line {
+  margin-top: 0 !important;
+  gap: 5px !important;
+}
+
+.pink-letter-list-page .letter-icon,
+.letters-main-page .letter-icon,
+.pink-letter-list-page .letter-favorite-button,
+.letters-main-page .letter-favorite-button,
+.pink-letter-list-page .letter-delete-button,
+.letters-main-page .letter-delete-button {
+  color: rgba(255, 250, 253, 0.94) !important;
+  -webkit-text-fill-color: rgba(255, 250, 253, 0.94) !important;
+}
+
+.pink-letter-list-page .letter-icon-svg,
+.letters-main-page .letter-icon-svg {
+  stroke: rgba(255, 250, 253, 0.94) !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-stage {
+  position: relative !important;
+  width: 100dvw !important;
+  max-width: 100dvw !important;
+  height: 100dvh !important;
+  padding: 0 !important;
+  display: block !important;
+  overflow: hidden !important;
+  isolation: isolate !important;
+  background: transparent !important;
+  transform-origin: 50% 50% !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-stage::before,
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-stage::after,
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-route-envelope-reveal {
+  content: none !important;
+  display: none !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-info {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-view-back {
+  left: 36px !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-from {
+  top: 130px !important;
+  left: 140px !important;
+  right: auto !important;
+  bottom: auto !important;
+  text-align: left !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-to {
+  top: auto !important;
+  right: 150px !important;
+  bottom: 132px !important;
+  left: auto !important;
+  text-align: right !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-divider {
+  position: absolute !important;
+  top: 50% !important;
+  left: 140px !important;
+  right: 140px !important;
+  width: auto !important;
+  height: 1px !important;
+  margin: 0 !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 235, 242, 0.24), transparent) !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-day-sidebar {
+  position: absolute !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: auto !important;
+  width: 96px !important;
+  height: 100% !important;
+  border-top-left-radius: 36px !important;
+  border-bottom-left-radius: 36px !important;
+  border-right: 0 !important;
+  background:
+    linear-gradient(to bottom, rgba(255, 250, 253, 0.09), rgba(255, 205, 222, 0.07)),
+    rgba(42, 27, 43, 0.42) !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-open-button {
+  bottom: 40px !important;
+}
+
+@media (max-width: 760px) {
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-view-back {
+    left: 12px !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-info {
+    width: min(300px, calc(100dvw - 56px)) !important;
+    max-width: min(300px, calc(100dvw - 56px)) !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-from {
+    top: calc(148px + env(safe-area-inset-top)) !important;
+    left: 28px !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-to {
+    right: 28px !important;
+    bottom: calc(130px + env(safe-area-inset-bottom)) !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-divider {
+    left: 28px !important;
+    right: 28px !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-day-sidebar {
+    display: none !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-mobile-day {
+    display: inline-flex !important;
+    top: calc(98px + env(safe-area-inset-top)) !important;
+    right: 28px !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-open-button {
+    bottom: calc(36px + env(safe-area-inset-bottom)) !important;
+  }
+}

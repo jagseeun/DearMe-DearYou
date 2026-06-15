@@ -999,19 +999,15 @@ export default function LetterViewPage() {
               className="letter-envelope-stage"
               initial={isPink ? {
                 opacity: 0,
-                y: 30,
-                scale: 0.965,
-                filter: 'blur(1.2px)',
-                clipPath: 'inset(44% 8% 44% 8% round 24px)',
+                y: 14,
+                scale: 0.992,
               } : undefined}
               animate={isPink ? {
                 opacity: 1,
                 y: 0,
                 scale: 1,
-                filter: 'blur(0px)',
-                clipPath: 'inset(0% 0% 0% 0% round 34px)',
               } : undefined}
-              transition={isPink ? { duration: 1.05, ease: [0.18, 0.86, 0.2, 1] } : undefined}
+              transition={isPink ? { duration: 0.72, ease } : undefined}
             >
               <motion.div
                 className="letter-envelope-info letter-from"
