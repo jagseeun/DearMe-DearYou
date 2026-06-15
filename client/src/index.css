@@ -16847,12 +16847,12 @@ select:focus,
 /* Letters/view-letter only: remove peach/yellow cast while leaving /letter-login untouched. */
 .pink-letter-list-page,
 .pink-letter-view {
-  --letter-soft-pink: #ffeaf2 !important;
-  --letter-soft-pink-strong: #fff3f8 !important;
-  --letter-soft-pink-muted: rgba(255, 226, 238, 0.78) !important;
-  --letter-soft-pink-faint: rgba(255, 218, 232, 0.38) !important;
-  --letter-peach: #ffc4d6 !important;
-  --letter-peach-deep: #c06c9c !important;
+  --letter-soft-pink: #e0a4b0 !important;
+  --letter-soft-pink-strong: #ffcdda !important;
+  --letter-soft-pink-muted: rgba(255, 205, 220, 0.78) !important;
+  --letter-soft-pink-faint: rgba(224, 164, 176, 0.42) !important;
+  --letter-peach: #eaa8ba !important;
+  --letter-peach-deep: #b76696 !important;
   color: var(--letter-soft-pink) !important;
 }
 
@@ -16861,14 +16861,14 @@ select:focus,
 .pink-letter-view .top-title .to {
   color: var(--letter-soft-pink-strong) !important;
   filter:
-    drop-shadow(0 0 16px rgba(255, 218, 232, 0.3))
+    drop-shadow(0 0 16px rgba(224, 164, 176, 0.34))
     drop-shadow(0 2px 8px rgba(24, 13, 28, 0.38)) !important;
 }
 
 .pink-letter-list-page .top-title .semicolon,
 .pink-letter-list-page .pink-letter-fixed-logo span:nth-child(2),
 .pink-letter-view .top-title .semicolon {
-  color: rgba(255, 226, 238, 0.6) !important;
+  color: rgba(255, 205, 220, 0.64) !important;
 }
 
 .pink-letter-list-page .top-title .from,
@@ -16876,7 +16876,7 @@ select:focus,
 .pink-letter-view .top-title .from {
   color: var(--letter-peach) !important;
   filter:
-    drop-shadow(0 0 14px rgba(255, 196, 220, 0.26))
+    drop-shadow(0 0 14px rgba(224, 164, 176, 0.3))
     drop-shadow(0 2px 8px rgba(24, 13, 28, 0.34)) !important;
 }
 
@@ -16916,6 +16916,51 @@ select:focus,
 .pink-letter-list-page .letter-back-floating,
 .pink-letter-view .letter-view-button,
 .pink-letter-view .letter-open-button {
-  border-color: rgba(255, 218, 232, 0.4) !important;
+  border-color: rgba(224, 164, 176, 0.46) !important;
   color: var(--letter-soft-pink) !important;
+}
+
+.pink-letter-list-page .letter-card.is-received .letter-card-copy {
+  gap: 4px !important;
+}
+
+.pink-letter-list-page .letter-card.is-received .letter-card-info-line,
+.letters-main-page .letter-card.is-received .letter-card-info-line {
+  margin-top: 3px !important;
+  gap: 5px !important;
+}
+
+@keyframes pinkLetterPaperIn {
+  from {
+    opacity: 0.62;
+    transform: translate3d(0, 18px, 0) scale(0.992);
+    filter: blur(1.2px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes pinkLetterPaperGlow {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scaleX(0.9);
+  }
+
+  100% {
+    opacity: 0.86;
+    transform: translateY(0) scaleX(1);
+  }
+}
+
+.letter-view-root.pink-letter-view .letter-content-box {
+  animation: pinkLetterPaperIn 860ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
+  transform-origin: 50% 42% !important;
+}
+
+.letter-view-root.pink-letter-view .letter-content-box::before {
+  animation: pinkLetterPaperGlow 980ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both !important;
 }

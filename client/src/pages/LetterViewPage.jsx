@@ -881,26 +881,26 @@ export default function LetterViewPage() {
   const recipientName = letter.recipientName || (letter.mailbox === 'received' ? name : '') || name || '나';
 
   // 핑크 테마 색상 시스템
-  const textMain        = isPink ? '#ffeaf2'                  : '#ffe2ef';
-  const textSub         = isPink ? 'rgba(255,232,240,0.84)'   : 'rgba(255,207,228,0.72)';
-  const textHint        = isPink ? 'rgba(255,218,232,0.72)'   : 'rgba(245,188,220,0.66)';
-  const textBtn         = isPink ? '#fff1f6'                  : '#ffe2ef';
-  const btnBg           = isPink ? 'linear-gradient(135deg, rgba(198,103,145,0.72), rgba(99,49,86,0.78)), rgba(255,236,244,0.1)' : 'linear-gradient(135deg, rgba(146,74,126,0.84), rgba(86,50,104,0.8)), rgba(232,190,216,0.1)';
-  const btnBorder       = isPink ? '1px solid rgba(255,220,234,0.42)'        : '1px solid rgba(244,190,218,0.34)';
-  const backColor       = isPink ? 'rgba(255,238,246,0.92)'    : 'rgba(255,236,246,0.88)';
-  const backBg          = isPink ? 'linear-gradient(135deg, rgba(99,49,86,0.7), rgba(45,28,45,0.68)), rgba(255,232,240,0.08)' : 'linear-gradient(135deg, rgba(94,54,106,0.62), rgba(62,39,78,0.58)), rgba(232,190,216,0.09)';
-  const backBorder      = isPink ? '1px solid rgba(255,220,234,0.3)'         : '1px solid rgba(232,190,216,0.26)';
-  const dividerBg       = isPink ? 'rgba(255,220,234,0.24)'    : 'rgba(232,190,216,0.2)';
-  const sidebarBg       = isPink ? 'linear-gradient(to bottom, rgba(255,238,246,0.12), rgba(255,196,220,0.13)), rgba(43,27,48,0.46)' : 'linear-gradient(to bottom, rgba(170,95,142,0.28), rgba(48,28,64,0.76))';
-  const sidebarBorder   = isPink ? '1px solid rgba(255,220,234,0.24)'        : '1px solid rgba(232,190,216,0.2)';
-  const letterBoxBg     = isPink ? 'linear-gradient(135deg, rgba(255,238,246,0.13), rgba(255,196,220,0.1) 56%, rgba(139,72,116,0.08)), rgba(43,27,48,0.5)' : 'linear-gradient(135deg, rgba(255,220,232,0.09), rgba(156,108,174,0.08)), rgba(40,23,52,0.48)';
-  const letterBoxBorder = isPink ? '1px solid rgba(255,220,234,0.24)'        : '1px solid rgba(232,190,216,0.25)';
+  const textMain        = isPink ? '#e0a4b0'                  : '#ffe2ef';
+  const textSub         = isPink ? 'rgba(224,164,176,0.86)'   : 'rgba(255,207,228,0.72)';
+  const textHint        = isPink ? 'rgba(255,205,220,0.76)'   : 'rgba(245,188,220,0.66)';
+  const textBtn         = isPink ? '#ffcdda'                  : '#ffe2ef';
+  const btnBg           = isPink ? 'linear-gradient(135deg, rgba(198,103,145,0.76), rgba(99,49,86,0.8)), rgba(224,164,176,0.12)' : 'linear-gradient(135deg, rgba(146,74,126,0.84), rgba(86,50,104,0.8)), rgba(232,190,216,0.1)';
+  const btnBorder       = isPink ? '1px solid rgba(224,164,176,0.48)'        : '1px solid rgba(244,190,218,0.34)';
+  const backColor       = isPink ? 'rgba(255,205,220,0.94)'    : 'rgba(255,236,246,0.88)';
+  const backBg          = isPink ? 'linear-gradient(135deg, rgba(99,49,86,0.72), rgba(45,28,45,0.7)), rgba(224,164,176,0.1)' : 'linear-gradient(135deg, rgba(94,54,106,0.62), rgba(62,39,78,0.58)), rgba(232,190,216,0.09)';
+  const backBorder      = isPink ? '1px solid rgba(224,164,176,0.34)'         : '1px solid rgba(232,190,216,0.26)';
+  const dividerBg       = isPink ? 'rgba(224,164,176,0.28)'    : 'rgba(232,190,216,0.2)';
+  const sidebarBg       = isPink ? 'linear-gradient(to bottom, rgba(255,205,220,0.13), rgba(224,164,176,0.14)), rgba(43,27,48,0.48)' : 'linear-gradient(to bottom, rgba(170,95,142,0.28), rgba(48,28,64,0.76))';
+  const sidebarBorder   = isPink ? '1px solid rgba(224,164,176,0.28)'        : '1px solid rgba(232,190,216,0.2)';
+  const letterBoxBg     = isPink ? 'linear-gradient(135deg, rgba(255,205,220,0.13), rgba(224,164,176,0.11) 56%, rgba(139,72,116,0.09)), rgba(43,27,48,0.52)' : 'linear-gradient(135deg, rgba(255,220,232,0.09), rgba(156,108,174,0.08)), rgba(40,23,52,0.48)';
+  const letterBoxBorder = isPink ? '1px solid rgba(224,164,176,0.3)'        : '1px solid rgba(232,190,216,0.25)';
 
   const btnStyle = {
     padding: '14px 56px', borderRadius: 50,
     border: btnBorder, background: btnBg,
     color: textBtn, fontSize: 17, fontFamily: 'inherit', cursor: 'pointer',
-    boxShadow: isPink ? '0 0 28px rgba(255,216,232,0.18), 0 16px 38px rgba(21,12,25,0.32), inset 0 1px 0 rgba(255,255,255,0.2)' : '0 0 26px rgba(218,157,196,0.17), 0 16px 38px rgba(21,12,30,0.28), inset 0 1px 0 rgba(255,255,255,0.14)',
+    boxShadow: isPink ? '0 0 28px rgba(224,164,176,0.2), 0 16px 38px rgba(21,12,25,0.32), inset 0 1px 0 rgba(255,255,255,0.2)' : '0 0 26px rgba(218,157,196,0.17), 0 16px 38px rgba(21,12,30,0.28), inset 0 1px 0 rgba(255,255,255,0.14)',
     backdropFilter: 'blur(24px)', whiteSpace: 'nowrap',
     transition: 'all 0.3s cubic-bezier(0.22,1,0.36,1)',
     letterSpacing: 0,
@@ -912,7 +912,7 @@ export default function LetterViewPage() {
     padding: '8px 20px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
     border: backBorder, background: backBg, color: backColor,
     backdropFilter: 'blur(18px)', transition: 'all 0.25s',
-    boxShadow: isPink ? '0 0 22px rgba(255,216,232,0.13), 0 12px 28px rgba(21,12,25,0.24)' : '0 0 20px rgba(218,157,196,0.12), 0 12px 28px rgba(21,12,30,0.24)',
+    boxShadow: isPink ? '0 0 22px rgba(224,164,176,0.15), 0 12px 28px rgba(21,12,25,0.24)' : '0 0 20px rgba(218,157,196,0.12), 0 12px 28px rgba(21,12,30,0.24)',
     textShadow: isPink ? '0 1px 7px rgba(24,13,28,0.38)' : '0 1px 7px rgba(24,13,34,0.36)',
   };
 
@@ -921,7 +921,7 @@ export default function LetterViewPage() {
       className={`letter-view-root letter-view-${letter.type} letter-view-phase-${phase} ${isPink ? 'pink-letter-view' : ''}`.trim()}
       style={{
         position: 'fixed', inset: 0, zIndex: 10, width: '100%', height: '100vh',
-        background: isPink ? 'linear-gradient(180deg, rgba(255,238,246,0.018), rgba(255,196,220,0.032))' : undefined,
+        background: isPink ? 'linear-gradient(180deg, rgba(255,205,220,0.018), rgba(224,164,176,0.034))' : undefined,
       }}
       initial={{ opacity: 0, y: isPink ? 10 : 0, scale: isPink ? 0.996 : 1 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1024,8 +1024,10 @@ export default function LetterViewPage() {
         {/* ── 일반: 내용 화면 ── */}
         {phase === 'content' && (
           <motion.div key="content" style={{ position: 'absolute', inset: 0 }}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}>
+            initial={{ opacity: 0, y: isPink ? 10 : 0, scale: isPink ? 0.992 : 1 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: isPink ? -6 : 0, scale: isPink ? 0.996 : 1 }}
+            transition={{ duration: isPink ? 0.72 : 0.5, ease }}>
 
             <motion.div className="top-title"
               initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
@@ -1053,8 +1055,9 @@ export default function LetterViewPage() {
             <div className="letter-content-viewport">
               <motion.div
                 className={`letter-content-wrap ${letter.type === 'draw' ? 'letter-content-wrap-draw' : letter.type === 'video' ? 'letter-content-wrap-video' : ''}`.trim()}
-                initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease }}
+                initial={{ opacity: 0, y: isPink ? 28 : 20, scale: isPink ? 0.986 : 1 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: isPink ? 0.9 : 0.8, ease }}
                 style={{ width: '100%', maxWidth: letter.type === 'video' ? 1480 : letter.type === 'draw' ? 1680 : 1120 }}>
 
                 {letter.type === 'draw' ? (
@@ -1076,7 +1079,7 @@ export default function LetterViewPage() {
                     border: letterBoxBorder,
                     borderRadius: 24, backdropFilter: 'blur(16px)',
                     padding: '52px 64px', overflowY: 'auto',
-                    boxShadow: isPink ? '0 0 34px rgba(255,216,232,0.13), 0 18px 44px rgba(21,12,25,0.26)' : '0 4px 40px rgba(0,0,0,0.1)',
+                    boxShadow: isPink ? '0 0 34px rgba(224,164,176,0.15), 0 18px 44px rgba(21,12,25,0.26)' : '0 4px 40px rgba(0,0,0,0.1)',
                   }}>
                     <p className="letter-content-text" style={{ color: textMain, fontSize: 24, fontWeight: 300, lineHeight: 2.15, whiteSpace: 'pre-wrap', margin: 0, letterSpacing: 0.4 }}>
                       {letter.content}
