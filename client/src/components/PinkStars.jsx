@@ -10,14 +10,16 @@ export default function PinkStars({ emphasized = false }) {
     for (let i = 0; i < count; i++) {
       const s = document.createElement('div');
       const large = Math.random() < (emphasized ? 0.34 : 0.3);
-      const hue = Math.random() < 0.55 ? '255,226,235' : '255,197,212';
+      const hue = emphasized
+        ? (Math.random() < 0.44 ? '255,246,250' : Math.random() < 0.74 ? '255,226,238' : '255,200,222')
+        : (Math.random() < 0.55 ? '255,226,235' : '255,197,212');
       const opacity = emphasized ? 0.42 + Math.random() * 0.48 : 0.34 + Math.random() * 0.52;
       const glow = emphasized ? (large ? 21 : 13) : (large ? 18 : 11);
       s.style.cssText = `position:absolute;border-radius:50%;background:rgba(${hue},0.92);
         width:${large ? 2.8 : 1.35}px;height:${large ? 2.8 : 1.35}px;
         top:${Math.random() * 100}%;left:${Math.random() * 100}%;
         opacity:${opacity};
-        box-shadow:0 0 ${glow}px rgba(255,202,220,${emphasized ? 0.84 : 0.76});
+        box-shadow:0 0 ${glow}px rgba(255,216,232,${emphasized ? 0.82 : 0.76});
         animation:twinkle ${3.4 + Math.random() * 3.8}s ease-in-out infinite;
         animation-delay:${Math.random() * 4.5}s;`;
       el.appendChild(s);
