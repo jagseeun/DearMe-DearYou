@@ -16853,13 +16853,19 @@ select:focus,
   --letter-soft-pink-faint: rgba(255, 214, 226, 0.3) !important;
   --letter-peach: #f2b7c8 !important;
   --letter-peach-deep: #c77fa5 !important;
+  --letter-logo-me: #fff2f6 !important;
+  --letter-logo-you: #f4c0cf !important;
+  --letter-copy-main: #ffe5ec !important;
+  --letter-copy-body: #f9dce5 !important;
+  --letter-copy-sub: rgba(255, 222, 232, 0.68) !important;
+  --letter-control-text: #ffd7e2 !important;
   color: var(--letter-soft-pink) !important;
 }
 
 .pink-letter-list-page .top-title .to,
 .pink-letter-list-page .pink-letter-fixed-logo span:first-child,
 .pink-letter-view .top-title .to {
-  color: var(--letter-soft-pink-strong) !important;
+  color: var(--letter-logo-me) !important;
   filter:
     drop-shadow(0 0 14px rgba(255, 214, 226, 0.22))
     drop-shadow(0 2px 8px rgba(24, 13, 28, 0.38)) !important;
@@ -16874,7 +16880,7 @@ select:focus,
 .pink-letter-list-page .top-title .from,
 .pink-letter-list-page .pink-letter-fixed-logo span:last-child,
 .pink-letter-view .top-title .from {
-  color: var(--letter-peach) !important;
+  color: var(--letter-logo-you) !important;
   filter:
     drop-shadow(0 0 12px rgba(255, 214, 226, 0.2))
     drop-shadow(0 2px 8px rgba(24, 13, 28, 0.34)) !important;
@@ -16885,9 +16891,12 @@ select:focus,
 .pink-letter-list-page .letter-card-title,
 .pink-letter-list-page .letter-empty strong,
 .pink-letter-view .letter-envelope-value,
-.pink-letter-view .letter-envelope-person,
+.pink-letter-view .letter-envelope-person {
+  color: var(--letter-copy-main) !important;
+}
+
 .pink-letter-view .letter-content-text {
-  color: var(--letter-soft-pink) !important;
+  color: var(--letter-copy-body) !important;
 }
 
 .pink-letter-list-page .letter-list-kicker,
@@ -16898,8 +16907,8 @@ select:focus,
 .pink-letter-view .letter-envelope-label,
 .pink-letter-view .letter-day-sidebar div,
 .pink-letter-view .letter-mobile-day {
-  color: var(--letter-soft-pink-muted) !important;
-  -webkit-text-fill-color: var(--letter-soft-pink-muted) !important;
+  color: var(--letter-copy-sub) !important;
+  -webkit-text-fill-color: var(--letter-copy-sub) !important;
 }
 
 .pink-letter-list-page .letter-list-stat-divider,
@@ -16917,7 +16926,7 @@ select:focus,
 .pink-letter-view .letter-view-button,
 .pink-letter-view .letter-open-button {
   border-color: rgba(255, 222, 232, 0.34) !important;
-  color: var(--letter-soft-pink) !important;
+  color: var(--letter-control-text) !important;
 }
 
 .pink-letter-list-page .letter-card.is-received .letter-card-copy {
@@ -16930,37 +16939,53 @@ select:focus,
   gap: 5px !important;
 }
 
-@keyframes pinkLetterPaperIn {
-  from {
-    opacity: 0.62;
-    transform: translate3d(0, 18px, 0) scale(0.992);
-    filter: blur(1.2px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-    filter: blur(0);
-  }
-}
-
 @keyframes pinkLetterPaperGlow {
   0% {
     opacity: 0;
-    transform: translateY(10px) scaleX(0.9);
+    transform: translateY(12px) scale(0.97);
   }
 
   100% {
-    opacity: 0.86;
-    transform: translateY(0) scaleX(1);
+    opacity: 0.82;
+    transform: translateY(0) scale(1);
   }
 }
 
-.letter-view-root.pink-letter-view .letter-content-box {
-  animation: pinkLetterPaperIn 860ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
-  transform-origin: 50% 42% !important;
+@keyframes pinkLetterPaperSheen {
+  0% {
+    opacity: 0;
+    transform: translateX(-125%) skewX(-14deg);
+  }
+
+  34% {
+    opacity: 0.4;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(130%) skewX(-14deg);
+  }
 }
 
-.letter-view-root.pink-letter-view .letter-content-box::before {
+.letter-view-root.pink-letter-view .letter-content-viewport {
+  perspective: 1200px;
+}
+
+.letter-view-root.pink-letter-view .letter-paper-motion {
+  animation: none !important;
+  transform-origin: 50% 46% !important;
+  will-change: transform, opacity, clip-path, filter;
+}
+
+.letter-view-root.pink-letter-view .letter-paper-motion::before {
   animation: pinkLetterPaperGlow 980ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both !important;
+}
+
+.letter-view-root.pink-letter-view .letter-paper-motion::after {
+  background:
+    linear-gradient(100deg, transparent 4%, rgba(255, 246, 250, 0.22) 38%, rgba(255, 214, 226, 0.16) 48%, transparent 64%),
+    radial-gradient(circle at 50% 8%, rgba(255, 241, 232, 0.11), transparent 34%),
+    radial-gradient(circle at 86% 88%, rgba(218, 157, 176, 0.1), transparent 38%) !important;
+  animation: pinkLetterPaperSheen 1080ms cubic-bezier(0.22, 1, 0.36, 1) 180ms both !important;
+  transform-origin: center center !important;
 }

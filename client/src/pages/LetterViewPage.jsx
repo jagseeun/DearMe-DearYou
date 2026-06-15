@@ -896,6 +896,40 @@ export default function LetterViewPage() {
   const letterBoxBg     = isPink ? 'linear-gradient(135deg, rgba(255,235,242,0.11), rgba(242,183,200,0.08) 56%, rgba(139,72,116,0.06)), rgba(43,27,48,0.52)' : 'linear-gradient(135deg, rgba(255,220,232,0.09), rgba(156,108,174,0.08)), rgba(40,23,52,0.48)';
   const letterBoxBorder = isPink ? '1px solid rgba(255,222,232,0.24)'        : '1px solid rgba(232,190,216,0.25)';
 
+  const paperMotion = isPink
+    ? {
+        initial: {
+          opacity: 0,
+          y: 74,
+          scale: 0.86,
+          rotateX: 16,
+          filter: 'blur(2.2px)',
+          clipPath: 'inset(48% 10% 48% 10% round 20px)',
+        },
+        animate: {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          rotateX: 0,
+          filter: 'blur(0px)',
+          clipPath: 'inset(0% 0% 0% 0% round 24px)',
+        },
+        transition: { duration: 1.35, delay: 0.04, ease: [0.18, 0.86, 0.2, 1] },
+      }
+    : {
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.8, ease },
+      };
+
+  const paperTextMotion = isPink
+    ? {
+        initial: { opacity: 0, y: 12, filter: 'blur(0.8px)' },
+        animate: { opacity: 1, y: 0, filter: 'blur(0px)' },
+        transition: { duration: 0.72, delay: 0.62, ease },
+      }
+    : {};
+
   const btnStyle = {
     padding: '14px 56px', borderRadius: 50,
     border: btnBorder, background: btnBg,
@@ -1055,14 +1089,15 @@ export default function LetterViewPage() {
             <div className="letter-content-viewport">
               <motion.div
                 className={`letter-content-wrap ${letter.type === 'draw' ? 'letter-content-wrap-draw' : letter.type === 'video' ? 'letter-content-wrap-video' : ''}`.trim()}
-                initial={{ opacity: 0, y: isPink ? 28 : 20, scale: isPink ? 0.986 : 1 }}
+                initial={{ opacity: isPink ? 1 : 0, y: isPink ? 0 : 20, scale: 1 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: isPink ? 0.9 : 0.8, ease }}
+                transition={{ duration: isPink ? 0.4 : 0.8, ease }}
                 style={{ width: '100%', maxWidth: letter.type === 'video' ? 1480 : letter.type === 'draw' ? 1680 : 1120 }}>
 
                 {letter.type === 'draw' ? (
-                  <div
-                    className="letter-draw-frame"
+                  <motion.div
+                    className="letter-draw-frame letter-paper-motion"
+                    {...paperMotion}
                     style={{
                       border: letterBoxBorder,
                       background: isPink
@@ -1071,9 +1106,9 @@ export default function LetterViewPage() {
                     }}
                   >
                     <img className="letter-draw-image" src={letter.imageUrl} alt="그림 편지" />
-                  </div>
+                  </motion.div>
                 ) : letter.type === 'text' ? (
-                  <div className="letters-scroll letter-content-box" style={{
+                  <motion.div className="letters-scroll letter-content-box letter-paper-motion" {...paperMotion} style={{
                     width: '100%', minHeight: 360, maxHeight: '66vh',
                     background: letterBoxBg,
                     border: letterBoxBorder,
@@ -1081,9 +1116,9 @@ export default function LetterViewPage() {
                     padding: '52px 64px', overflowY: 'auto',
                     boxShadow: isPink ? '0 0 28px rgba(255,214,226,0.11), 0 18px 44px rgba(21,12,25,0.26)' : '0 4px 40px rgba(0,0,0,0.1)',
                   }}>
-                    <p className="letter-content-text" style={{ color: textMain, fontSize: 24, fontWeight: 300, lineHeight: 2.15, whiteSpace: 'pre-wrap', margin: 0, letterSpacing: 0.4 }}>
+                    <motion.p className="letter-content-text letter-paper-text-motion" {...paperTextMotion} style={{ color: textMain, fontSize: 24, fontWeight: 300, lineHeight: 2.15, whiteSpace: 'pre-wrap', margin: 0, letterSpacing: 0.4 }}>
                       {letter.content}
-                    </p>
+                    </motion.p>
 
                     {/* 첨부 이미지 */}
                     {letter.imageUrl && (
@@ -1101,7 +1136,7 @@ export default function LetterViewPage() {
                         <img src={letter.signatureData} style={{ maxHeight: 70, opacity: 0.85 }} />
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 ) : (
                   <div className="letter-video-frame" style={{ width: '100%', borderRadius: 20, overflow: 'hidden', boxShadow: '0 16px 44px rgba(0,0,0,0.24)', background: '#080808' }}>
                     <video src={letter.videoUrl} controls playsInline style={{ width: '100%', height: 'min(76vh, 800px)', minHeight: 'min(480px, 62vh)', objectFit: 'contain', display: 'block', background: '#080808' }} />
