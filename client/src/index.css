@@ -17612,3 +17612,48 @@ select:focus,
     bottom: calc(36px + env(safe-area-inset-bottom)) !important;
   }
 }
+
+.write-stage.write-stage-text .write-paper {
+  position: relative !important;
+}
+
+.write-stage.write-stage-text .write-char-count {
+  position: absolute !important;
+  right: var(--paper-pad-x, clamp(22px, 4vw, 52px)) !important;
+  bottom: 72px !important;
+  z-index: 6 !important;
+  min-width: 58px !important;
+  padding: 5px 10px !important;
+  border: 1px solid rgba(202, 137, 154, 0.22) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 248, 250, 0.72) !important;
+  color: rgba(86, 56, 64, 0.68) !important;
+  box-shadow: 0 8px 18px rgba(82, 45, 58, 0.08) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  pointer-events: none !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.write-stage.write-stage-text .write-char-count.is-limit {
+  border-color: rgba(210, 116, 142, 0.34) !important;
+  background: rgba(255, 238, 244, 0.9) !important;
+  color: rgba(116, 58, 76, 0.86) !important;
+}
+
+.write-stage.write-stage-text .write-paper.is-signing .write-char-count {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .write-stage.write-stage-text .write-char-count {
+    right: 16px !important;
+    bottom: 58px !important;
+    min-width: 54px !important;
+    padding: 5px 8px !important;
+    font-size: 11px !important;
+  }
+}

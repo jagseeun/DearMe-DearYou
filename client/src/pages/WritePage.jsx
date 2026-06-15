@@ -8,7 +8,7 @@ import NoticeModal from '../components/NoticeModal.jsx';
 const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.96, ease } } };
-const LETTER_CONTENT_MAX_LENGTH = 5000;
+const LETTER_CONTENT_MAX_LENGTH = 500;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
@@ -30,6 +30,10 @@ function dataUrlToBlob(dataUrl) {
     bytes[i] = binary.charCodeAt(i);
   }
   return new Blob([bytes], { type: mime });
+}
+
+function clampLetterText(value) {
+  return String(value ?? '').slice(0, LETTER_CONTENT_MAX_LENGTH);
 }
 
 function WriteIcon({ name }) {
@@ -95,7 +99,7 @@ function LetterTextarea({ value, onChange, placeholder }) {
     <textarea
       id="textInput"
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={e => onChange(clampLetterText(e.target.value))}
       placeholder={placeholder}
       maxLength={LETTER_CONTENT_MAX_LENGTH}
       className="write-textarea letters-scroll"
@@ -424,7 +428,7 @@ export default function WritePage() {
   }
 
   function handleTextChange(nextText) {
-    setText(nextText);
+    setText(clampLetterText(nextText));
     setTextBorderTone(prev => (prev + 1) % 5);
   }
 
@@ -613,7 +617,7 @@ export default function WritePage() {
     if (!nextDraft) return;
     const nextMode = ['text', 'video', 'draw'].includes(nextDraft.type) ? nextDraft.type : 'text';
     setMode(nextMode);
-    setText(nextDraft.content || '');
+    setText(clampLetterText(nextDraft.content || ''));
     setVideoUrl(nextDraft.videoUrl || '');
     setImageUrl(nextMode === 'text' ? (nextDraft.imageUrl || '') : '');
     setDrawDraftImageUrl(nextMode === 'draw' ? (nextDraft.imageUrl || '') : '');
@@ -642,12 +646,14 @@ export default function WritePage() {
         setSignatureData(draftSignatureData);
       }
 
+      const draftContent = mode === 'text' ? clampLetterText(text) : '';
+
       const res = await fetch('/letter-draft', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: mode,
-          content: mode === 'text' ? text : '',
+          content: draftContent,
           videoUrl: mode === 'video' ? videoUrl || undefined : undefined,
           imageUrl: mode === 'text' ? imageUrl || undefined : mode === 'draw' ? draftImageUrl : undefined,
           signatureData: mode === 'text' ? draftSignatureData || undefined : undefined,
@@ -694,6 +700,7 @@ export default function WritePage() {
   }
 
   async function handleSave() {
+    const limitedText = clampLetterText(text);
     if (!openDate) return showNotice('개봉일을 선택해 주세요.');
     const cleanEmail = email.trim().toLowerCase();
     const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
@@ -724,7 +731,7 @@ export default function WritePage() {
 
       const body = {
         type: mode,
-        content: mode === 'text' ? text : undefined,
+        content: mode === 'text' ? limitedText : undefined,
         videoUrl: mode === 'video' ? videoUrl : undefined,
         imageUrl: mode === 'text' ? (imageUrl || undefined) : mode === 'draw' ? drawImageUrl : undefined,
         signatureData: mode === 'text' ? (finalSignature || undefined) : undefined,
@@ -978,6 +985,13 @@ export default function WritePage() {
                 />
 
                 {/* 사진 촬영 */}
+                <div
+                  className={`write-char-count ${text.length >= LETTER_CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}
+                  aria-live="polite"
+                >
+                  {text.length}/{LETTER_CONTENT_MAX_LENGTH}
+                </div>
+
                 <div className="write-tools-row">
                   <button onClick={imageUploading ? undefined : openPhotoCamera} disabled={imageUploading} className="write-tool-button-inline"
                     style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: imageUploading ? 'default' : 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.65)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, opacity: imageUploading ? 0.6 : 1 }}>
