@@ -696,6 +696,7 @@ function getLetterEmailTheme(theme) {
       metaBg: "rgba(255,255,255,0.62)",
       metaBorder: "rgba(190,128,145,0.2)",
       metaLabel: "rgba(141,86,101,0.64)",
+      metaValue: "#4f3941",
       buttonBg: "linear-gradient(135deg,#f6bfd1,#d98fa8)",
       buttonText: "#3d2430",
       footer: "rgba(116,73,88,0.52)",
@@ -704,26 +705,27 @@ function getLetterEmailTheme(theme) {
   }
 
   return {
-    outerBg: "linear-gradient(180deg,#111827 0%,#20192f 48%,#3a2235 100%)",
-    panelBg: "#182033",
+    outerBg: "#070d1d",
+    panelBg: "#101a2d",
     text: "#fff8ef",
-    muted: "rgba(255,230,239,0.62)",
-    soft: "#f5dce6",
-    headerBg: "linear-gradient(145deg,#19243a 0%,#271d36 54%,#3b2338 100%)",
-    brandMain: "#ffd8e5",
-    brandSecond: "#fff8ec",
-    semicolon: "#f2b8cb",
-    star: "#f4c8d7",
-    cardBg: "#fff8ef",
-    cardBorder: "#f0d5cf",
-    cardText: "#4f3941",
-    metaBg: "rgba(255,255,255,0.075)",
-    metaBorder: "rgba(255,222,233,0.14)",
-    metaLabel: "rgba(255,222,233,0.56)",
-    buttonBg: "linear-gradient(135deg,#ffd8e5,#e8a8be)",
-    buttonText: "#2f2130",
-    footer: "rgba(255,230,239,0.46)",
-    shadow: "0 24px 64px rgba(7,12,24,0.34)",
+    muted: "#c9bdd0",
+    soft: "#f0dce6",
+    headerBg: "#101a2d",
+    brandMain: "#f6cdda",
+    brandSecond: "#fff8ef",
+    semicolon: "#e5aabd",
+    star: "#e9bdcc",
+    cardBg: "#0b1325",
+    cardBorder: "#2a3857",
+    cardText: "#fff8ef",
+    metaBg: "#0b1325",
+    metaBorder: "#2a3857",
+    metaLabel: "#bda9bd",
+    metaValue: "#fff8ef",
+    buttonBg: "#f1c7d6",
+    buttonText: "#121827",
+    footer: "#a998b0",
+    shadow: "0 24px 60px #050817",
   };
 }
 
@@ -749,14 +751,14 @@ function buildLetterMetaHtml(meta = {}, themeStyles) {
   ];
 
   return `
-    <div style="margin:0 0 24px;background:${themeStyles.metaBg};border:1px solid ${themeStyles.metaBorder};border-radius:14px;overflow:hidden">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;background:${themeStyles.metaBg};border:1px solid ${themeStyles.metaBorder};border-radius:14px;border-collapse:separate;overflow:hidden">
       ${rows.map(([label, value], index) => `
-        <div style="display:flex;gap:12px;padding:12px 16px;${index < rows.length - 1 ? `border-bottom:1px solid ${themeStyles.metaBorder};` : ""}font-size:14px;line-height:1.5">
-          <div style="min-width:92px;color:${themeStyles.metaLabel};font-weight:600">${escapeHtml(label)}</div>
-          <div style="color:${themeStyles.cardText};word-break:break-word">${escapeHtml(value || "-")}</div>
-        </div>
+        <tr>
+          <td style="width:92px;padding:12px 0 12px 16px;${index < rows.length - 1 ? `border-bottom:1px solid ${themeStyles.metaBorder};` : ""}color:${themeStyles.metaLabel};font-weight:600;font-size:14px;line-height:1.5;vertical-align:top">${escapeHtml(label)}</td>
+          <td style="padding:12px 16px;${index < rows.length - 1 ? `border-bottom:1px solid ${themeStyles.metaBorder};` : ""}color:${themeStyles.metaValue || themeStyles.text};font-size:14px;line-height:1.5;word-break:break-word;vertical-align:top">${escapeHtml(value || "-")}</td>
+        </tr>
       `).join("")}
-    </div>`;
+    </table>`;
 }
 
 function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 600 }) {
@@ -904,20 +906,24 @@ function personalizeTeacherLetterForMember(teacherLetter, memberName) {
 function buildTeacherLetterEmail(memberName, teacherLetter) {
   const personalizedTeacherLetter = personalizeTeacherLetterForMember(teacherLetter, memberName);
   const rawTeacherName = String(personalizedTeacherLetter.teacherName || "").trim();
-  const rawTitle = personalizedTeacherLetter.title || `${memberName}님을 응원하는 ${rawTeacherName || "선생님"}의 편지입니다`;
+  const rawMemberName = String(memberName || "").trim() || "여러분";
+  const rawTitle = personalizedTeacherLetter.title || `${rawTeacherName || "선생님"}의 편지`;
+  const safeMemberName = escapeHtml(rawMemberName);
   const teacherName = escapeHtml(rawTeacherName);
   const title = escapeHtml(rawTitle);
   const content = escapeHtml(personalizedTeacherLetter.content);
 
   return buildEmailShell({
     theme: "dark",
-    subtitle: `${rawTeacherName || "선생님"}의 편지가 도착했습니다`,
-    maxWidth: 720,
+    subtitle: `${rawTeacherName || "선생님"}의 편지`,
+    maxWidth: 680,
     body: themeStyles => `
-    <div style="padding:42px 48px">
-      <div style="margin-bottom:18px;color:${themeStyles.brandMain};font-size:13px;font-weight:700">${teacherName || "선생님"}</div>
-      <div style="margin-bottom:18px;color:${themeStyles.text};font-size:24px;line-height:1.35;font-weight:300">${title}</div>
-      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:34px 38px;font-size:16px;line-height:1.95;color:${themeStyles.cardText};white-space:pre-wrap">${content}</div>
+    <div style="padding:40px 42px 44px">
+      <div style="margin:0 0 22px;border-top:1px solid ${themeStyles.cardBorder};height:1px;line-height:1px"></div>
+      <div style="margin-bottom:8px;color:${themeStyles.muted};font-size:13px;line-height:1.5">To. ${safeMemberName}</div>
+      <div style="margin-bottom:24px;color:${themeStyles.text};font-size:23px;line-height:1.45;font-weight:300">${title}</div>
+      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:18px;padding:34px 36px;font-size:16px;line-height:2;color:${themeStyles.cardText};white-space:pre-wrap">${content}</div>
+      <div style="margin-top:20px;text-align:right;color:${themeStyles.muted};font-size:14px;line-height:1.6">From. ${teacherName || "선생님"}</div>
     </div>`,
   });
 }
@@ -936,13 +942,13 @@ async function sendTeacherDelivery(delivery) {
   }
 
   try {
-    const teacherIntro = `${member.name}님을 응원하는 ${teacherLetter.teacherName}께서 편지를 보냈습니다!`;
+    const teacherIntro = `${teacherLetter.teacherName}의 편지가 도착했습니다`;
     await sendMail({
       from: emailFromHeader,
       replyTo: emailReplyTo,
       to: member.email,
       subject: mailHeader(teacherIntro),
-      text: `${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
+      text: `To. ${member.name}\n\n${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
       html: buildTeacherLetterEmail(member.name, personalizedTeacherLetter),
     });
 
@@ -2224,14 +2230,14 @@ app.post("/teacher-letters/:id/test-send", requireAdmin, async (req, res) => {
 
     const testName = String(req.session.user?.name || TEACHER_TEST_NAME).trim() || TEACHER_TEST_NAME;
     const personalizedTeacherLetter = personalizeTeacherLetterForMember(teacherLetter, testName);
-    const teacherIntro = `${testName}님을 응원하는 ${teacherLetter.teacherName}께서 편지를 보냈습니다!`;
+    const teacherIntro = `${teacherLetter.teacherName}의 편지가 도착했습니다`;
 
     await sendMail({
       from: emailFromHeader,
       replyTo: emailReplyTo,
       to: TEACHER_TEST_EMAIL,
       subject: mailHeader(`[테스트] ${teacherIntro}`),
-      text: `[테스트 발송]\n받는 사람: ${testName} <${TEACHER_TEST_EMAIL}>\n\n${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
+      text: `[테스트 발송]\n받는 사람: ${testName} <${TEACHER_TEST_EMAIL}>\n\nTo. ${testName}\n\n${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
       html: buildTeacherLetterEmail(testName, personalizedTeacherLetter),
     });
 
