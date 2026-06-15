@@ -11063,9 +11063,43 @@ canvas {
 .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-info,
 .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-divider,
 .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-open-button,
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-route-envelope-reveal,
 .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-day-sidebar,
 .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-mobile-day {
   z-index: 3 !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-route-envelope-reveal {
+  position: absolute !important;
+  z-index: 1 !important;
+  left: 84px !important;
+  right: 84px !important;
+  top: calc(88px + env(safe-area-inset-top)) !important;
+  bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+  border: 1px solid rgba(255, 232, 239, 0.2) !important;
+  border-radius: 34px !important;
+  background:
+    linear-gradient(146deg, transparent 49.45%, rgba(255, 238, 244, 0.07) 49.8%, rgba(255, 238, 244, 0.07) 50.2%, transparent 50.55%),
+    linear-gradient(34deg, transparent 49.35%, rgba(242, 183, 200, 0.055) 49.8%, rgba(242, 183, 200, 0.055) 50.2%, transparent 50.65%),
+    radial-gradient(circle at 50% 18%, rgba(255, 246, 250, 0.08), transparent 38%),
+    linear-gradient(180deg, rgba(255, 245, 248, 0.08), rgba(255, 222, 232, 0.03)),
+    rgba(42, 27, 43, 0.18) !important;
+  box-shadow:
+    0 0 54px rgba(255, 214, 226, 0.1),
+    0 26px 70px rgba(17, 10, 24, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  pointer-events: none !important;
+  transform-origin: 50% 50% !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-route-envelope-reveal span {
+  position: absolute !important;
+  left: 56px !important;
+  right: 56px !important;
+  top: 50% !important;
+  height: 1px !important;
+  background: linear-gradient(90deg, transparent, rgba(255, 236, 242, 0.22), transparent) !important;
+  transform-origin: center center !important;
 }
 
 .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-info {
@@ -11151,6 +11185,19 @@ canvas {
     top: calc(82px + env(safe-area-inset-top)) !important;
     bottom: calc(70px + env(safe-area-inset-bottom)) !important;
     border-radius: 24px !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-route-envelope-reveal {
+    left: 16px !important;
+    right: 16px !important;
+    top: calc(82px + env(safe-area-inset-top)) !important;
+    bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+    border-radius: 24px !important;
+  }
+
+  .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-route-envelope-reveal span {
+    left: 28px !important;
+    right: 28px !important;
   }
 
   .letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-stage::after,
@@ -16919,7 +16966,6 @@ select:focus,
 .pink-letter-list-page .letter-badge,
 .pink-letter-list-page .letter-recipient,
 .pink-letter-list-page .letter-lock-pill,
-.pink-letter-list-page .letter-open-arrow,
 .pink-letter-list-page .letter-delete-button,
 .pink-letter-list-page .soft-button,
 .pink-letter-list-page .letter-back-floating,
@@ -16927,6 +16973,34 @@ select:focus,
 .pink-letter-view .letter-open-button {
   border-color: rgba(255, 222, 232, 0.34) !important;
   color: var(--letter-control-text) !important;
+}
+
+.pink-letter-list-page .letter-date-line,
+.letters-main-page .letter-date-line,
+.letters-main-page .letter-card.is-received .letter-date-line {
+  color: rgba(255, 246, 250, 0.9) !important;
+  -webkit-text-fill-color: rgba(255, 246, 250, 0.9) !important;
+  text-shadow: 0 1px 7px rgba(24, 13, 28, 0.34) !important;
+}
+
+.pink-letter-list-page .letter-open-arrow,
+.letters-main-page .letter-open-arrow {
+  border-color: rgba(255, 246, 250, 0.34) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 222, 232, 0.08)),
+    rgba(42, 27, 48, 0.24) !important;
+  color: rgba(255, 248, 252, 0.94) !important;
+  -webkit-text-fill-color: rgba(255, 248, 252, 0.94) !important;
+  box-shadow:
+    0 0 18px rgba(255, 246, 250, 0.1),
+    0 8px 22px rgba(17, 10, 24, 0.16) !important;
+}
+
+.pink-letter-list-page .letter-badge,
+.pink-letter-list-page .letter-recipient,
+.pink-letter-list-page .letter-lock-pill {
+  color: rgba(255, 219, 229, 0.78) !important;
+  -webkit-text-fill-color: rgba(255, 219, 229, 0.78) !important;
 }
 
 .pink-letter-list-page .letter-card.is-received .letter-card-copy {

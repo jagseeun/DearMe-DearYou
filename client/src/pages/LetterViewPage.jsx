@@ -996,11 +996,38 @@ export default function LetterViewPage() {
             </motion.button>
 
             <div className="letter-envelope-stage">
+              {isPink && (
+                <motion.div
+                  className="letter-route-envelope-reveal"
+                  aria-hidden="true"
+                  initial={{
+                    opacity: 0,
+                    y: 42,
+                    scale: 0.92,
+                    filter: 'blur(1.4px)',
+                    clipPath: 'inset(46% 6% 46% 6% round 24px)',
+                  }}
+                  animate={{
+                    opacity: [0, 0.82, 0.12],
+                    y: 0,
+                    scale: 1,
+                    filter: 'blur(0px)',
+                    clipPath: 'inset(0% 0% 0% 0% round 34px)',
+                  }}
+                  transition={{ duration: 1.3, times: [0, 0.72, 1], ease: [0.18, 0.86, 0.2, 1] }}
+                >
+                  <motion.span
+                    initial={{ opacity: 0, scaleX: 0.72 }}
+                    animate={{ opacity: 1, scaleX: 1 }}
+                    transition={{ duration: 0.82, delay: 0.28, ease }}
+                  />
+                </motion.div>
+              )}
 
               <motion.div
                 className="letter-envelope-info letter-from"
                 initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.15, ease }}>
+                transition={{ duration: 0.8, delay: isPink ? 0.34 : 0.15, ease }}>
                 <div className="letter-envelope-label" style={{ color: textHint }}>보낸 날</div>
                 <div className="letter-envelope-value">
                   <span>{formatDate(letter.createdAt)}</span>
@@ -1013,7 +1040,7 @@ export default function LetterViewPage() {
               <motion.div
                 className="letter-envelope-info letter-to"
                 initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.22, ease }}>
+                transition={{ duration: 0.8, delay: isPink ? 0.46 : 0.22, ease }}>
                 <div className="letter-envelope-label" style={{ color: textHint }}>열린 날</div>
                 <div className="letter-envelope-value">
                   <span>{formatDate(letter.openDate)}</span>
@@ -1025,7 +1052,7 @@ export default function LetterViewPage() {
               <motion.div
                 className="letter-day-sidebar"
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, delay: 0.3, ease }}
+                transition={{ duration: 0.8, delay: isPink ? 0.58 : 0.3, ease }}
                 style={{
                   position: 'absolute', right: 0, top: 0, width: 96, height: '100%',
                   background: sidebarBg,
@@ -1045,7 +1072,7 @@ export default function LetterViewPage() {
               <motion.button
                 className="letter-view-button letter-open-button"
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.95, delay: 0.42, ease }}
+                transition={{ duration: 0.95, delay: isPink ? 0.72 : 0.42, ease }}
                 onClick={() => setPhase('content')}
                 whileHover={{ scale: 1.018 }}
                 style={{ ...btnStyle, position: 'absolute', bottom: 40, left: '50%', translate: '-50% 0', transformOrigin: 'center center' }}>
