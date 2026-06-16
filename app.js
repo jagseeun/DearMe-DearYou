@@ -918,9 +918,9 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
       <div style="padding:44px 40px 34px;text-align:center;border-bottom:1px solid rgba(255,230,242,0.16);background:rgba(255,245,250,0.08)">
         <div style="margin-bottom:20px;color:rgba(255,235,245,0.48);font-size:9px;line-height:1;letter-spacing:13px">***</div>
         <div style="font-size:28px;font-weight:300;letter-spacing:0.04em;line-height:1">
-          <span style="color:#f6c6dc;text-shadow:0 0 12px rgba(244,155,205,0.24)">Dear Me</span>
-          <span style="margin:0 10px;color:rgba(248,226,238,0.56);font-weight:300">;</span>
-          <span style="color:#e4d5f7;text-shadow:0 0 12px rgba(194,160,232,0.22)">Dear You</span>
+          <span style="color:#684554;text-shadow:0 0 10px rgba(104,69,84,0.18)">Dear Me</span>
+          <span style="margin:0 10px;color:#fff7fb;font-weight:300;text-shadow:0 0 10px rgba(255,245,250,0.18)">;</span>
+          <span style="color:#2a3052;text-shadow:0 0 10px rgba(42,48,82,0.18)">Dear You</span>
         </div>
         <div style="width:58px;height:1px;margin:26px auto 0;background:linear-gradient(to right,transparent,rgba(255,220,238,0.34),transparent);box-shadow:0 0 6px rgba(230,170,210,0.16);line-height:1px"></div>
       </div>
