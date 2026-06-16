@@ -169,7 +169,7 @@ export default function LettersPage() {
   }
 
   function logoutLetters() {
-    setLogoutConfirm(true);
+    confirmLogoutLetters();
   }
 
   function confirmLogoutLetters() {
