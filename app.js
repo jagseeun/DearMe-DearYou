@@ -1600,18 +1600,17 @@ app.put("/update-profile", async (req, res) => {
 
   if (!name) return res.status(400).json({ message: "이름을 입력해주세요." });
   if (name.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (email && !isValidEmail(email)) {
+  if (!email) return res.status(400).json({ message: "이메일을 입력해주세요." });
+  if (!isValidEmail(email)) {
     return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   }
 
   try {
-    if (email) {
-      const existingEmail = await prisma.member.findUnique({ where: { email } });
-      if (existingEmail && existingEmail.id !== req.session.user.id) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
-    }
+    const existingEmail = await prisma.member.findUnique({ where: { email } });
+    if (existingEmail && existingEmail.id !== req.session.user.id) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
     const updated = await prisma.member.update({
       where: { id: req.session.user.id },
-      data: { name, email: email || null },
+      data: { name, email },
     });
     req.session.user.name = updated.name;
     req.session.user.email = updated.email || "";
@@ -1935,6 +1934,9 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
       select: { email: true },
     });
     const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
+    if (!toOther && !accountEmail) {
+      return res.status(400).json({ message: "계정 이메일을 먼저 등록해주세요." });
+    }
     const draftDeliveryEmail = toOther ? null : (accountEmail || null);
 
     const draft = await prisma.letterDraft.upsert({
@@ -2049,6 +2051,9 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
       select: { email: true },
     });
     const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
+    if (!recipientEmail && !accountEmail) {
+      return res.status(400).json({ message: "계정 이메일을 먼저 등록해주세요." });
+    }
 
     const letter = await prisma.letter.create({
       data: {
@@ -2089,12 +2094,11 @@ app.get("/my-letters", async (req, res) => {
   try {
     const now = new Date();
     const letters = await prisma.letter.findMany({
-      where: { authorId: req.session.user.id },
+      where: { authorId: req.session.user.id, type: { not: "call" } },
       orderBy: { createdAt: "desc" },
       select: {
         id: true, type: true, content: true, videoUrl: true,
         imageUrl: true, signatureData: true,
-        callReplyVideoUrl: true, callCompositeVideoUrl: true, callReplyEmail: true, callReplySentAt: true,
         recipientEmail: true, recipientName: true,
         emailTheme: true,
         favorite: true,
@@ -2111,10 +2115,6 @@ app.get("/my-letters", async (req, res) => {
         videoUrl: null,
         imageUrl: null,
         signatureData: null,
-        callReplyVideoUrl: null,
-        callCompositeVideoUrl: null,
-        callReplyEmail: null,
-        callReplySentAt: null,
       };
     }));
   } catch { res.status(500).json({ message: "서버 오류" }); }

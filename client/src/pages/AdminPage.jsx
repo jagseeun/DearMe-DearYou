@@ -67,7 +67,6 @@ function toDateInputValue(value) {
 
 function getLetterSendStatus(letter) {
   if (letter.sentAt) return { key: 'sent', label: `\uC644\uB8CC ${formatDate(letter.sentAt)}`, color: '#8fd19e' };
-  if (letter.type === 'call') return { key: 'excluded', label: '\uD1B5\uD654 \uD3B8\uC9C0', color: 'rgba(255,252,223,0.42)' };
   if (new Date(letter.openDate) <= new Date()) return { key: 'due', label: '\uBC1C\uC1A1 \uB300\uAE30', color: '#ffd38a' };
   return { key: 'scheduled', label: '\uC608\uC57D', color: 'rgba(255,252,223,0.48)' };
 }

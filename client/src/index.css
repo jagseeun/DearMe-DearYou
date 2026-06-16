@@ -17666,3 +17666,79 @@ select:focus,
     font-size: 11px !important;
   }
 }
+
+.letters-main-exit-actions {
+  position: fixed !important;
+  left: max(20px, calc((100vw - 780px) / 2 + 24px)) !important;
+  bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+  z-index: 20 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  max-width: calc(100vw - 32px) !important;
+}
+
+.letters-main-exit-actions .letter-back-floating {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: auto !important;
+  min-width: 72px !important;
+  white-space: nowrap !important;
+}
+
+.letters-main-exit-actions .letters-main-logout {
+  min-width: 96px !important;
+}
+
+@media (max-width: 760px) {
+  .letters-main-exit-actions {
+    left: 14px !important;
+    right: 14px !important;
+    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    max-width: none !important;
+  }
+
+  .letters-main-exit-actions .letter-back-floating {
+    flex: 0 1 auto !important;
+  }
+}
+
+/* Drawing letters are saved at 1440x1080. Keep every editor and viewer surface at 4:3. */
+.draw-editor.draw-editor-clean .draw-canvas-wrap,
+.write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas-wrap,
+.write-stage.write-stage-draw .draw-canvas-wrap {
+  aspect-ratio: 4 / 3 !important;
+}
+
+.draw-editor.draw-editor-clean .draw-canvas,
+.write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-canvas,
+.write-stage.write-stage-draw .draw-canvas {
+  aspect-ratio: 4 / 3 !important;
+}
+
+.letter-content-wrap-draw {
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.letter-draw-frame {
+  width: 100% !important;
+  max-width: min(1440px, calc((100dvh - 188px) * 4 / 3)) !important;
+  aspect-ratio: 4 / 3 !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+.letter-draw-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+@media (max-width: 760px) {
+  .letter-draw-frame {
+    max-width: min(100%, calc((100svh - 168px) * 4 / 3)) !important;
+  }
+}

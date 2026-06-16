@@ -24,6 +24,22 @@ function getDrawContext(canvas) {
   return canvas.getContext('2d', { willReadFrequently: true });
 }
 
+function drawImageContained(ctx, img, width, height) {
+  const sourceWidth = img.naturalWidth || img.width;
+  const sourceHeight = img.naturalHeight || img.height;
+  if (!sourceWidth || !sourceHeight) return;
+
+  ctx.fillStyle = CANVAS_BG;
+  ctx.fillRect(0, 0, width, height);
+
+  const scale = Math.min(width / sourceWidth, height / sourceHeight);
+  const drawWidth = sourceWidth * scale;
+  const drawHeight = sourceHeight * scale;
+  const x = (width - drawWidth) / 2;
+  const y = (height - drawHeight) / 2;
+  ctx.drawImage(img, x, y, drawWidth, drawHeight);
+}
+
 function DrawToolIcon({ name }) {
   const paths = {
     eraser: (
@@ -87,7 +103,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        drawImageContained(ctx, img, canvas.width, canvas.height);
         storeHistory();
         setDrawn(true);
       };

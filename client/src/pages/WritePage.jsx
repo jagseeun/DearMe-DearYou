@@ -407,6 +407,7 @@ export default function WritePage() {
   const [showModal, setShowModal] = useState(false);
   const [openDate, setOpenDate] = useState(defaultOpenDate());
   const [sendNow, setSendNow] = useState(false);
+  const [accountEmail, setAccountEmail] = useState('');
   const [email, setEmail] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [name, setName] = useState('');
@@ -440,7 +441,13 @@ export default function WritePage() {
   useEffect(() => {
     fetch('/get-user-info', { cache: 'no-store' })
       .then(r => { if (r.status === 401) { navigate('/login'); return null; } return r.json(); })
-      .then(d => { if (!d) return; if (d.email) setEmail(d.email); if (d.name) setName(d.name); })
+      .then(d => {
+        if (!d) return;
+        const nextEmail = d.email || '';
+        setAccountEmail(nextEmail);
+        setEmail(nextEmail);
+        if (d.name) setName(d.name);
+      })
       .catch(() => {});
   }, []);
 
@@ -628,7 +635,7 @@ export default function WritePage() {
     setDrawDraftImageUrl(nextMode === 'draw' ? (nextDraft.imageUrl || '') : '');
     setSignatureData(nextDraft.signatureData || null);
     setEmailTheme(nextDraft.emailTheme === 'pink' ? 'pink' : 'dark');
-    setEmail(email);
+    setEmail(accountEmail || email);
     setEmailSubject(nextDraft.emailSubject || '');
     setToOther(Boolean(nextDraft.toOther));
     setRecipientName(nextDraft.recipientName || '');
@@ -667,7 +674,7 @@ export default function WritePage() {
           openDate,
           emailSubject: emailSubject.trim(),
           emailTheme,
-          deliveryEmail: toOther ? '' : email.trim().toLowerCase(),
+          deliveryEmail: toOther ? '' : (accountEmail || email).trim().toLowerCase(),
           toOther,
           recipientEmail: toOther ? recipientEmail.trim().toLowerCase() : '',
           recipientName: toOther ? recipientName.trim() : '',
@@ -710,7 +717,7 @@ export default function WritePage() {
   async function handleSave() {
     const limitedText = clampLetterText(text);
     if (!openDate) return showNotice('개봉일을 선택해 주세요.');
-    const cleanEmail = email.trim().toLowerCase();
+    const cleanEmail = (accountEmail || email).trim().toLowerCase();
     const cleanEmailSubject = emailSubject.trim();
     const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
     const cleanRecipientName = recipientName.trim();
@@ -1163,6 +1170,41 @@ export default function WritePage() {
               </div>
 
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={labelStyle}>편지 테마</label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {[
+                    { value: 'dark', label: '다크' },
+                    { value: 'pink', label: '핑크' },
+                  ].map(option => {
+                    const selected = emailTheme === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setEmailTheme(option.value)}
+                        style={{
+                          padding: '10px 0',
+                          borderRadius: 12,
+                          border: '1px solid',
+                          borderColor: selected ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)',
+                          background: selected
+                            ? option.value === 'pink'
+                              ? 'linear-gradient(135deg, rgba(192,99,135,0.78), rgba(90,54,92,0.78))'
+                              : 'rgba(72,56,41,0.75)'
+                            : 'rgba(255,255,255,0.06)',
+                          color: selected ? '#ffeacd' : 'rgba(255,252,223,0.55)',
+                          fontFamily: 'inherit',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label style={labelStyle}>
                   메일 제목 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(선택)</span>
                 </label>
@@ -1208,7 +1250,7 @@ export default function WritePage() {
                   <input
                     type="email"
                     placeholder="이메일 주소"
-                    value={email}
+                    value={accountEmail || email}
                     readOnly
                     aria-readonly="true"
                     style={{ ...inputStyle, cursor: 'default', opacity: 0.82 }}

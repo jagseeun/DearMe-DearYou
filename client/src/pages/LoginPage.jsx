@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
-import { rememberLetterAuth, useAuth } from '../auth.jsx';
+import { clearLetterAuth, rememberLetterAuth, useAuth } from '../auth.jsx';
 
 const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.055 } } };
@@ -17,6 +17,7 @@ export default function LoginPage({ letterMode = false }) {
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
   const [notice, setNotice] = useState(null);
+  const [preparingForcedLogin, setPreparingForcedLogin] = useState(false);
   const isLetterMode = letterMode || location.pathname === '/letter-login';
   const forceLogin = Boolean(location.state?.forceLogin);
   const returnTo = typeof location.state?.from === 'string'
@@ -29,7 +30,23 @@ export default function LoginPage({ letterMode = false }) {
     }
   }, [status, isLetterMode, forceLogin, navigate, returnTo]);
 
+  useEffect(() => {
+    if (!isLetterMode || !forceLogin) return;
+    let cancelled = false;
+    setPreparingForcedLogin(true);
+    clearLetterAuth();
+    fetch('/logout', { cache: 'no-store' })
+      .catch(() => {})
+      .finally(async () => {
+        if (cancelled) return;
+        await refresh();
+        if (!cancelled) setPreparingForcedLogin(false);
+      });
+    return () => { cancelled = true; };
+  }, [isLetterMode, forceLogin, refresh]);
+
   async function handleLogin() {
+    if (preparingForcedLogin) return;
     const nextUserid = userid.trim();
     if (!nextUserid || !password) {
       setNotice({ title: '로그인 확인', message: '아이디와 비밀번호를 입력해 주세요.' });
@@ -44,7 +61,7 @@ export default function LoginPage({ letterMode = false }) {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         const currentUser = await refresh();
-        rememberLetterAuth(currentUser);
+        if (isLetterMode) rememberLetterAuth(currentUser);
         navigate(returnTo, { replace: true });
       }
       else setNotice({ title: '로그인 실패', message: data.message || '로그인에 실패했습니다.' });
@@ -94,8 +111,8 @@ export default function LoginPage({ letterMode = false }) {
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
-        <motion.button variants={item} className="submit-btn" type="submit">
-          로그인
+        <motion.button variants={item} className="submit-btn" type="submit" disabled={preparingForcedLogin}>
+          {preparingForcedLogin ? '준비 중...' : '로그인'}
         </motion.button>
       </motion.form>
 

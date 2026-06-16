@@ -65,7 +65,11 @@ export default function MyPage() {
       setNotice({ title: '이름 확인', message: '이름은 10자를 넘을 수 없습니다.' });
       return;
     }
-    if (nextEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
+    if (!nextEmail) {
+      setNotice({ title: '이메일 확인', message: '이메일을 입력해 주세요.' });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
       setNotice({ title: '이메일 확인', message: '이메일 형식이 올바르지 않습니다.' });
       return;
     }
@@ -210,6 +214,7 @@ export default function MyPage() {
                 value={email}
                 onChange={event => setEmail(event.target.value)}
                 placeholder="이메일"
+                required
                 disabled={loading || profileSaving}
               />
             </label>

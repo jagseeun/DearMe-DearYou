@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
 import { listItemMotion, motionEase, pageMotion, panelMotion } from '../utils/motion.js';
+import { clearLetterAuth } from '../auth.jsx';
 
 const ease = motionEase;
 
@@ -75,6 +76,15 @@ export default function PinkLetterViewPage() {
 
   function openLetter(letter) {
     navigate('/view-letter', { state: { letter, name, returnTo: '/pink-letters' } });
+  }
+
+  function goHome() {
+    navigate('/');
+  }
+
+  function logoutLetters() {
+    clearLetterAuth();
+    window.location.assign('/logout');
   }
 
   function handleCardClick(letter, unlocked, event) {
@@ -179,16 +189,27 @@ export default function PinkLetterViewPage() {
       </div>
 
       {!loading && (
-        <motion.button
-          type="button"
-          className="letter-back-floating pink-letter-exit"
+        <motion.div
+          className="letters-main-exit-actions pink-letter-exit-actions"
           initial={{ opacity: 0, y: 8, pointerEvents: 'none' }}
           animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
           transition={{ duration: 0.52, delay: 0.48, ease }}
-          onClick={() => navigate('/')}
         >
-          ← 나가기
-        </motion.button>
+          <motion.button
+            type="button"
+            className="letter-back-floating pink-letter-exit"
+            onClick={goHome}
+          >
+            홈
+          </motion.button>
+          <motion.button
+            type="button"
+            className="letter-back-floating pink-letter-exit letters-main-logout"
+            onClick={logoutLetters}
+          >
+            로그아웃
+          </motion.button>
+        </motion.div>
       )}
     </motion.div>
   );

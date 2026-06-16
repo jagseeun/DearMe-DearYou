@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
 import NoticeModal from '../components/NoticeModal.jsx';
 import { listItemMotion, modalBackdropMotion, modalPanelMotion, motionEase, pageMotion, panelMotion } from '../utils/motion.js';
+import { clearLetterAuth } from '../auth.jsx';
 
 const ease = motionEase;
 
@@ -161,8 +162,13 @@ export default function LettersPage() {
     openLetter(letter);
   }
 
-  function exitLetters() {
-    navigate('/hello');
+  function goHome() {
+    navigate('/');
+  }
+
+  function logoutLetters() {
+    clearLetterAuth();
+    window.location.assign('/logout');
   }
 
   async function toggleFavorite(letter, event) {
@@ -393,17 +399,29 @@ export default function LettersPage() {
         )}
       </div>
 
-      <motion.button
-        type="button"
-        className="letter-back-floating pink-letter-exit letters-main-exit"
+      <motion.div
+        className="letters-main-exit-actions"
         initial={{ opacity: 0, y: 8, pointerEvents: 'none' }}
         animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
         transition={{ duration: 0.52, delay: 0.48, ease }}
-        onClick={exitLetters}
-        whileHover={{ boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
       >
-        나가기
-      </motion.button>
+        <motion.button
+          type="button"
+          className="letter-back-floating pink-letter-exit letters-main-exit"
+          onClick={goHome}
+          whileHover={{ boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
+        >
+          홈
+        </motion.button>
+        <motion.button
+          type="button"
+          className="letter-back-floating pink-letter-exit letters-main-exit letters-main-logout"
+          onClick={logoutLetters}
+          whileHover={{ boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
+        >
+          로그아웃
+        </motion.button>
+      </motion.div>
 
       <AnimatePresence>
         {deleteConfirm !== null && (
