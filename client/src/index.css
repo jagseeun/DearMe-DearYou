@@ -17875,3 +17875,95 @@ select:focus,
 .password-toggle:active {
   transform: translateY(-50%) !important;
 }
+
+button,
+[role="button"],
+a[href],
+summary,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+.glass-btn,
+.submit-btn,
+.primary-cta,
+.soft-button,
+.write-submit,
+.done-button,
+.letter-view-button,
+.letter-open-arrow,
+.letter-back-floating,
+.letter-delete-button,
+.letter-favorite-button,
+.letter-delete-modal-button,
+.notice-modal-actions button,
+.modal-actions button,
+.password-toggle {
+  cursor: pointer !important;
+}
+
+button:disabled,
+input:disabled,
+[aria-disabled="true"] {
+  cursor: default !important;
+}
+
+.password-field {
+  overflow: visible !important;
+}
+
+.password-toggle {
+  top: 50% !important;
+  right: 8px !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  padding: 0 !important;
+  transform: translateY(-50%) !important;
+  transform-origin: center !important;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease !important;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible,
+.password-toggle:active {
+  transform: translateY(-50%) !important;
+}
+
+.letter-login-page .password-toggle {
+  right: 8px !important;
+  background: rgba(86, 42, 61, 0.1) !important;
+  color: rgba(58, 24, 39, 0.56) !important;
+}
+
+.letter-login-page .password-toggle:hover,
+.letter-login-page .password-toggle:focus-visible {
+  background: rgba(86, 42, 61, 0.16) !important;
+  color: rgba(58, 24, 39, 0.72) !important;
+}
+
+.letter-login-page .submit-btn {
+  border-color: rgba(244, 211, 218, 0.28) !important;
+  background:
+    linear-gradient(135deg, rgba(206, 142, 164, 0.76), rgba(139, 81, 108, 0.72)),
+    rgba(255, 235, 241, 0.18) !important;
+  color: rgba(45, 18, 30, 0.86) !important;
+  box-shadow:
+    0 12px 28px rgba(24, 13, 28, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.17) !important;
+}
+
+.letter-login-page .submit-btn:hover {
+  border-color: rgba(255, 230, 238, 0.38) !important;
+  background:
+    linear-gradient(135deg, rgba(214, 153, 174, 0.82), rgba(151, 89, 116, 0.78)),
+    rgba(255, 235, 241, 0.2) !important;
+  color: rgba(45, 18, 30, 0.9) !important;
+}
+
+.letters-main-page .letter-card.is-locked .letter-date-line,
+.pink-letter-list-page .letter-card.is-locked .letter-date-line {
+  color: rgba(255, 231, 239, 0.58) !important;
+  -webkit-text-fill-color: rgba(255, 231, 239, 0.58) !important;
+  text-shadow: 0 1px 5px rgba(24, 13, 28, 0.22) !important;
+}
