@@ -912,24 +912,24 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
   const content = escapeHtml(personalizedTeacherLetter.content);
 
   return `
-  <div style="box-sizing:border-box;width:100%;margin:0;padding:30px 0 38px;background:#2f1c3b;background-image:linear-gradient(160deg,#2f1c3b 0%,#51304a 22%,#684554 40%,#5f4a68 58%,#3e3f63 76%,#2a3052 90%,#1f2845 100%);font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;position:relative;overflow:hidden;color:#fff7ed">
-    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 40% at 15% 10%,rgba(220,160,180,0.12) 0%,transparent 62%),radial-gradient(ellipse 60% 50% at 85% 80%,rgba(200,170,120,0.09) 0%,transparent 62%);pointer-events:none"></div>
-    <div style="box-sizing:border-box;width:86%;max-width:640px;margin:0 auto;position:relative;z-index:1;background:rgba(205,176,197,0.38);border:1px solid rgba(236,212,228,0.36);border-radius:28px;overflow:hidden;box-shadow:0 0 0 1px rgba(236,205,225,0.08),0 24px 58px rgba(12,6,24,0.34),inset 0 1px 0 rgba(255,245,250,0.16)">
-      <div style="padding:38px 28px 30px;text-align:center;border-bottom:1px solid rgba(236,212,228,0.2);background:rgba(188,160,183,0.16)">
-        <div style="margin-bottom:20px;color:rgba(255,245,250,0.6);font-size:9px;line-height:1;letter-spacing:13px">***</div>
+  <div style="box-sizing:border-box;width:100%;margin:0;padding:34px 0 44px;background:#241831;background-image:linear-gradient(160deg,#241831 0%,#3f2440 24%,#5d4055 46%,#5a536d 66%,#293757 86%,#1d2742 100%);font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;position:relative;overflow:hidden;color:#2a2133">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 42% at 18% 8%,rgba(226,170,196,0.16) 0%,transparent 62%),radial-gradient(ellipse 68% 56% at 90% 78%,rgba(160,177,220,0.12) 0%,transparent 64%);pointer-events:none"></div>
+    <div style="box-sizing:border-box;width:90%;max-width:620px;margin:0 auto;position:relative;z-index:1;background:#cbb4c8;border:1px solid #ead9e6;border-radius:26px;overflow:hidden;box-shadow:0 24px 62px rgba(12,6,24,0.42),inset 0 1px 0 rgba(255,250,253,0.42)">
+      <div style="padding:38px 28px 30px;text-align:center;border-bottom:1px solid rgba(120,86,112,0.18);background:#d8c2d4">
+        <div style="margin-bottom:18px;color:rgba(105,70,96,0.54);font-size:9px;line-height:1;letter-spacing:13px">***</div>
         <div style="font-size:28px;font-weight:300;letter-spacing:0.04em;line-height:1">
-          <span style="color:#5d3146;text-shadow:0 0 10px rgba(255,230,244,0.22)">Dear Me</span>
-          <span style="margin:0 10px;color:#fffafd;font-weight:300;text-shadow:0 0 10px rgba(255,245,250,0.22)">;</span>
-          <span style="color:#28365f;text-shadow:0 0 10px rgba(230,235,255,0.18)">Dear You</span>
+          <span style="color:#5a2943;text-shadow:0 1px 0 rgba(255,248,252,0.32)">Dear Me</span>
+          <span style="margin:0 10px;color:#fff7fb;font-weight:300;text-shadow:0 1px 0 rgba(92,55,82,0.16)">;</span>
+          <span style="color:#27385f;text-shadow:0 1px 0 rgba(235,240,255,0.22)">Dear You</span>
         </div>
-        <div style="width:58px;height:1px;margin:26px auto 0;background:linear-gradient(to right,transparent,rgba(255,220,238,0.34),transparent);box-shadow:0 0 6px rgba(230,170,210,0.16);line-height:1px"></div>
+        <div style="width:58px;height:1px;margin:24px auto 0;background:linear-gradient(to right,transparent,rgba(109,72,100,0.36),transparent);line-height:1px"></div>
       </div>
       <div style="padding:34px 28px 40px">
-        <div style="font-size:16px;font-weight:400;color:rgba(54,37,58,0.94);margin:0 0 22px;line-height:1.7;overflow-wrap:anywhere;word-break:break-all">${title}</div>
-        <div style="box-sizing:border-box;width:100%;max-width:100%;padding:28px 26px;border:1px solid rgba(230,204,222,0.34);border-radius:16px;background:rgba(190,166,188,0.42);box-shadow:inset 0 1px 0 rgba(255,242,248,0.14);color:rgba(36,30,49,0.95);font-size:15px;line-height:2.15;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all">${content}</div>
-        <div style="margin-top:20px;text-align:right;font-size:14px;color:rgba(66,45,67,0.88);line-height:1.75;overflow-wrap:anywhere;word-break:break-all">${teacherName || "선생님"}</div>
+        <div style="font-size:16px;font-weight:400;color:#39283b;margin:0 0 20px;line-height:1.7;overflow-wrap:anywhere;word-break:break-all">${title}</div>
+        <div style="box-sizing:border-box;width:100%;max-width:100%;padding:28px 26px;border:1px solid #e8d7e5;border-radius:16px;background:#e2cedd;box-shadow:inset 0 1px 0 rgba(255,250,253,0.5);color:#241f31;font-size:15px;line-height:2.08;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all">${content}</div>
+        <div style="margin-top:20px;text-align:right;font-size:14px;color:#493245;line-height:1.75;overflow-wrap:anywhere;word-break:break-all">${teacherName || "선생님"}</div>
       </div>
-      <div style="padding:0 40px 38px;text-align:center;font-size:11.5px;font-weight:300;letter-spacing:0.12em;color:rgba(190,158,210,0.32)">Dear Me; Dear You</div>
+      <div style="padding:0 40px 36px;text-align:center;font-size:11.5px;font-weight:300;letter-spacing:0.12em;color:rgba(89,66,95,0.38)">Dear Me; Dear You</div>
     </div>
   </div>`;
 }
