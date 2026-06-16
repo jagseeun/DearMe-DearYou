@@ -9,6 +9,7 @@ const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.055 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.92, ease } } };
 const PASSWORD_MAX_LENGTH = 128;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -31,6 +32,15 @@ export default function SignupPage() {
     const afterClose = notice?.afterClose;
     setNotice(null);
     afterClose?.();
+  }
+
+  function getMissingSignupMessage() {
+    if (!name.trim()) return '이름을 적어 주세요.';
+    if (!userid.trim()) return '아이디를 적어 주세요.';
+    if (!password) return '비밀번호를 적어 주세요.';
+    if (!passwordConfirm) return '비밀번호 확인을 적어 주세요.';
+    if (!email.trim()) return '편지를 받을 이메일을 적어 주세요.';
+    return '';
   }
 
   async function checkUsername() {
@@ -58,7 +68,9 @@ export default function SignupPage() {
     const nextName = name.trim();
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
-    if (!nextName || !nextUserid || !password || !passwordConfirm || !nextEmail) return setNotice({ title: '회원가입 확인', message: '모든 정보를 입력해 주세요.' });
+    const missingMessage = getMissingSignupMessage();
+    if (missingMessage) return setNotice({ title: '아직 비어 있는 칸이 있어요', message: missingMessage });
+    if (!EMAIL_PATTERN.test(nextEmail)) return setNotice({ title: '이메일 확인', message: '편지가 닿을 이메일 형식으로 적어 주세요.' });
     if (!idChecked) return setNotice({ title: '아이디 확인', message: '아이디 중복 확인을 진행해 주세요.' });
     if (password.length < 6) return setNotice({ title: '비밀번호 확인', message: '비밀번호는 6자 이상으로 입력해 주세요.' });
     if (password.length > PASSWORD_MAX_LENGTH) return setNotice({ title: '비밀번호 확인', message: `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
@@ -111,6 +123,7 @@ export default function SignupPage() {
       <motion.form
         className="form-container"
         variants={container}
+        noValidate
         onSubmit={e => { e.preventDefault(); handleRegister(); }}
       >
         <motion.input
@@ -177,7 +190,6 @@ export default function SignupPage() {
           placeholder="이메일"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          required
         />
 
         <motion.button variants={item} className="submit-btn" type="submit">

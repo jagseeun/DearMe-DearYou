@@ -88,15 +88,9 @@ export default function PinkLetterViewPage() {
     setLogoutConfirm(true);
   }
 
-  async function confirmLogoutLetters() {
-    setLogoutConfirm(false);
+  function confirmLogoutLetters() {
     clearLetterAuth();
-    try {
-      await fetch('/logout', { cache: 'no-store', credentials: 'include' });
-      window.location.replace('/');
-    } catch {
-      window.location.replace('/logout');
-    }
+    window.location.assign('/logout');
   }
 
   function handleCardClick(letter, unlocked, event) {
@@ -203,8 +197,8 @@ export default function PinkLetterViewPage() {
       {!loading && (
         <motion.div
           className="letters-main-exit-actions pink-letter-exit-actions"
-          initial={{ opacity: 0, y: 8, pointerEvents: 'none' }}
-          animate={{ opacity: 1, y: 0, pointerEvents: 'auto' }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.52, delay: 0.48, ease }}
         >
           <motion.button
