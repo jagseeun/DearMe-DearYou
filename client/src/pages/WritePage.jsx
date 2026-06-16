@@ -9,7 +9,7 @@ const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.96, ease } } };
 const LETTER_CONTENT_MAX_LENGTH = 500;
-const LETTER_EMAIL_SUBJECT_MAX_LENGTH = 80;
+const LETTER_EMAIL_SUBJECT_MAX_LENGTH = 40;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
@@ -425,12 +425,16 @@ export default function WritePage() {
   const [emailPreview, setEmailPreview] = useState({ subject: '', html: '' });
   const [emailPreviewLoading, setEmailPreviewLoading] = useState(false);
   const [emailPreviewError, setEmailPreviewError] = useState('');
+  const [emailPreviewScale, setEmailPreviewScale] = useState(0.6);
+  const [emailPreviewHeight, setEmailPreviewHeight] = useState(0);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const recorderRef = useRef(null);
   const recordingStartedAtRef = useRef(0);
   const chunksRef = useRef([]);
+  const emailPreviewFrameRef = useRef(null);
+  const emailPreviewDocumentRef = useRef(null);
 
   function showNotice(message, title = '확인해 주세요') {
     setShowModal(false);
@@ -473,6 +477,33 @@ export default function WritePage() {
     setShowEmailPreview(false);
     setEmailPreviewError('');
   }, [mode, text, videoUrl, imageUrl, drawHasDrawn, openDate, sendNow, emailSubject, emailTheme, toOther, recipientEmail, recipientName]);
+
+  useEffect(() => {
+    if (!showEmailPreview || emailPreviewLoading || !emailPreview.html) return undefined;
+
+    let frameId = 0;
+    function fitPreview() {
+      const frame = emailPreviewFrameRef.current;
+      const documentEl = emailPreviewDocumentRef.current;
+      if (!frame || !documentEl) return;
+
+      const frameWidth = frame.clientWidth || 1;
+      const contentWidth = documentEl.scrollWidth || 700;
+      const contentHeight = documentEl.scrollHeight || 1;
+      const maxHeight = window.innerWidth <= 520 ? 318 : 392;
+      const nextScale = Math.min(1, frameWidth / contentWidth, maxHeight / contentHeight);
+      const safeScale = Math.max(0.32, Number(nextScale.toFixed(3)));
+      setEmailPreviewScale(safeScale);
+      setEmailPreviewHeight(Math.ceil(contentHeight * safeScale));
+    }
+
+    frameId = requestAnimationFrame(fitPreview);
+    window.addEventListener('resize', fitPreview);
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener('resize', fitPreview);
+    };
+  }, [showEmailPreview, emailPreviewLoading, emailPreview.html]);
 
   useEffect(() => { return () => { streamRef.current?.getTracks().forEach(t => t.stop()); }; }, []);
 
@@ -1291,6 +1322,9 @@ export default function WritePage() {
                   maxLength={LETTER_EMAIL_SUBJECT_MAX_LENGTH}
                   style={inputStyle}
                 />
+                <div className={`write-subject-count ${emailSubject.length >= LETTER_EMAIL_SUBJECT_MAX_LENGTH ? 'is-limit' : ''}`}>
+                  {emailSubject.length}/{LETTER_EMAIL_SUBJECT_MAX_LENGTH}
+                </div>
               </div>
 
               {/* 수신인 토글 */}
@@ -1333,16 +1367,22 @@ export default function WritePage() {
               )}
 
               <section className={`write-email-preview ${emailTheme}`}>
-                <button
-                  type="button"
-                  className={`write-email-preview-toggle ${showEmailPreview ? 'is-open' : ''}`}
-                  onClick={toggleEmailPreview}
-                  disabled={emailPreviewLoading || drawUploading}
-                  aria-expanded={showEmailPreview}
-                >
-                  <span>{showEmailPreview ? '이메일 미리보기 닫기' : '이메일 미리보기 보기'}</span>
-                  <em>{emailPreviewLoading || drawUploading ? '만드는 중' : '실제 발송 화면'}</em>
-                </button>
+                <label className={`write-email-preview-switch ${showEmailPreview ? 'is-open' : ''} ${emailPreviewLoading || drawUploading ? 'is-loading' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={showEmailPreview}
+                    onChange={toggleEmailPreview}
+                    disabled={emailPreviewLoading || drawUploading}
+                    aria-label="이메일 미리보기"
+                  />
+                  <span className="write-email-preview-switch-copy">
+                    <strong>이메일 미리보기</strong>
+                    <em>{emailPreviewLoading || drawUploading ? '만드는 중' : '실제 발송 화면'}</em>
+                  </span>
+                  <span className="write-email-preview-switch-track" aria-hidden="true">
+                    <span className="write-email-preview-switch-thumb" />
+                  </span>
+                </label>
 
                 <AnimatePresence initial={false}>
                   {showEmailPreview && (
@@ -1356,19 +1396,24 @@ export default function WritePage() {
                       <div className="write-email-preview-toolbar">
                         <span>메일 제목</span>
                         <strong>{emailPreview.subject || '미리보기를 준비하고 있습니다'}</strong>
-                        <button type="button" onClick={loadEmailPreview} disabled={emailPreviewLoading || drawUploading}>
-                          새로고침
-                        </button>
                       </div>
 
                       {emailPreviewError ? (
                         <div className="write-email-preview-message">{emailPreviewError}</div>
                       ) : (
-                        <div className="write-email-preview-frame">
+                        <div
+                          ref={emailPreviewFrameRef}
+                          className="write-email-preview-frame"
+                          style={{
+                            '--email-preview-scale': emailPreviewScale,
+                            height: emailPreviewLoading || drawUploading ? undefined : (emailPreviewHeight || undefined),
+                          }}
+                        >
                           {emailPreviewLoading || drawUploading ? (
                             <div className="write-email-preview-message">이메일 화면을 만들고 있습니다...</div>
                           ) : (
                             <div
+                              ref={emailPreviewDocumentRef}
                               className="write-email-preview-document"
                               dangerouslySetInnerHTML={{ __html: emailPreview.html }}
                             />
