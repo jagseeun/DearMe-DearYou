@@ -912,22 +912,22 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
   const content = escapeHtml(personalizedTeacherLetter.content);
 
   return `
-  <div style="margin:0;padding:36px 16px 44px;background:#2f1c3b;background-image:linear-gradient(160deg,#2f1c3b 0%,#51304a 22%,#684554 40%,#5f4a68 58%,#3e3f63 76%,#2a3052 90%,#1f2845 100%);font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;position:relative;overflow:hidden;color:#fff7ed">
+  <div style="box-sizing:border-box;width:100%;margin:0;padding:30px 0 38px;background:#2f1c3b;background-image:linear-gradient(160deg,#2f1c3b 0%,#51304a 22%,#684554 40%,#5f4a68 58%,#3e3f63 76%,#2a3052 90%,#1f2845 100%);font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;position:relative;overflow:hidden;color:#fff7ed">
     <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 40% at 15% 10%,rgba(220,160,180,0.12) 0%,transparent 62%),radial-gradient(ellipse 60% 50% at 85% 80%,rgba(200,170,120,0.09) 0%,transparent 62%);pointer-events:none"></div>
-    <div style="max-width:640px;margin:0 auto;position:relative;z-index:1;background:rgba(255,238,247,0.16);border:1px solid rgba(255,235,246,0.28);border-radius:28px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,210,232,0.07),0 24px 62px rgba(12,6,24,0.42),inset 0 1px 0 rgba(255,255,255,0.16)">
-      <div style="padding:44px 40px 34px;text-align:center;border-bottom:1px solid rgba(255,230,242,0.16);background:rgba(255,245,250,0.08)">
-        <div style="margin-bottom:20px;color:rgba(255,235,245,0.48);font-size:9px;line-height:1;letter-spacing:13px">***</div>
+    <div style="box-sizing:border-box;width:86%;max-width:640px;margin:0 auto;position:relative;z-index:1;background:rgba(255,240,248,0.34);border:1px solid rgba(255,238,248,0.4);border-radius:28px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,220,238,0.09),0 24px 58px rgba(12,6,24,0.36),inset 0 1px 0 rgba(255,255,255,0.24)">
+      <div style="padding:38px 28px 30px;text-align:center;border-bottom:1px solid rgba(255,235,246,0.22);background:rgba(255,248,252,0.12)">
+        <div style="margin-bottom:20px;color:rgba(255,245,250,0.6);font-size:9px;line-height:1;letter-spacing:13px">***</div>
         <div style="font-size:28px;font-weight:300;letter-spacing:0.04em;line-height:1">
-          <span style="color:#684554;text-shadow:0 0 10px rgba(104,69,84,0.18)">Dear Me</span>
-          <span style="margin:0 10px;color:#fff7fb;font-weight:300;text-shadow:0 0 10px rgba(255,245,250,0.18)">;</span>
-          <span style="color:#2a3052;text-shadow:0 0 10px rgba(42,48,82,0.18)">Dear You</span>
+          <span style="color:#5d3146;text-shadow:0 0 10px rgba(255,230,244,0.22)">Dear Me</span>
+          <span style="margin:0 10px;color:#fffafd;font-weight:300;text-shadow:0 0 10px rgba(255,245,250,0.22)">;</span>
+          <span style="color:#28365f;text-shadow:0 0 10px rgba(230,235,255,0.18)">Dear You</span>
         </div>
         <div style="width:58px;height:1px;margin:26px auto 0;background:linear-gradient(to right,transparent,rgba(255,220,238,0.34),transparent);box-shadow:0 0 6px rgba(230,170,210,0.16);line-height:1px"></div>
       </div>
-      <div style="padding:40px 42px 48px">
-        <div style="font-size:16px;font-weight:400;color:rgba(99,67,92,0.82);margin:0 0 22px;line-height:1.7">${title}</div>
-        <div style="padding:32px 34px;border:1px solid rgba(255,230,242,0.2);border-radius:16px;background:rgba(255,245,250,0.1);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);color:rgba(80,54,74,0.88);font-size:15px;line-height:2.15;white-space:pre-wrap">${content}</div>
-        <div style="margin-top:20px;text-align:right;font-size:14px;color:rgba(113,78,104,0.72);line-height:1.75">${teacherName || "선생님"}</div>
+      <div style="padding:34px 28px 40px">
+        <div style="font-size:16px;font-weight:400;color:rgba(82,53,75,0.92);margin:0 0 22px;line-height:1.7;overflow-wrap:anywhere;word-break:break-all">${title}</div>
+        <div style="box-sizing:border-box;width:100%;max-width:100%;padding:28px 26px;border:1px solid rgba(255,236,246,0.3);border-radius:16px;background:rgba(255,248,252,0.28);box-shadow:inset 0 1px 0 rgba(255,255,255,0.18);color:rgba(58,40,55,0.92);font-size:15px;line-height:2.15;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all">${content}</div>
+        <div style="margin-top:20px;text-align:right;font-size:14px;color:rgba(92,57,80,0.84);line-height:1.75;overflow-wrap:anywhere;word-break:break-all">${teacherName || "선생님"}</div>
       </div>
       <div style="padding:0 40px 38px;text-align:center;font-size:11.5px;font-weight:300;letter-spacing:0.12em;color:rgba(190,158,210,0.32)">Dear Me; Dear You</div>
     </div>
