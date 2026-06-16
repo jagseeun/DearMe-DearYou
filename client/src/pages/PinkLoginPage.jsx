@@ -19,7 +19,7 @@ export default function PinkLoginPage() {
   async function handleLogin() {
     const nextUserid = userid.trim();
     if (!nextUserid || !password) {
-      setNotice({ title: '로그인 확인', message: '아이디와 비밀번호를 입력해 주세요.' });
+      setNotice({ title: '로그인이 필요합니다', message: '편지함에 들어가시려면 아이디와 비밀번호를 입력해 주세요.' });
       return;
     }
     try {
@@ -30,9 +30,9 @@ export default function PinkLoginPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) navigate('/pink-letters');
-      else setNotice({ title: '로그인 실패', message: data.message || '로그인에 실패했습니다.' });
+      else setNotice({ title: '로그인하지 못했습니다', message: data.message || '아이디와 비밀번호를 다시 확인해 주세요.' });
     } catch {
-      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.' });
+      setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     }
   }
 
@@ -72,7 +72,7 @@ export default function PinkLoginPage() {
           <motion.input
             variants={item}
             type="text"
-            placeholder="아이디를 입력하세요"
+            placeholder="아이디를 입력해 주세요"
             maxLength={20}
             value={userid}
             onChange={e => setUserid(e.target.value)}
@@ -82,7 +82,7 @@ export default function PinkLoginPage() {
             variants={item}
             wrapperClassName="password-field password-field-pink"
             className="pink-password-input"
-            placeholder="비밀번호를 입력하세요"
+            placeholder="비밀번호를 입력해 주세요"
             maxLength={PASSWORD_MAX_LENGTH}
             value={password}
             onChange={e => setPassword(e.target.value)}
@@ -90,7 +90,7 @@ export default function PinkLoginPage() {
             inputStyle={{ ...inputStyle, paddingRight: 58 }}
           />
           <motion.button variants={item} type="submit" style={btnStyle}>
-            편지 읽기
+            편지 열람하기
           </motion.button>
         </motion.form>
 
@@ -115,7 +115,7 @@ export default function PinkLoginPage() {
           }}
           whileHover={{ background: 'rgba(91,52,78,0.56)', color: 'rgba(255,245,240,0.98)' }}
         >
-          ← 돌아가기
+          ← 처음으로 돌아가기
         </motion.button>
       </motion.div>
       <NoticeModal

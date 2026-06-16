@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate, daysSince } from '../utils/dates.js';
 import { clearLetterAuth } from '../auth.jsx';
+import NoticeModal from '../components/NoticeModal.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const TYPEWRITER_MIN_DURATION = 1400;
@@ -105,6 +106,7 @@ export default function LetterViewPage() {
   const navigate = useNavigate();
   const { letter, name, returnTo } = useLocation().state || {};
   const [phase, setPhase] = useState('envelope');
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
 
   useEffect(() => {
     if (!letter) {
@@ -192,6 +194,10 @@ export default function LetterViewPage() {
   };
 
   function finishAndLogout() {
+    setLogoutConfirm(true);
+  }
+
+  function confirmFinishAndLogout() {
     clearLetterAuth();
     window.location.assign('/logout');
   }
@@ -268,10 +274,10 @@ export default function LetterViewPage() {
                 className="letter-envelope-info letter-from"
                 initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: isPink ? 0.42 : 0.15, ease }}>
-                <div className="letter-envelope-label" style={{ color: textHint }}>보낸 날</div>
+                <div className="letter-envelope-label" style={{ color: textHint }}>남긴 날</div>
                 <div className="letter-envelope-value">
                   <span>{formatDate(letter.createdAt)}</span>
-                  <small className="letter-envelope-person">보낸 사람 {senderName}</small>
+                  <small className="letter-envelope-person">남긴 사람 {senderName}</small>
                 </div>
               </motion.div>
 
@@ -284,7 +290,7 @@ export default function LetterViewPage() {
                 <div className="letter-envelope-label" style={{ color: textHint }}>열린 날</div>
                 <div className="letter-envelope-value">
                   <span>{formatDate(letter.openDate)}</span>
-                  <small className="letter-envelope-person">받는 사람 {recipientName}</small>
+                  <small className="letter-envelope-person">받을 사람 {recipientName}</small>
                 </div>
               </motion.div>
 
@@ -316,7 +322,7 @@ export default function LetterViewPage() {
                 onClick={() => setPhase('content')}
                 whileHover={{ scale: 1.018 }}
                 style={{ ...btnStyle, position: 'absolute', bottom: 40, left: '50%', translate: '-50% 0', transformOrigin: 'center center' }}>
-                {letter.type === 'video' ? '영상 열기' : letter.type === 'draw' ? '그림 열기' : '편지 읽기'}
+                {letter.type === 'video' ? '영상 편지 열람하기' : letter.type === 'draw' ? '그림 편지 열람하기' : '편지 열람하기'}
               </motion.button>
             </motion.div>
           </motion.div>
@@ -420,7 +426,7 @@ export default function LetterViewPage() {
                 whileHover={{ scale: 1.018 }}
                 className="letter-view-button"
                 style={btnStyle}>
-                확인 완료
+                확인했습니다
               </motion.button>
             </div>
           </motion.div>
@@ -437,7 +443,7 @@ export default function LetterViewPage() {
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, ease }}
                 style={{ fontSize: 28, fontWeight: 300, color: textMain }}>
-                다음은 어떻게 할까요?
+                이 마음을 다 읽으셨습니다
               </motion.div>
 
               <motion.div
@@ -449,19 +455,19 @@ export default function LetterViewPage() {
                   whileHover={{ scale: 1.018 }}
                   onClick={() => navigate(returnTo || '/letters')}
                   style={{ ...btnStyle, background: backBg, border: backBorder, color: backColor }}>
-                  편지 목록
+                  편지함으로 돌아가기
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.018 }}
                   onClick={() => navigate('/write', { state: { emailTheme: isPink ? 'pink' : 'dark' } })}
                   style={{ ...btnStyle, background: backBg, border: backBorder, color: backColor }}>
-                  편지 쓰기
+                  편지 남기기
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.018 }}
                   onClick={finishAndLogout}
                   style={btnStyle}>
-                  마무리
+                  로그아웃
                 </motion.button>
               </motion.div>
             </div>
@@ -469,6 +475,16 @@ export default function LetterViewPage() {
         )}
 
       </AnimatePresence>
+      <NoticeModal
+        open={logoutConfirm}
+        title="로그아웃하시겠습니까?"
+        message="지금 계정에서 나가도 남겨 두신 편지는 그대로 보관됩니다."
+        cancelLabel="머무르기"
+        confirmLabel="로그아웃"
+        onClose={() => setLogoutConfirm(false)}
+        onConfirm={confirmFinishAndLogout}
+        variant="logout"
+      />
     </motion.div>
   );
 }

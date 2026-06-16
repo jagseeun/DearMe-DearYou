@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { buttonMotion, modalBackdropMotion, modalPanelMotion } from '../utils/motion.js';
 
@@ -6,9 +7,9 @@ const NOTICE_MODAL_OPEN_EVENT = 'dearme:notice-modal-open';
 
 export default function NoticeModal({
   open,
-  title = '알림',
+  title = '안내드립니다',
   message = '',
-  confirmLabel = '확인',
+  confirmLabel = '확인했습니다',
   cancelLabel = '',
   onClose,
   onConfirm,
@@ -57,7 +58,7 @@ export default function NoticeModal({
     else close();
   }
 
-  return (
+  const modal = (
     <AnimatePresence mode="wait">
       {open && isActive && (
         <motion.div
@@ -92,4 +93,7 @@ export default function NoticeModal({
       )}
     </AnimatePresence>
   );
+
+  if (typeof document === 'undefined') return modal;
+  return createPortal(modal, document.body);
 }

@@ -23,7 +23,7 @@ function defaultOpenDate() {
 function dataUrlToBlob(dataUrl) {
   const [header, data] = String(dataUrl || '').split(',');
   const mime = header?.match(/^data:([^;]+);base64$/)?.[1];
-  if (!mime || !data) throw new Error('서명 이미지 형식이 올바르지 않습니다.');
+  if (!mime || !data) throw new Error('서명 이미지 형식을 확인해 주세요.');
 
   const binary = atob(data);
   const bytes = new Uint8Array(binary.length);
@@ -113,7 +113,7 @@ function tomorrow() {
   return d.toISOString().split('T')[0];
 }
 
-// ── 글자 하나씩 페이드인 텍스트 입력 컴포넌트 ──
+// ── 글자 하나씩 페이드인 글 편지 입력 컴포넌트 ──
 function AnimatedTextarea({ value, onChange, placeholder }) {
   const textareaRef = useRef(null);
   const [chars, setChars] = useState([]); // [{ id, char }]
@@ -169,7 +169,7 @@ function AnimatedTextarea({ value, onChange, placeholder }) {
             )
         )}
       </div>
-      {/* 실제 textarea (투명 텍스트, 캐럿만 보임) */}
+      {/* 실제 textarea (투명 글 편지, 캐럿만 보임) */}
       <textarea
         ref={textareaRef}
         id="textInput"
@@ -335,7 +335,7 @@ function SignatureCanvas({ onSave, onClose, existing }) {
       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10, paddingTop: 10 }}>
         {hasDrawn && !locked && (
           <span style={{ fontSize: 12, color: 'rgba(255,252,223,0.25)', letterSpacing: 1, marginRight: 4 }}>
-            서명 완료 후 확인을 눌러주세요
+            서명을 마치신 뒤 확인을 눌러 주세요
           </span>
         )}
         <button onClick={clear} style={sigBtnStyle}>지우기</button>
@@ -379,21 +379,21 @@ export default function WritePage() {
   const [text, setText] = useState('');
   const [textBorderTone, setTextBorderTone] = useState(0);
 
-  // 영상 상태
+  // 영상 편지 상태
   const [stage, setStage] = useState('idle');
   const [countdown, setCountdown] = useState(3);
   const [timeLeft, setTimeLeft] = useState(30);
   const [videoUrl, setVideoUrl] = useState('');
   const [showRetryConfirm, setShowRetryConfirm] = useState(false);
 
-  // 사진 촬영
+  // 사진 담기
   const [imageUrl, setImageUrl] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const photoVideoRef = useRef(null);
   const photoStreamRef = useRef(null);
 
-  // 그림 편지
+  // 그림 편지 편지
   const [drawCanvasEl, setDrawCanvasEl] = useState(null);
   const [drawHasDrawn, setDrawHasDrawn] = useState(false);
   const [drawUploading, setDrawUploading] = useState(false);
@@ -413,7 +413,7 @@ export default function WritePage() {
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // 수신인 (타인에게 보내기)
+  // 수신인 (타인에게 편지 보내기)
   const [toOther, setToOther] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [recipientName, setRecipientName] = useState('');
@@ -427,7 +427,7 @@ export default function WritePage() {
   const recordingStartedAtRef = useRef(0);
   const chunksRef = useRef([]);
 
-  function showNotice(message, title = '확인이 필요합니다') {
+  function showNotice(message, title = '확인해 주세요') {
     setShowModal(false);
     setShowRetryConfirm(false);
     setNotice({ title, message });
@@ -487,7 +487,7 @@ export default function WritePage() {
       setStage('counting');
       setCountdown(3);
       setVideoUrl('');
-    } catch { showNotice('카메라 권한을 허용해 주세요.', '카메라 확인'); }
+    } catch { showNotice('카메라 권한을 허용해 주시면 촬영을 이어갈 수 있습니다.', '카메라를 확인해 주세요'); }
   }
 
   function startRecording() {
@@ -514,7 +514,7 @@ export default function WritePage() {
       const rawBlob = new Blob(chunksRef.current, { type: 'video/webm' });
       const durationMs = Math.max(1, Date.now() - recordingStartedAtRef.current);
       const blob = await fixWebmDuration(rawBlob, durationMs, { logger: false }).catch(() => rawBlob);
-      if (blob.size > MAX_VIDEO_BYTES) throw new Error('영상 파일이 너무 큽니다. 다시 촬영해 주세요.');
+      if (blob.size > MAX_VIDEO_BYTES) throw new Error('영상 편지 파일이 너무 큽니다. 조금 짧게 다시 촬영해 주세요.');
       const res = await fetch('/get-upload-url');
       if (!res.ok) throw new Error();
       const { uploadUrl, publicUrl } = await res.json();
@@ -523,7 +523,7 @@ export default function WritePage() {
       setVideoUrl(publicUrl);
       setStage('done');
     } catch {
-      showNotice('업로드에 실패했습니다. 다시 시도해 주세요.', '업로드 실패');
+      showNotice('파일을 올리지 못했습니다. 잠시 후 다시 시도해 주세요.', '업로드하지 못했습니다');
       setStage('idle');
     }
   }
@@ -562,7 +562,7 @@ export default function WritePage() {
           photoVideoRef.current.play?.().catch(() => {});
         }
       });
-    } catch { showNotice('카메라 권한을 허용해 주세요.', '카메라 확인'); }
+    } catch { showNotice('카메라 권한을 허용해 주시면 촬영을 이어갈 수 있습니다.', '카메라를 확인해 주세요'); }
   }
 
   function closePhotoCamera() {
@@ -590,22 +590,22 @@ export default function WritePage() {
       const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/jpeg' } });
       if (!put.ok) throw new Error();
       setImageUrl(publicUrl);
-    } catch { showNotice('사진 업로드에 실패했습니다. 다시 시도해 주세요.', '업로드 실패'); }
+    } catch { showNotice('사진 파일을 올리지 못했습니다. 잠시 후 다시 시도해 주세요.', '업로드하지 못했습니다'); }
     finally { setImageUploading(false); }
   }
 
   async function uploadSignature(dataUrl) {
     try {
       const res = await fetch('/get-image-upload-url?ext=png');
-      if (!res.ok) throw new Error('서명 업로드 URL 발급에 실패했습니다.');
+      if (!res.ok) throw new Error('서명을 올릴 준비를 하지 못했습니다.');
       const { uploadUrl, publicUrl } = await res.json();
       const blob = dataUrlToBlob(dataUrl);
-      if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('서명 이미지가 너무 큽니다.');
+      if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('서명 이미지가 너무 큽니다. 조금 더 가볍게 저장해 주세요.');
       const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/png' } });
-      if (!put.ok) throw new Error('서명 업로드에 실패했습니다.');
+      if (!put.ok) throw new Error('서명을 올리지 못했습니다.');
       return publicUrl;
     } catch (err) {
-      throw new Error(err.message || '서명 업로드에 실패했습니다.');
+      throw new Error(err.message || '서명을 올리지 못했습니다.');
     }
   }
 
@@ -615,7 +615,7 @@ export default function WritePage() {
       const canvas = drawCanvasEl;
       if (!canvas) throw new Error('canvas not ready');
       const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-      if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('그림 이미지가 너무 큽니다.');
+      if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('그림 편지 이미지가 너무 큽니다. 조금 더 가볍게 저장해 주세요.');
       const res = await fetch('/get-image-upload-url?ext=png');
       if (!res.ok) throw new Error();
       const { uploadUrl, publicUrl } = await res.json();
@@ -644,7 +644,7 @@ export default function WritePage() {
     setSendNow(false);
     setStage(nextMode === 'video' && nextDraft.videoUrl ? 'done' : 'idle');
     setDrawHasDrawn(Boolean(nextMode === 'draw' && nextDraft.imageUrl));
-    showNotice('임시 저장된 내용을 불러왔습니다.', '초안 불러오기');
+    showNotice('저장해 둔 초안을 불러왔습니다.', '초안 불러오기');
   }
 
   async function saveDraft() {
@@ -681,11 +681,11 @@ export default function WritePage() {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || '임시저장에 실패했습니다.');
+      if (!res.ok) throw new Error(data.message || '초안을 저장하지 못했습니다.');
       setDraft(data.draft);
-      showNotice(data.message || '임시 저장이 완료되었습니다.', '임시 저장');
+      showNotice(data.message || '초안을 저장했습니다.', '초안 저장');
     } catch (err) {
-      showNotice(err.message || '임시저장에 실패했습니다.', '임시 저장 실패');
+      showNotice(err.message || '초안을 저장하지 못했습니다.', '초안을 저장하지 못했습니다');
     } finally {
       setDraftSaving(false);
     }
@@ -696,41 +696,41 @@ export default function WritePage() {
     try {
       const res = await fetch('/letter-draft', { method: 'DELETE' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || '임시저장을 삭제하지 못했습니다.');
+      if (!res.ok) throw new Error(data.message || '초안을 삭제하지 못했습니다.');
       setDraft(null);
-      showNotice(data.message || '임시저장을 삭제했습니다.', '초안 삭제');
+      showNotice(data.message || '초안을 삭제했습니다.', '초안 삭제');
     } catch (err) {
-      showNotice(err.message || '임시저장을 삭제하지 못했습니다.', '초안 삭제 실패');
+      showNotice(err.message || '초안을 삭제하지 못했습니다.', '초안을 삭제하지 못했습니다');
     } finally {
       setDraftSaving(false);
     }
   }
 
   async function handleFromMe() {
-    if (mode === 'text' && !text.trim()) return showNotice('편지 내용을 입력해 주세요.');
-    if (mode === 'video' && !videoUrl) return showNotice('먼저 영상을 촬영해 주세요.');
-    if (mode === 'draw' && !drawHasDrawn) return showNotice('그림을 그려 주세요.');
+    if (mode === 'text' && !text.trim()) return showNotice('편지에 남길 내용을 입력해 주세요.');
+    if (mode === 'video' && !videoUrl) return showNotice('먼저 영상 편지 편지를 촬영해 주세요.');
+    if (mode === 'draw' && !drawHasDrawn) return showNotice('그림 편지 편지에 남길 그림 편지을 그려 주세요.');
     setNotice(null);
     setShowModal(true);
   }
 
   async function handleSave() {
     const limitedText = clampLetterText(text);
-    if (!openDate) return showNotice('개봉일을 선택해 주세요.');
+    if (!openDate) return showNotice('편지를 열어 볼 날짜를 선택해 주세요.');
     const cleanEmail = (accountEmail || email).trim().toLowerCase();
     const cleanEmailSubject = emailSubject.trim();
     const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
     const cleanRecipientName = recipientName.trim();
     const effectiveOpenDate = sendNow ? new Date().toISOString() : openDate;
     const isImmediateDelivery = sendNow || new Date(effectiveOpenDate) <= new Date();
-    if (isImmediateDelivery && !toOther && !cleanEmail) return showNotice('바로 보내려면 발송 이메일을 입력해 주세요.');
+    if (isImmediateDelivery && !toOther && !cleanEmail) return showNotice('바로 보내려면 받을 이메일을 입력해 주세요.');
     if (text.length > LETTER_CONTENT_MAX_LENGTH) return showNotice(`내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
     if (cleanEmailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return showNotice(`메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.`);
-    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return showNotice('이메일 형식이 올바르지 않습니다.');
+    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return showNotice('이메일 형식을 다시 확인해 주세요.');
     if (toOther) {
-      if (!cleanRecipientEmail) return showNotice('받는 사람 이메일을 입력해 주세요.');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanRecipientEmail)) return showNotice('받는 사람 이메일 형식이 올바르지 않습니다.');
-      if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return showNotice(`받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
+      if (!cleanRecipientEmail) return showNotice('받을 분의 이메일을 입력해 주세요.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanRecipientEmail)) return showNotice('받을 사람 이메일 형식을 다시 확인해 주세요.');
+      if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return showNotice(`받을 분의 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
     }
     setSaving(true);
     try {
@@ -740,7 +740,7 @@ export default function WritePage() {
         finalSignature = await uploadSignature(signatureData);
       }
 
-      // 그림 편지 캔버스 업로드
+      // 그림 편지 편지 캔버스 업로드
       let drawImageUrl;
       if (mode === 'draw') {
         drawImageUrl = await uploadCanvas();
@@ -777,10 +777,10 @@ export default function WritePage() {
           },
         });
       } else {
-        showNotice(data.message || '오류가 발생했습니다.', '저장 실패');
+        showNotice(data.message || '편지를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.', '저장하지 못했습니다');
         if (res.status === 401) navigate('/login');
       }
-    } catch (err) { showNotice(err.message || '서버 연결 오류', '저장 실패'); }
+    } catch (err) { showNotice(err.message || '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', '저장하지 못했습니다'); }
     finally { setSaving(false); }
   }
 
@@ -856,7 +856,7 @@ export default function WritePage() {
         {stage === 'uploading' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', color: '#fffcdf', fontSize: 18 }}>
-            업로드 중...
+            올리는 중입니다...
           </motion.div>
         )}
 
@@ -904,12 +904,12 @@ export default function WritePage() {
                 <motion.button whileHover={{ background: 'rgba(255,255,255,0.14)' }}
                   onClick={() => setShowRetryConfirm(false)}
                   style={{ width: 130, height: 50, borderRadius: 50, fontSize: 17, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.25)', background: 'rgba(255,255,255,.08)', color: '#f2efe8', transition: 'all 0.2s' }}>
-                  아니요
+                  유지하기
                 </motion.button>
                 <motion.button whileHover={{ scale: 1.018 }}
                   onClick={() => { setShowRetryConfirm(false); retryVideo(); }}
                   style={{ width: 130, height: 50, borderRadius: 50, fontSize: 17, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg,#e7cfa1,#cfa874)', color: '#2b1e10', transition: 'all 0.2s' }}>
-                  예
+                  다시 촬영하기
                 </motion.button>
               </div>
             </motion.div>
@@ -947,13 +947,13 @@ export default function WritePage() {
         {/* 제목 + 모드 토글 */}
         <motion.div variants={item} className="write-header">
           <div className="write-heading">
-            편지 쓰기
+            편지 남기기
           </div>
           <div className="write-draft-actions">
             {draft && (
               <>
                 <button type="button" onClick={() => applyDraft(draft)} disabled={draftSaving}>
-                  불러오기
+                  초안 불러오기
                 </button>
                 <button type="button" onClick={deleteDraft} disabled={draftSaving}>
                   초안 삭제
@@ -963,9 +963,9 @@ export default function WritePage() {
           </div>
           <div className="mode-tabs">
             {[
-              { key: 'text', label: '텍스트', icon: 'text' },
-              { key: 'video', label: '영상', icon: 'video' },
-              { key: 'draw', label: '그림', icon: 'draw' },
+              { key: 'text', label: '글 편지', icon: 'text' },
+              { key: 'video', label: '영상 편지', icon: 'video' },
+              { key: 'draw', label: '그림 편지', icon: 'draw' },
             ].map(({ key, label, icon }) => (
               <button key={key} type="button" className="write-mode-button" onClick={() => handleModeSwitch(key)} style={{
                 padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
@@ -991,7 +991,7 @@ export default function WritePage() {
               className="write-stage write-stage-text"
               style={{ marginBottom: 20 }}
             >
-              {/* 텍스트 입력 */}
+              {/* 글 편지 입력 */}
               <div
                 className={`write-paper write-paper-tone-${textBorderTone} ${showSig ? 'is-signing' : ''}`}
                 onClick={() => document.getElementById('textInput')?.focus()}
@@ -999,10 +999,10 @@ export default function WritePage() {
                 <LetterTextarea
                   value={text}
                   onChange={handleTextChange}
-                  placeholder="지금 남기고 싶은 마음을 차분히 기록해 주세요"
+                  placeholder="지금 전하고 싶은 마음을 천천히 기록해 주세요"
                 />
 
-                {/* 사진 촬영 */}
+                {/* 사진 담기 */}
                 <div
                   className={`write-char-count ${text.length >= LETTER_CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}
                   aria-live="polite"
@@ -1013,10 +1013,10 @@ export default function WritePage() {
                 <div className="write-tools-row">
                   <button onClick={imageUploading ? undefined : openPhotoCamera} disabled={imageUploading} className="write-tool-button-inline"
                     style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: imageUploading ? 'default' : 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.65)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, opacity: imageUploading ? 0.6 : 1 }}>
-                    {imageUploading ? '업로드 중...' : (
+                    {imageUploading ? '올리는 중입니다...' : (
                       <>
                         <WriteIcon name="camera" />
-                        <span>사진 촬영</span>
+                        <span>사진 담기</span>
                       </>
                     )}
                   </button>
@@ -1029,7 +1029,7 @@ export default function WritePage() {
                   <button onClick={() => setShowSig(s => !s)} className="write-tool-button-inline"
                     style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid', transition: 'all 0.2s', borderColor: showSig ? 'rgba(205,154,99,0.5)' : 'rgba(255,255,255,0.2)', background: showSig ? 'rgba(72,56,41,0.6)' : 'rgba(255,255,255,0.07)', color: showSig ? '#ffeacd' : 'rgba(255,252,223,0.65)' }}>
                     <WriteIcon name="signature" />
-                    <span>{signatureData ? '서명 완료' : '서명'}</span>
+                    <span>{signatureData ? '서명 완료' : '서명 남기기'}</span>
                   </button>
                 </div>
 
@@ -1072,10 +1072,10 @@ export default function WritePage() {
             disabled={draftSaving || drawUploading || imageUploading}
             className="write-draft-save"
           >
-            {draftSaving ? '저장 중...' : (
+            {draftSaving ? '저장하고 있습니다...' : (
               <>
                 <WriteIcon name="save" />
-                <span>임시 저장</span>
+                <span>초안 저장</span>
               </>
             )}
           </button>
@@ -1085,7 +1085,7 @@ export default function WritePage() {
             className="write-submit"
           >
             <WriteIcon name="send" />
-            <span>보내기</span>
+            <span>편지 보내기</span>
           </motion.button>
         </motion.div>
       </div>
@@ -1144,16 +1144,16 @@ export default function WritePage() {
               style={{ background: 'rgba(30,40,55,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 28, padding: '44px 52px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22, minWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}
             >
               <div style={{ order: -1, fontSize: 32, fontWeight: 400, color: '#e9dcc6', textShadow: '0 0 12px rgba(255,252,223,.3)' }}>
-                편지를 저장하시겠습니까?
+                이 편지를 어떻게 보관할까요?
               </div>
 
-              {/* 개봉일 */}
+              {/* 열람일 */}
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={labelStyle}>📅 개봉일</label>
+                <label style={labelStyle}>📅 열람일</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <button type="button" onClick={() => setSendNow(false)}
                     style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: !sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: !sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: !sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
-                    예약 발송
+                    날짜에 맞춰 보내기
                   </button>
                   <button type="button" onClick={() => setSendNow(true)}
                     style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
@@ -1162,7 +1162,7 @@ export default function WritePage() {
                 </div>
                 {sendNow ? (
                   <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', color: 'rgba(255,252,223,0.72)' }}>
-                    저장하면 바로 이메일을 발송합니다
+                    저장하면 이메일을 바로 보내드립니다
                   </div>
                 ) : (
                   <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
@@ -1170,11 +1170,11 @@ export default function WritePage() {
               </div>
 
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={labelStyle}>편지 테마</label>
+                <label style={labelStyle}>편지 분위기</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {[
-                    { value: 'dark', label: '다크' },
-                    { value: 'pink', label: '핑크' },
+                    { value: 'dark', label: '밤빛' },
+                    { value: 'pink', label: '분홍빛' },
                   ].map(option => {
                     const selected = emailTheme === option.value;
                     return (
@@ -1210,7 +1210,7 @@ export default function WritePage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="비워두면 자동 제목으로 보내집니다"
+                  placeholder="비워 두시면 편지에 어울리는 제목으로 보내드립니다"
                   value={emailSubject}
                   onChange={e => setEmailSubject(e.target.value.slice(0, LETTER_EMAIL_SUBJECT_MAX_LENGTH))}
                   maxLength={LETTER_EMAIL_SUBJECT_MAX_LENGTH}
@@ -1220,9 +1220,9 @@ export default function WritePage() {
 
               {/* 수신인 토글 */}
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <label style={labelStyle}>📬 받는 사람</label>
+                <label style={labelStyle}>📬 받을 사람</label>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  {[{ val: false, label: '나에게' }, { val: true, label: '다른 사람에게' }].map(({ val, label }) => (
+                  {[{ val: false, label: '나에게' }, { val: true, label: '다른 분에게' }].map(({ val, label }) => (
                     <button key={String(val)} onClick={() => setToOther(val)}
                       style={{ flex: 1, padding: '9px 0', borderRadius: 50, fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid', transition: 'all 0.2s',
                         borderColor: toOther === val ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)',
@@ -1237,8 +1237,8 @@ export default function WritePage() {
                 <AnimatePresence>
                   {toOther && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <input type="text" placeholder="받는 사람 이름 (선택)" value={recipientName} onChange={e => setRecipientName(e.target.value)} style={inputStyle} />
-                      <input type="email" placeholder="받는 사람 이메일 *" value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} style={inputStyle} />
+                      <input type="text" placeholder="받을 사람 이름 (선택)" value={recipientName} onChange={e => setRecipientName(e.target.value)} style={inputStyle} />
+                      <input type="email" placeholder="받을 사람 이메일 *" value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} style={inputStyle} />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1246,10 +1246,10 @@ export default function WritePage() {
 
               {!toOther && (
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <label style={labelStyle}>✉ 발송 이메일 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(개봉일에 자동 발송)</span></label>
+                  <label style={labelStyle}>✉ 받을 이메일 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(열람일에 자동 발송)</span></label>
                   <input
                     type="email"
-                    placeholder="이메일 주소"
+                    placeholder="이메일 주소를 입력해 주세요"
                     value={accountEmail || email}
                     readOnly
                     aria-readonly="true"
@@ -1263,12 +1263,12 @@ export default function WritePage() {
                 <motion.button whileHover={{ background: 'rgba(255,255,255,0.14)' }}
                   onClick={() => setShowModal(false)}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', backdropFilter: 'blur(6px)', transition: 'all 0.3s' }}>
-                  아니요
+                  돌아가기
                 </motion.button>
                 <motion.button whileHover={{ scale: 1.018, boxShadow: '0 0 24px rgba(231,207,161,.7)' }}
                   onClick={handleSave} disabled={saving}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg, #e7cfa1, #cfa874)', color: '#2b1e10', boxShadow: '0 0 16px rgba(231,207,161,.4)', transition: 'all 0.3s', opacity: saving ? 0.6 : 1 }}>
-                  {saving ? '저장 중...' : '저장'}
+                  {saving ? '저장하고 있습니다...' : '보관하기'}
                 </motion.button>
               </div>
             </motion.div>

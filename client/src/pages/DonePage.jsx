@@ -18,21 +18,21 @@ export default function DonePage() {
     if (deliveryFailed) {
       return {
         kind: 'failed',
-        title: '편지는 저장되었지만 이메일 전송에 실패했습니다',
-        message: delivery?.message || '관리자 화면에서 다시 전송할 수 있습니다.',
+        title: '편지는 저장했지만 이메일은 보내지 못했습니다',
+        message: delivery?.message || '관리자 화면에서 다시 발송하실 수 있습니다.',
       };
     }
     if (deliveryAccepted) {
       return {
         kind: 'success',
-        title: '편지가 이메일로 전송되었습니다',
+        title: '편지를 이메일로 보냈습니다',
         message: '받은편지함에서 보이지 않으면 스팸함도 함께 확인해 주세요.',
       };
     }
     return {
       kind: 'success',
-      title: '편지가 저장되었습니다',
-      message: '작성한 마음이 조용히 보관되었습니다.',
+      title: '편지를 소중히 보관했습니다',
+      message: '남겨 주신 마음을 조용히 보관했습니다.',
     };
   }, [delivery?.message, deliveryAccepted, deliveryFailed, sentNow]);
 
@@ -105,13 +105,13 @@ export default function DonePage() {
                 <div className="done-seal-ring" />
                 <div className="done-seal-text">
                   <strong>{openDateLabel}</strong>
-                  <span>개봉 예정</span>
+                  <span>열람 예정</span>
                 </div>
               </div>
 
               <div className="done-message">
-                <strong>편지가 봉인되었습니다</strong>
-                <span>약속한 날에 다시 열람할 수 있습니다.</span>
+                <strong>편지를 봉인했습니다</strong>
+                <span>약속한 날에 다시 열람하실 수 있습니다.</span>
               </div>
             </motion.div>
 
@@ -142,7 +142,7 @@ export default function DonePage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.1, ease }}
               >
-                <div className="done-envelope-label">보내는 사람</div>
+                <div className="done-envelope-label">남긴 사람</div>
                 <div className="done-envelope-value">
                   <span>{formatDate(new Date())}의</span>
                   <span>{senderName}</span>
@@ -157,7 +157,7 @@ export default function DonePage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, delay: 0.2, ease }}
               >
-                <div className="done-envelope-label">받는 사람</div>
+                <div className="done-envelope-label">받을 사람</div>
                 <div className="done-envelope-value">
                   <span>{formatDate(openDate)}의</span>
                   <span>{recipientDisplayName}에게</span>

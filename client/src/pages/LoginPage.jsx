@@ -52,7 +52,7 @@ export default function LoginPage({ letterMode = false }) {
     if (preparingForcedLogin) return;
     const nextUserid = userid.trim();
     if (!nextUserid || !password) {
-      setNotice({ title: '로그인 확인', message: '아이디와 비밀번호를 입력해 주세요.' });
+      setNotice({ title: '편지함 로그인이 필요합니다', message: '편지함에 들어가시려면 아이디와 비밀번호를 입력해 주세요.' });
       return;
     }
     try {
@@ -67,9 +67,9 @@ export default function LoginPage({ letterMode = false }) {
         if (isLetterMode) rememberLetterAuth(currentUser);
         navigate(returnTo, { replace: true });
       }
-      else setNotice({ title: '로그인 실패', message: data.message || '로그인에 실패했습니다.' });
+      else setNotice({ title: '편지함 로그인하지 못했습니다', message: data.message || '아이디와 비밀번호를 다시 확인해 주세요.' });
     } catch {
-      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.' });
+      setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     }
   }
 
@@ -88,7 +88,7 @@ export default function LoginPage({ letterMode = false }) {
       </motion.h1>
 
       <motion.p variants={item} className="home-subtitle">
-        {isLetterMode ? '도착한 편지를 확인하는 공간입니다' : '소중한 마음을 기록하고 전하는 편지'}
+        {isLetterMode ? '도착한 편지를 조용히 열어 보는 공간입니다' : '마음을 기록하고, 약속한 날에 다시 전하는 편지'}
       </motion.p>
 
       <motion.form
@@ -100,7 +100,7 @@ export default function LoginPage({ letterMode = false }) {
           variants={item}
           className="input-field"
           type="text"
-          placeholder="아이디를 입력하세요"
+          placeholder="아이디를 입력해 주세요"
           maxLength={20}
           value={userid}
           onChange={e => setUserid(e.target.value)}
@@ -109,25 +109,25 @@ export default function LoginPage({ letterMode = false }) {
           variants={item}
           wrapperClassName={isLetterMode ? 'password-field password-field-pink' : 'password-field'}
           className={isLetterMode ? 'input-field pink-password-input' : 'input-field'}
-          placeholder="비밀번호를 입력하세요"
+          placeholder="비밀번호를 입력해 주세요"
           maxLength={PASSWORD_MAX_LENGTH}
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
         <motion.button variants={item} className="submit-btn" type="submit" disabled={preparingForcedLogin}>
-          {preparingForcedLogin ? '준비 중...' : '로그인'}
+          {preparingForcedLogin ? '준비하고 있습니다...' : '편지함 로그인'}
         </motion.button>
       </motion.form>
 
       <motion.button variants={item} className="back-link" onClick={() => navigate('/')}>
-        ← 돌아가기
+        ← 처음으로 돌아가기
       </motion.button>
 
       <motion.button
         type="button"
         className="open-mailbox-floating-button"
-        aria-label="열린 편지함"
-        title="열린 편지함"
+        aria-label="열린 편지함으로 가기"
+        title="열린 편지함으로 가기"
         onClick={() => navigate('/open-mailbox')}
         initial={false}
         animate={{ opacity: 1, y: 0 }}

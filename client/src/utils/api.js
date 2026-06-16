@@ -16,7 +16,7 @@ export async function fetchJson(url, options = {}) {
   const data = await readJson(response);
 
   if (!response.ok) {
-    throw new ApiError(data.message || '요청에 실패했습니다.', response.status, data);
+    throw new ApiError(data.message || '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.', response.status, data);
   }
 
   return data;

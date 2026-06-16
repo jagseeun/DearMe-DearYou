@@ -31,7 +31,7 @@ function senderText(letter) {
 
 function receivedDateText(letter, unlocked) {
   const date = letter.arrivedAt || letter.sentAt || letter.openDate;
-  return unlocked ? `✓ ${formatDate(date)} 도착` : `${formatDate(letter.openDate)} 도착 예정`;
+  return unlocked ? `${formatDate(date)} 도착 완료` : `${formatDate(letter.openDate)}에 도착 예정`;
 }
 
 function LetterTypeIcon({ type, locked }) {
@@ -169,7 +169,7 @@ export default function LettersPage() {
   }
 
   function logoutLetters() {
-    confirmLogoutLetters();
+    setLogoutConfirm(true);
   }
 
   function confirmLogoutLetters() {
@@ -188,10 +188,10 @@ export default function LettersPage() {
         body: JSON.stringify({ favorite: nextFavorite }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || '즐겨찾기를 변경하지 못했습니다.');
+      if (!res.ok) throw new Error(data.message || '다시 보고 싶은 편지 표시를 바꾸지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } catch (err) {
       setLetters(prev => prev.map(item => item.id === letter.id ? { ...item, favorite: letter.favorite } : item));
-      setNotice({ title: '변경 실패', message: err.message || '즐겨찾기를 변경하지 못했습니다.' });
+      setNotice({ title: '변경하지 못했습니다', message: err.message || '다시 보고 싶은 편지 표시를 바꾸지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     }
   }
 
@@ -202,10 +202,10 @@ export default function LettersPage() {
         setLetters(prev => prev.filter(l => l.id !== id));
       } else {
         const data = await res.json();
-        setNotice({ title: '삭제 실패', message: data.message || '삭제에 실패했습니다.' });
+        setNotice({ title: '삭제하지 못했습니다', message: data.message || '편지를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
       }
     } catch {
-      setNotice({ title: '연결 실패', message: '서버 연결 오류' });
+      setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     }
     setDeleteConfirm(null);
   }
@@ -233,45 +233,45 @@ export default function LettersPage() {
         >
           <div>
             <div className="letter-list-kicker">{isReceivedBox ? 'RECEIVED' : 'MY LETTERS'}</div>
-            <h2 className="letter-list-title">{isReceivedBox ? '받은 편지' : '나의 편지'}</h2>
+            <h2 className="letter-list-title">{isReceivedBox ? '받은 편지함' : '내 편지함'}</h2>
           </div>
           {!loading && activeLetters.length > 0 && (
-            <div className="letter-list-stats" aria-label="편지 통계">
+            <div className="letter-list-stats" aria-label="편지함 현황">
               <div className="letter-list-stat">
                 <strong>{unlockedCount}</strong>
-                <span>개봉됨</span>
+                <span>열람 가능</span>
               </div>
               <div className="letter-list-stat-divider" />
               <div className="letter-list-stat locked">
                 <strong>{lockedCount}</strong>
-                <span>잠김</span>
+                <span>기다리는 중</span>
               </div>
             </div>
           )}
         </motion.header>
 
         {!loading && (
-          <motion.div className="letter-mailbox-tabs" aria-label="편지함 전환" {...panelMotion}>
+          <motion.div className="letter-mailbox-tabs" aria-label="편지함 선택" {...panelMotion}>
             <button type="button" className={!isReceivedBox ? 'active' : ''} onClick={() => switchMailbox('mine')}>
-              나의 편지 <span>{letters.length}</span>
+              내 편지함 <span>{letters.length}</span>
             </button>
             <button type="button" className={isReceivedBox ? 'active' : ''} onClick={() => switchMailbox('received')}>
-              받은 편지 <span>{receivedLetters.length}</span>
+              받은 편지함 <span>{receivedLetters.length}</span>
             </button>
           </motion.div>
         )}
 
         {!loading && !isReceivedBox && letters.length > 0 && (
           <motion.div className="letter-list-controls" {...panelMotion}>
-            <div className="letter-list-filters" aria-label="편지 필터">
-              <button type="button" className={!favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(false)}>전체</button>
-              <button type="button" className={favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(true)}>즐겨찾기 {favoriteCount}</button>
+            <div className="letter-list-filters" aria-label="편지 보기 방식">
+              <button type="button" className={!favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(false)}>모든 편지</button>
+              <button type="button" className={favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(true)}>다시 보고 싶은 편지 {favoriteCount}</button>
             </div>
           </motion.div>
         )}
 
         {loading ? (
-          <div className="letter-empty">불러오는 중...</div>
+          <div className="letter-empty">편지함을 불러오는 중입니다...</div>
         ) : activeLetters.length === 0 ? (
           <motion.div
             className="letter-empty"
@@ -279,14 +279,14 @@ export default function LettersPage() {
           >
             {isReceivedBox ? (
               <>
-                <strong>{userEmail ? '아직 받은 편지가 없습니다.' : '받은 편지를 확인할 이메일이 없습니다.'}</strong>
-                <span>{userEmail ? '도착한 편지는 이곳에 모입니다.' : '계정 이메일과 일치하는 편지만 표시됩니다.'}</span>
+                <strong>{userEmail ? '아직 도착한 편지가 없습니다.' : '도착한 편지를 확인할 이메일이 없습니다.'}</strong>
+                <span>{userEmail ? '누군가 남겨 주신 편지는 이곳에 차곡차곡 모입니다.' : '계정에 등록된 이메일로 도착한 편지만 보여드립니다.'}</span>
               </>
             ) : (
               <>
-                <strong>아직 작성한 편지가 없습니다.</strong>
-                <span>미래의 나에게 첫 편지를 남겨 보세요.</span>
-                <button type="button" className="soft-button" onClick={() => navigate('/write', { state: { emailTheme: 'pink' } })}>첫 편지 쓰기</button>
+                <strong>아직 남겨 둔 편지가 없습니다.</strong>
+                <span>미래의 나에게 첫 마음을 조용히 남겨 보세요.</span>
+                <button type="button" className="soft-button" onClick={() => navigate('/write', { state: { emailTheme: 'pink' } })}>첫 편지 남기기</button>
               </>
             )}
           </motion.div>
@@ -295,9 +295,9 @@ export default function LettersPage() {
             className="letter-empty"
             {...panelMotion}
           >
-            <strong>즐겨찾기한 편지가 아직 없습니다</strong>
-            <span>별을 눌러 다시 보고 싶은 편지를 모아둘 수 있습니다.</span>
-            <button type="button" className="soft-button" onClick={() => setFavoriteOnly(false)}>전체 보기</button>
+            <strong>다시 보고 싶은 편지가 아직 없습니다</strong>
+            <span>별을 눌러 오래 간직하고 싶은 편지를 모아 두실 수 있습니다.</span>
+            <button type="button" className="soft-button" onClick={() => setFavoriteOnly(false)}>모든 편지 보기</button>
           </motion.div>
         ) : (
           <div className="letter-scroll letters-scroll">
@@ -307,10 +307,10 @@ export default function LettersPage() {
               const type = getType(letter);
               const recipient = recipientText(letter);
               const sender = senderText(letter);
-              const cardTitle = isReceivedBox ? `보낸 사람 ${sender}` : `${formatDate(letter.createdAt)} 작성`;
+              const cardTitle = isReceivedBox ? `${sender}님이 보내신 편지` : `${formatDate(letter.createdAt)}에 남긴 편지`;
               const dateText = isReceivedBox
                 ? receivedDateText(letter, unlocked)
-                : unlocked ? `✓ ${formatDate(letter.openDate)} 개봉` : `${formatDate(letter.openDate)} 개봉 예정`;
+                : unlocked ? `${formatDate(letter.openDate)}부터 열람 가능` : `${formatDate(letter.openDate)}에 열립니다`;
 
               return (
                 <motion.article
@@ -355,7 +355,7 @@ export default function LettersPage() {
                             type="button"
                             className="letter-open-arrow"
                             onClick={event => { event.stopPropagation(); openLetter(letter); }}
-                            aria-label="편지 열기"
+                            aria-label="편지 열람하기"
                           >
                             ▶
                           </button>
@@ -368,7 +368,7 @@ export default function LettersPage() {
                             type="button"
                             className={`letter-favorite-button ${letter.favorite ? 'active' : ''}`}
                             onClick={event => toggleFavorite(letter, event)}
-                            aria-label={letter.favorite ? '즐겨찾기 해제' : '즐겨찾기'}
+                            aria-label={letter.favorite ? '다시 보기 목록에서 빼기' : '다시 보기 목록에 담기'}
                           >
                             ★
                           </button>
@@ -377,7 +377,7 @@ export default function LettersPage() {
                               type="button"
                               className="letter-open-arrow"
                               onClick={event => { event.stopPropagation(); openLetter(letter); }}
-                              aria-label="편지 열기"
+                              aria-label="편지 열람하기"
                             >
                               ▶
                             </button>
@@ -388,7 +388,7 @@ export default function LettersPage() {
                                 type="button"
                                 className="letter-delete-button"
                                 onClick={event => { event.stopPropagation(); setDeleteConfirm(letter.id); }}
-                                aria-label="편지 삭제"
+                                aria-label="편지 삭제하기"
                               >
                                 ×
                               </button>
@@ -418,7 +418,7 @@ export default function LettersPage() {
           onClick={goHome}
           whileHover={{ boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
         >
-          홈으로
+          홈으로 돌아가기
         </motion.button>
         <motion.button
           type="button"
@@ -441,18 +441,18 @@ export default function LettersPage() {
               className="modal-panel letter-delete-modal"
               {...modalPanelMotion}
             >
-              <div className="letter-delete-modal-title">편지를 삭제할까요?</div>
+              <div className="letter-delete-modal-title">이 편지를 삭제하시겠습니까?</div>
               <div className="letter-delete-modal-message">
-                아직 개봉하지 않은 편지만 삭제할 수 있습니다.
+                아직 열람하지 않은 편지만 삭제할 수 있습니다. 삭제한 편지는 되돌릴 수 없습니다.
               </div>
               <div className="modal-actions letter-delete-modal-actions">
-                <button type="button" className="letter-delete-modal-button" onClick={() => setDeleteConfirm(null)}>취소</button>
+                <button type="button" className="letter-delete-modal-button" onClick={() => setDeleteConfirm(null)}>돌아가기</button>
                 <button
                   type="button"
                   className="letter-delete-modal-button danger"
                   onClick={() => deleteLetter(deleteConfirm)}
                 >
-                  삭제
+                  삭제하기
                 </button>
               </div>
             </motion.div>
@@ -461,13 +461,13 @@ export default function LettersPage() {
       </AnimatePresence>
       <NoticeModal
         open={logoutConfirm}
-        title="로그아웃할까요?"
-        message="확인을 누르면 현재 계정에서 로그아웃됩니다."
-        cancelLabel="취소"
+        title="로그아웃하시겠습니까?"
+        message="지금 계정에서 나가도 남겨 두신 편지는 그대로 보관됩니다."
+        cancelLabel="머무르기"
         confirmLabel="로그아웃"
         onClose={() => setLogoutConfirm(false)}
         onConfirm={confirmLogoutLetters}
-        variant="pink"
+        variant="logout"
       />
       <NoticeModal
         open={Boolean(notice)}

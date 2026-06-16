@@ -106,14 +106,14 @@ export default function HelloPage() {
           whileHover={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,252,223,0.9)' }}
           style={navBtnStyle}
         >
-          나의 편지
+          내 편지함
         </motion.button>
         <motion.button
           onClick={() => navigate('/mypage')}
           whileHover={{ background: 'rgba(255,255,255,0.12)', color: 'rgba(255,252,223,0.9)' }}
           style={navBtnStyle}
         >
-          마이페이지
+          계정 관리
         </motion.button>
         <motion.button
           onClick={() => setShowLogoutModal(true)}
@@ -126,7 +126,7 @@ export default function HelloPage() {
 
       <div className="hello-content">
         <motion.div variants={item} className="hello-greeting">
-          반갑습니다. <span style={{ color: '#E6C395' }}>{displayName}</span>님
+          오늘도 반갑습니다, <span style={{ color: '#E6C395' }}>{displayName}</span>님
         </motion.div>
 
         <div className="hello-question-wrap">
@@ -152,7 +152,7 @@ export default function HelloPage() {
           whileHover={{ boxShadow: '0 8px 32px rgba(0,0,0,0.24), 0 0 20px rgba(205,154,99,0.18)' }}
           className="primary-cta"
         >
-          편지 쓰기
+          편지 남기기
         </motion.button>
       </div>
 
@@ -169,7 +169,7 @@ export default function HelloPage() {
               <strong>{deliveryNotice.title}</strong>
               <span>{deliveryNotice.message}</span>
             </div>
-            <button type="button" onClick={() => setDeliveryNotice(null)}>확인</button>
+            <button type="button" onClick={() => setDeliveryNotice(null)}>확인했습니다</button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -177,8 +177,8 @@ export default function HelloPage() {
       <NoticeModal
         open={showLogoutModal}
         title="로그아웃하시겠습니까?"
-        message="다시 로그인하면 편지를 이어서 확인할 수 있습니다."
-        cancelLabel="취소"
+        message="다시 로그인하시면 편지를 이어서 확인하실 수 있습니다."
+        cancelLabel="머무르기"
         confirmLabel="로그아웃"
         onClose={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}

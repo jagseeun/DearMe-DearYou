@@ -49,11 +49,11 @@ export default function PinkLetterViewPage() {
     try {
       const res = await fetch('/trigger-send', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || '발송 실패');
-      setSendMsg(data.sent ? '이메일 발송 요청이 접수되었습니다. 스팸함이나 프로모션함도 확인해 주세요.' : '발송할 편지가 없습니다');
+      if (!res.ok) throw new Error(data.message || '발송하지 못했습니다');
+      setSendMsg(data.sent ? '이메일 발송 요청을 접수했습니다. 받은편지함에 보이지 않으면 스팸함이나 프로모션함도 함께 확인해 주세요.' : '지금 발송할 편지가 없습니다');
       setTimeout(() => setSendMsg(''), 3000);
     } catch (err) {
-      setSendMsg(err.message || '발송 실패');
+      setSendMsg(err.message || '발송하지 못했습니다');
     } finally {
       setSending(false);
     }
@@ -114,11 +114,11 @@ export default function PinkLetterViewPage() {
 
       <div className="letter-list-shell compact">
         {loading ? (
-          <div className="letter-empty">불러오는 중...</div>
+          <div className="letter-empty">편지함을 불러오는 중입니다...</div>
         ) : letters.length === 0 ? (
           <div className="letter-empty">
-            <strong>아직 개봉할 편지가 없습니다.</strong>
-            <span>개봉일이 지나면 이곳에서 읽을 수 있습니다.</span>
+            <strong>아직 열람할 편지가 없습니다.</strong>
+            <span>약속한 날짜가 지나면 이곳에서 천천히 읽으실 수 있습니다.</span>
           </div>
         ) : (
           <>
@@ -127,7 +127,7 @@ export default function PinkLetterViewPage() {
             {...panelMotion}
           >
             <button type="button" className="soft-button pink-send-button" onClick={triggerSend} disabled={sending}>
-              {sending ? '발송 중...' : '이메일 지금 받기'}
+              {sending ? '메일을 보내는 중입니다...' : '이메일로 다시 받기'}
             </button>
             {sendMsg && <span style={{ fontSize: 13, color: 'rgba(255,232,226,0.82)' }}>{sendMsg}</span>}
           </motion.div>
@@ -157,7 +157,7 @@ export default function PinkLetterViewPage() {
                     >
                       <div className="letter-card-title-line">
                         <span className="letter-card-title">
-                          {unlocked ? `${formatDate(letter.openDate)} 개봉` : `${formatDate(letter.openDate)} 개봉 예정`}
+                          {unlocked ? `${formatDate(letter.openDate)}부터 열람 가능` : `${formatDate(letter.openDate)}부터 열람 가능 예정`}
                         </span>
                       </div>
                       <div className="letter-card-info-line">
@@ -177,7 +177,7 @@ export default function PinkLetterViewPage() {
                           type="button"
                           className="letter-open-arrow"
                           onClick={event => { event.stopPropagation(); openLetter(letter); }}
-                          aria-label="편지 열기"
+                          aria-label="편지 열람하기"
                         >
                           ▶
                         </button>
@@ -206,7 +206,7 @@ export default function PinkLetterViewPage() {
             className="letter-back-floating pink-letter-exit"
             onClick={goHome}
           >
-            홈으로
+            홈으로 돌아가기
           </motion.button>
           <motion.button
             type="button"
@@ -219,13 +219,13 @@ export default function PinkLetterViewPage() {
       )}
       <NoticeModal
         open={logoutConfirm}
-        title="로그아웃할까요?"
-        message="확인을 누르면 현재 계정에서 로그아웃됩니다."
-        cancelLabel="취소"
+        title="로그아웃하시겠습니까?"
+        message="지금 계정에서 나가도 남겨 두신 편지는 그대로 보관됩니다."
+        cancelLabel="머무르기"
         confirmLabel="로그아웃"
         onClose={() => setLogoutConfirm(false)}
         onConfirm={confirmLogoutLetters}
-        variant="pink"
+        variant="logout"
       />
     </motion.div>
   );

@@ -247,7 +247,7 @@ export default function OpenMailboxPage() {
       setPage(data.page || 0);
       setPageSize(data.pageSize || 8);
     } catch (err) {
-      setMessage(err.message || '열린 편지를 불러오지 못했습니다.');
+      setMessage(err.message || '열린 편지함을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setLoading(false);
     }
@@ -273,7 +273,7 @@ export default function OpenMailboxPage() {
   }, [selected]);
 
   async function uploadImageBlob(blob, ext, contentType) {
-    if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('이미지가 너무 큽니다.');
+    if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error('이미지가 너무 큽니다. 조금 더 가볍게 올려 주세요.');
     const data = await fetchJson('/public-image-upload-url', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -284,7 +284,7 @@ export default function OpenMailboxPage() {
       body: blob,
       headers: { 'Content-Type': contentType },
     });
-    if (!put.ok) throw new Error('이미지 업로드에 실패했습니다.');
+    if (!put.ok) throw new Error('이미지를 올리지 못했습니다. 잠시 후 다시 시도해 주세요.');
     return data.publicUrl;
   }
 
@@ -300,7 +300,7 @@ export default function OpenMailboxPage() {
         }
       });
     } catch {
-      setMessage('카메라 권한을 허용해 주세요.');
+      setMessage('카메라 권한을 허용해 주시면 사진을 남길 수 있습니다.');
     }
   }
 
@@ -326,7 +326,7 @@ export default function OpenMailboxPage() {
       const publicUrl = await uploadImageBlob(blob, 'jpg', 'image/jpeg');
       setPhotoUrl(publicUrl);
     } catch (err) {
-      setMessage(err.message || '사진 업로드에 실패했습니다.');
+      setMessage(err.message || '사진을 올리지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setPhotoUploading(false);
     }
@@ -334,7 +334,7 @@ export default function OpenMailboxPage() {
 
   async function uploadDrawing(targetCanvasRef = canvasRef, hasDrawing = drawn) {
     const canvas = targetCanvasRef.current;
-    if (!canvas || !hasDrawing) throw new Error('그림을 그려 주세요.');
+    if (!canvas || !hasDrawing) throw new Error('그림 편지에 남길 그림을 그려 주세요.');
     const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
     return uploadImageBlob(blob, 'png', 'image/png');
   }
@@ -382,12 +382,12 @@ export default function OpenMailboxPage() {
     const cleanNickname = nickname.trim();
     const cleanContent = content.trim();
 
-    if (!cleanNickname) return setMessage('닉네임을 입력해 주세요.');
-    if (!/^\d{4}$/.test(pin)) return setMessage('수정/삭제에 사용할 4자리 PIN을 입력해 주세요.');
-    if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
-    if (mode === 'text' && !cleanContent) return setMessage('내용을 입력해 주세요.');
-    if (mode === 'photo' && !photoUrl) return setMessage('사진을 촬영해 주세요.');
-    if (mode === 'draw' && !drawn) return setMessage('그림을 그려 주세요.');
+    if (!cleanNickname) return setMessage('편지에 표시할 닉네임을 입력해 주세요을 입력해 주세요.');
+    if (!/^\d{4}$/.test(pin)) return setMessage('나중에 수정하거나 삭제할 때 사용할 4자리 PIN을 입력해 주세요.');
+    if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용을 입력해 주세요은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+    if (mode === 'text' && !cleanContent) return setMessage('모두에게 남길 마음을 입력해 주세요.');
+    if (mode === 'photo' && !photoUrl) return setMessage('먼저 사진을 촬영해 주세요.');
+    if (mode === 'draw' && !drawn) return setMessage('그림 편지에 남길 그림을 그려 주세요.');
 
     setSaving(true);
     setMessage('');
@@ -409,7 +409,7 @@ export default function OpenMailboxPage() {
       setMessage('');
       await loadLetters(0);
     } catch (err) {
-      setMessage(err.message || '열린 편지를 저장하지 못했습니다.');
+      setMessage(err.message || '열린 편지를 남기지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setSaving(false);
     }
@@ -437,13 +437,13 @@ export default function OpenMailboxPage() {
     if (!selected) return;
     const cleanNickname = editNickname.trim();
     const cleanContent = editContent.trim();
-    if (!cleanNickname) return setMessage('닉네임을 입력해 주세요.');
+    if (!cleanNickname) return setMessage('편지에 표시할 닉네임을 입력해 주세요을 입력해 주세요.');
     if (!/^\d{4}$/.test(editPin)) return setMessage('4자리 PIN을 입력해 주세요.');
     if (selected.type === 'text') {
-      if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
-      if (!cleanContent) return setMessage('내용을 입력해 주세요.');
+      if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용을 입력해 주세요은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+      if (!cleanContent) return setMessage('모두에게 남길 마음을 입력해 주세요.');
     }
-    if (selected.type === 'draw' && !editDrawn) return setMessage('수정할 그림을 확인해 주세요.');
+    if (selected.type === 'draw' && !editDrawn) return setMessage('수정할 그림을 다시 확인해 주세요.');
 
     setEditSaving(true);
     setMessage('');
@@ -467,23 +467,23 @@ export default function OpenMailboxPage() {
       setSelected(updated);
       setEditingSelected(false);
       setEditPin('');
-      setMessage('수정됨');
+      setMessage('수정했습니다.');
     } catch (err) {
-      setMessage(err.message || '열린 편지를 수정하지 못했습니다.');
+      setMessage(err.message || '열린 편지를 수정하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setEditSaving(false);
     }
   }
 
   function requestDeleteSelectedLetter() {
-    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해 주세요.');
+    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하시려면 4자리 PIN을 입력해 주세요.');
     setConfirmingDelete(true);
     setMessage('');
   }
 
   async function deleteSelectedLetter() {
     if (!selected) return;
-    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하려면 4자리 PIN을 입력해 주세요.');
+    if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하시려면 4자리 PIN을 입력해 주세요.');
     setEditSaving(true);
     setMessage('');
     try {
@@ -495,7 +495,7 @@ export default function OpenMailboxPage() {
       closeSelectedLetter();
       await loadLetters(page);
     } catch (err) {
-      setMessage(err.message || '열린 편지를 삭제하지 못했습니다.');
+      setMessage(err.message || '열린 편지를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
       setEditSaving(false);
     }
@@ -506,7 +506,7 @@ export default function OpenMailboxPage() {
       className="open-mailbox-page"
       {...pageMotion}
     >
-      <button type="button" className="open-mailbox-back" onClick={() => navigate('/')}>돌아가기</button>
+      <button type="button" className="open-mailbox-back" onClick={() => navigate('/')}>처음으로 돌아가기</button>
 
       <OpenMailboxLogo />
 
@@ -516,11 +516,11 @@ export default function OpenMailboxPage() {
             <div className="open-board-title-row">
               <span>{total} letters</span>
               <h1 className="open-board-emoji-title" aria-label="열린 편지함">💌</h1>
-              <p>모두에게 전하는 편지</p>
+              <p>모두에게 남기는 편지</p>
             </div>
             <div className="open-board-controls">
               <button type="button" className="open-compose-open-button" onClick={openComposer}>
-                작성하기
+                편지 남기기
               </button>
               <div className="open-page-arrows">
                 <button type="button" onClick={() => changePage(page - 1)} disabled={page <= 0}>‹</button>
@@ -531,13 +531,13 @@ export default function OpenMailboxPage() {
           </div>
 
           {loading ? (
-            <div className="open-empty-letter">불러오는 중...</div>
+            <div className="open-empty-letter">열린 편지함을 불러오는 중입니다...</div>
           ) : letters.length === 0 ? (
             <div className="open-empty-letter">
-              <strong>첫 편지를 기다리는 중</strong>
-              <span>아무도 안 하면 우리가 첫 장을 열면 됩니다.</span>
+              <strong>첫 마음을 기다리는 중입니다</strong>
+              <span>첫 마음이 도착하면 이곳에 조용히 쌓입니다.</span>
               <button type="button" className="open-compose-open-button" onClick={openComposer}>
-                첫 편지 남기기
+                첫 마음 남기기
               </button>
             </div>
           ) : (
@@ -585,8 +585,8 @@ export default function OpenMailboxPage() {
             >
               <button type="button" className="open-compose-close" onClick={closeComposer}>닫기</button>
               <div className="open-compose-heading">
-                <h2>모두에게 전하는 편지</h2>
-                <span>모든 사람이 볼 수 있습니다.</span>
+                <h2>모두에게 남기는 편지</h2>
+                <span>남겨 주신 글은 모두에게 공개됩니다.</span>
               </div>
 
               <form className="open-compose-form" onSubmit={submitLetter}>
@@ -595,7 +595,7 @@ export default function OpenMailboxPage() {
                   value={nickname}
                   onChange={event => setNickname(event.target.value)}
                   maxLength={12}
-                  placeholder="닉네임"
+                  placeholder="닉네임을 입력해 주세요"
                 />
                 <input
                   className="open-compose-input"
@@ -605,10 +605,10 @@ export default function OpenMailboxPage() {
                   inputMode="numeric"
                   autoComplete="new-password"
                   maxLength={4}
-                  placeholder="수정/삭제 PIN 4자리"
+                  placeholder="수정/삭제용 PIN 4자리"
                 />
 
-                <div className="open-mode-tabs" aria-label="작성 형식">
+                <div className="open-mode-tabs" aria-label="편지 형식">
                   {modes.map(item => (
                     <button
                       key={item.key}
@@ -629,7 +629,7 @@ export default function OpenMailboxPage() {
                       value={content}
                       onChange={event => changeContent(event.target.value)}
                       maxLength={CONTENT_MAX_LENGTH}
-                      placeholder="모두에게 남길 편지"
+                      placeholder="모두에게 남길 마음을 적어 주세요"
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
@@ -659,11 +659,11 @@ export default function OpenMailboxPage() {
                       {photoUrl ? (
                         <div className="open-photo-preview">
                           <img src={photoUrl} alt="" />
-                          <button type="button" onClick={() => setPhotoUrl('')}>다시 촬영</button>
+                          <button type="button" onClick={() => setPhotoUrl('')}>다시 촬영하기</button>
                         </div>
                       ) : (
                         <button type="button" className="open-photo-button" onClick={openPhotoCamera} disabled={photoUploading}>
-                          {photoUploading ? '업로드 중...' : '사진 촬영'}
+                          {photoUploading ? '업로드 중...' : '사진 남기기'}
                         </button>
                       )}
                     </motion.div>
@@ -673,7 +673,7 @@ export default function OpenMailboxPage() {
                 <div className="open-compose-footer">
                   <span>{mode === 'text' ? `${content.length}/${CONTENT_MAX_LENGTH}` : mode === 'photo' ? '사진 1장' : '그림 1장'}</span>
                   <button type="submit" disabled={saving || photoUploading}>
-                    {saving ? '저장 중...' : '등록하기'}
+                    {saving ? '저장하고 있습니다...' : '남기기'}
                   </button>
                 </div>
               </form>
@@ -707,7 +707,7 @@ export default function OpenMailboxPage() {
                     value={editNickname}
                     onChange={event => setEditNickname(event.target.value)}
                     maxLength={12}
-                    placeholder="닉네임"
+                    placeholder="닉네임을 입력해 주세요"
                   />
                   {selected.type === 'text' && (
                     <textarea
@@ -715,7 +715,7 @@ export default function OpenMailboxPage() {
                       value={editContent}
                       onChange={event => setEditContent(event.target.value.slice(0, CONTENT_MAX_LENGTH))}
                       maxLength={CONTENT_MAX_LENGTH}
-                      placeholder="내용"
+                      placeholder="내용을 입력해 주세요"
                     />
                   )}
                   {selected.type === 'draw' && (
@@ -731,7 +731,7 @@ export default function OpenMailboxPage() {
                   {selected.type === 'photo' && selected.imageUrl && (
                     <div className="open-edit-photo-note">
                       <img src={selected.imageUrl} alt="" />
-                      <span>사진은 유지되며 닉네임만 수정할 수 있습니다.</span>
+                      <span>사진은 그대로 두고 닉네임만 수정하실 수 있습니다.</span>
                     </div>
                   )}
                   <input
@@ -745,8 +745,8 @@ export default function OpenMailboxPage() {
                     placeholder="PIN 4자리"
                   />
                   <div className="open-letter-actions">
-                    <button type="button" onClick={() => setEditingSelected(false)} disabled={editSaving}>취소</button>
-                    <button type="submit" disabled={editSaving}>{editSaving ? '저장 중...' : '수정 저장'}</button>
+                    <button type="button" onClick={() => setEditingSelected(false)} disabled={editSaving}>돌아가기</button>
+                    <button type="submit" disabled={editSaving}>{editSaving ? '저장하고 있습니다...' : '수정 내용 저장하기'}</button>
                   </div>
                 </form>
               ) : (
@@ -766,15 +766,15 @@ export default function OpenMailboxPage() {
                       maxLength={4}
                       placeholder="PIN 4자리"
                     />
-                    <button type="button" onClick={() => setEditingSelected(true)} disabled={editSaving}>수정</button>
-                    <button type="button" onClick={requestDeleteSelectedLetter} disabled={editSaving}>삭제</button>
+                    <button type="button" onClick={() => setEditingSelected(true)} disabled={editSaving}>수정하기</button>
+                    <button type="button" onClick={requestDeleteSelectedLetter} disabled={editSaving}>삭제하기</button>
                   </div>
                   {confirmingDelete && (
                     <div className="open-delete-confirm">
-                      <span>정말 삭제할까요?</span>
-                      <button type="button" onClick={() => setConfirmingDelete(false)} disabled={editSaving}>취소</button>
+                      <span>이 열린 편지를 삭제하시겠습니까?</span>
+                      <button type="button" onClick={() => setConfirmingDelete(false)} disabled={editSaving}>돌아가기</button>
                       <button type="button" onClick={deleteSelectedLetter} disabled={editSaving}>
-                        {editSaving ? '삭제 중...' : '삭제'}
+                        {editSaving ? '삭제하고 있습니다...' : '삭제하기'}
                       </button>
                     </div>
                   )}
@@ -807,7 +807,7 @@ export default function OpenMailboxPage() {
               />
             </div>
             <div className="photo-capture-actions" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <button type="button" onClick={closePhotoCamera} style={{ padding: '10px 26px', borderRadius: 50, fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.72)' }}>취소</button>
+              <button type="button" onClick={closePhotoCamera} style={{ padding: '10px 26px', borderRadius: 50, fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.72)' }}>돌아가기</button>
               <button type="button" onClick={capturePhoto} className="open-shutter-button" aria-label="촬영" />
             </div>
           </motion.div>

@@ -49,20 +49,20 @@ export default function IndexPage() {
       </motion.h1>
 
       <motion.p variants={item} className="home-subtitle">
-        마음을 기록하고 전하는 편지
+        마음을 기록하고, 약속한 날에 다시 전하는 편지
       </motion.p>
 
       <motion.div
         variants={item}
         className="home-actions"
       >
-        <button className="glass-btn" onClick={openLogin}>로그인</button>
-        <button className="glass-btn" onClick={openSignup}>회원가입</button>
+        <button className="glass-btn" onClick={openLogin}>편지함 로그인</button>
+        <button className="glass-btn" onClick={openSignup}>가입하기</button>
         <button
           className="glass-btn"
           onClick={openLetterBox}
         >
-          편지 읽기
+          편지 열람하기
         </button>
         {status === 'authenticated' && (
           <motion.p variants={item} className="home-session-note">
@@ -74,8 +74,8 @@ export default function IndexPage() {
       <motion.button
         type="button"
         className="open-mailbox-floating-button"
-        aria-label="열린 편지함"
-        title="열린 편지함"
+        aria-label="열린 편지함으로 가기"
+        title="열린 편지함으로 가기"
         onClick={() => navigate('/open-mailbox')}
         initial={false}
         animate={{ opacity: 1, y: 0 }}

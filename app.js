@@ -291,7 +291,7 @@ function mailMessageId(result) {
 
 function validatePassword(value) {
   if (typeof value !== "string" || value.length < PASSWORD_MIN_LENGTH) {
-    return `비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상으로 입력해주세요.`;
+    return `비밀번호는 ${PASSWORD_MIN_LENGTH}자 이상으로 입력해 주세요.`;
   }
   if (value.length > PASSWORD_MAX_LENGTH) {
     return `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.`;
@@ -486,7 +486,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
               from: emailFromHeader,
               replyTo: emailReplyTo,
               to: letter.author.email,
-              subject: mailHeader(`${recipientName}님께 보낸 편지가 전달되었습니다`),
+              subject: mailHeader(`${recipientName}님께 보낸 편지가 도착했습니다`),
               text: `안녕하세요, ${senderName}님.\n${recipientName}님께 보낸 편지가 오늘 조용히 전달되었습니다.\n소중히 남겨 두신 마음이 제자리까지 닿았습니다.\n\n${metaText}`,
               html: senderHtml,
             });
@@ -495,7 +495,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
             stats.errors.push({
               letterId: letter.id,
               reason: "sender_notify_failed",
-              message: "수신자 이메일 발송 요청은 접수됐지만 발신자 알림 메일은 실패했습니다.",
+              message: "수신자 이메일 발송 요청은 접수했지만, 보낸 분께 드리는 알림 메일은 보내지 못했습니다.",
             });
             console.error(`✉ 발신자 알림 실패: ${letter.author.email}`, notifyErr.message);
           }
@@ -517,7 +517,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
     stats.failed += 1;
     stats.errors.push({
       reason: "delivery_query_failed",
-      message: "편지 발송 처리 중 서버 오류가 발생했습니다. 관리자에서 다시 발송해주세요.",
+      message: "편지 발송 처리 중 문제가 생겼습니다. 관리자 화면에서 다시 발송해 주세요.",
     });
   }
 
@@ -538,44 +538,44 @@ function classifyMailError(err) {
 function publicMailErrorMessage(err) {
   const reason = classifyMailError(err);
   if (reason === "brevo_config_missing") {
-    return "Brevo 발송 설정이 없습니다. BREVO_API_KEY와 BREVO_SENDER_EMAIL을 확인해주세요.";
+    return "Brevo 발송 설정이 없습니다. BREVO_API_KEY와 BREVO_SENDER_EMAIL을 확인해 주세요.";
   }
   if (reason === "missing_or_invalid_email") {
     return "발송할 이메일 주소가 없거나 형식이 올바르지 않습니다.";
   }
   if (reason === "brevo_api_failed") {
     if (err?.responseCode === 401 || err?.responseCode === 403) {
-      return "Brevo API 인증에 실패했습니다. Render의 BREVO_API_KEY를 확인해주세요.";
+      return "Brevo API 인증을 완료하지 못했습니다. Render의 BREVO_API_KEY를 확인해 주세요.";
     }
     if (err?.responseCode === 400) {
-      return "Brevo가 메일 요청을 거절했습니다. 발신자 이메일이 Brevo에 등록/인증되어 있는지 확인해주세요.";
+      return "Brevo가 메일 요청을 거절했습니다. 발신자 이메일이 Brevo에 등록/인증되어 있는지 확인해 주세요.";
     }
-    return "Brevo 이메일 API 발송에 실패했습니다. Brevo 대시보드의 Transactional logs를 확인해주세요.";
+    return "Brevo 이메일 API로 발송하지 못했습니다. Brevo 대시보드의 Transactional logs를 확인해 주세요.";
   }
   if (reason === "mail_config_missing") {
     return "배포 서버에 GMAIL_USER 또는 GMAIL_APP_PASSWORD 환경변수가 설정되지 않았습니다.";
   }
   if (reason === "mail_auth_failed") {
-    return "Gmail 인증에 실패했습니다. Render 환경변수의 Gmail 계정과 앱 비밀번호를 확인해주세요.";
+    return "Gmail 인증을 완료하지 못했습니다. Render 환경변수의 Gmail 계정과 앱 비밀번호를 확인해 주세요.";
   }
   if (reason === "mail_timeout") {
     return brevoApiKey
-      ? "Brevo API 응답 시간이 초과됐습니다. 잠시 후 관리자에서 다시 발송해주세요."
-      : "Gmail SMTP 응답 시간이 초과됐습니다. 잠시 후 관리자에서 다시 발송해주세요.";
+      ? "Brevo API 응답 시간이 초과됐습니다. 잠시 후 관리자에서 다시 발송해 주세요."
+      : "Gmail SMTP 응답 시간이 초과됐습니다. 잠시 후 관리자에서 다시 발송해 주세요.";
   }
   if (reason === "mail_connection_failed") {
-    return "배포 서버에서 Gmail SMTP에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.";
+    return "배포 서버에서 Gmail SMTP에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.";
   }
-  return "Gmail SMTP 발송이 거절되었거나 일시 오류가 발생했습니다.";
+  return "Gmail SMTP 발송이 거절되었거나 일시적인 문제가 생겼습니다.";
 }
 
 function deliveryResultMessage(delivery) {
   if (!delivery) return "";
-  if (delivery.sent > 0) return "이메일 발송 요청이 접수되었습니다. 받은편지함에 없으면 스팸함이나 프로모션함도 확인해주세요.";
-  if (delivery.checked === 0) return "발송 대상 편지를 찾지 못했습니다. 관리자에서 편지 상태를 확인해주세요.";
+  if (delivery.sent > 0) return "이메일 발송 요청을 접수했습니다. 받은편지함에 보이지 않으면 스팸함이나 프로모션함도 함께 확인해 주세요.";
+  if (delivery.checked === 0) return "발송할 편지를 찾지 못했습니다. 관리자 화면에서 편지 상태를 확인해 주세요.";
   if (delivery.skippedNoEmail > 0) return "발송할 이메일 주소가 없거나 형식이 올바르지 않습니다.";
   if (delivery.errors?.[0]?.message) return delivery.errors[0].message;
-  return "편지는 저장됐지만 이메일 발송은 실패했습니다. 관리자에서 다시 발송해주세요.";
+  return "편지는 저장했지만 이메일은 보내지 못했습니다. 관리자 화면에서 다시 발송해 주세요.";
 }
 
 function buildLegacySenderNotifyEmail(senderName, recipientName, openDate) {
@@ -585,13 +585,13 @@ function buildLegacySenderNotifyEmail(senderName, recipientName, openDate) {
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
       <div style="font-size:13px;color:rgba(255,252,223,0.5);margin-bottom:10px">DEAR ME; DEAR YOU</div>
-      <div style="font-size:26px;font-weight:300;color:#e9dcc6">편지가 전달되었습니다</div>
+      <div style="font-size:26px;font-weight:300;color:#e9dcc6">편지가 도착했습니다</div>
     </div>
     <div style="padding:36px 40px">
       <p style="font-size:16px;line-height:1.9;color:#d9cfc0">
         안녕하세요, <strong>${safeSenderName}</strong>님.<br><br>
         <strong>${safeRecipientName}</strong>님에게 보낸 편지가 오늘 전달되었습니다.<br>
-        소중한 마음이 조용히 닿기를 바랍니다.
+        남겨 두신 마음이 조용히 닿았습니다.
       </p>
     </div>
     <div style="padding:20px 40px 36px;text-align:center;color:rgba(255,252,223,0.3);font-size:12px">
@@ -611,7 +611,7 @@ function buildLegacyTextEmail(recipientName, senderName, content, openDate, isTo
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
       <div style="font-size:28px;font-weight:300;color:#cd9a63">Dear Me<span style="color:#fff;margin:0 8px">;</span><span style="color:#f0ebe0">Dear You</span></div>
-      <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
+      <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 열람</div>
     </div>
     <div style="padding:40px">
       <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}</p>
@@ -632,7 +632,7 @@ function buildLegacyDrawEmail(recipientName, senderName, imageUrl, openDate, isT
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
       <div style="font-size:28px;font-weight:300;color:#cd9a63">Dear Me<span style="color:#fff;margin:0 8px">;</span><span style="color:#f0ebe0">Dear You</span></div>
-      <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
+      <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 열람</div>
     </div>
     <div style="padding:40px">
       <p style="font-size:18px;color:#e9dcc6;margin-bottom:24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}</p>
@@ -653,7 +653,7 @@ function buildLegacyVideoEmail(recipientName, senderName, videoUrl, openDate, is
   <div style="max-width:600px;margin:0 auto;background:#151f2e;color:#f0ebe0;font-family:sans-serif;border-radius:16px;overflow:hidden">
     <div style="background:linear-gradient(135deg,#2a3a4d,#3d4b5a);padding:40px;text-align:center">
       <div style="font-size:28px;font-weight:300;color:#cd9a63">Dear Me<span style="color:#fff;margin:0 8px">;</span><span style="color:#f0ebe0">Dear You</span></div>
-      <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 개봉</div>
+      <div style="margin-top:8px;color:rgba(255,252,223,0.6);font-size:14px">${new Date(openDate).toLocaleDateString("ko-KR")} 열람</div>
     </div>
     <div style="padding:40px;text-align:center">
       <p style="font-size:18px;color:#e9dcc6;margin-bottom:28px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}</p>
@@ -766,7 +766,7 @@ function getLetterEmailTheme(theme) {
 function buildLetterMetaText(meta = {}) {
   return [
     `보낸 날: ${formatMailDate(meta.createdAt)}`,
-    `개봉일: ${formatMailDate(meta.openDate)}`,
+    `열람일: ${formatMailDate(meta.openDate)}`,
   ].join("\n");
 }
 
@@ -792,7 +792,7 @@ function buildEmailStarField(themeStyles) {
 function buildLetterMetaHtml(meta = {}, themeStyles) {
   const rows = [
     ["보낸 날", formatMailDateOnly(meta.createdAt)],
-    ["개봉일", formatMailDateOnly(meta.openDate)],
+    ["열람일", formatMailDateOnly(meta.openDate)],
     ["받는 사람", meta.recipientName || meta.recipientEmail],
   ];
 
@@ -809,7 +809,7 @@ function buildLetterMetaHtml(meta = {}, themeStyles) {
 
 function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 620 }) {
   const themeStyles = getLetterEmailTheme(theme);
-  const headerSubtitle = subtitle || "마음을 담아 전하는 편지";
+  const headerSubtitle = subtitle || "마음을 담아 전하는 Dear Me ; Dear You 편지";
   return `
   <div style="padding:40px 16px 56px;background:${themeStyles.outerBg};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;position:relative;overflow:hidden">
     <div style="position:absolute;inset:0;pointer-events:none;background:${themeStyles.glowBg}"></div>
@@ -846,7 +846,7 @@ function buildSenderNotifyEmail(senderName, recipientName, openDate, emailTheme 
   return buildEmailShell({
     theme: emailTheme,
     openDate,
-    subtitle: "보낸 편지가 전달되었습니다",
+    subtitle: "보낸 편지가 도착했습니다",
     body: themeStyles => `
     <div style="padding:36px 40px 44px">
       <div style="font-size:14px;color:${themeStyles.soft};line-height:1.9;margin-bottom:28px">안녕하세요, <strong style="color:${themeStyles.text}">${safeSenderName}</strong>님.<br>보내신 편지가 <strong style="color:${themeStyles.text}">${safeRecipientName}</strong>님께 차분히 전달되었습니다.</div>
@@ -1247,7 +1247,7 @@ const authLimiter = rateLimit({
   limit: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+  message: { message: "요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
 });
 
 const adminLimiter = rateLimit({
@@ -1255,7 +1255,7 @@ const adminLimiter = rateLimit({
   limit: 120,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "관리자 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+  message: { message: "관리자 요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
 });
 
 const uploadLimiter = rateLimit({
@@ -1263,7 +1263,7 @@ const uploadLimiter = rateLimit({
   limit: 80,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "업로드 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+  message: { message: "업로드 요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
 });
 
 const writeLimiter = rateLimit({
@@ -1271,7 +1271,7 @@ const writeLimiter = rateLimit({
   limit: 60,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "저장 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+  message: { message: "저장 요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
 });
 
 const publicLetterLimiter = rateLimit({
@@ -1287,7 +1287,7 @@ const publicUploadLimiter = rateLimit({
   limit: 24,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { message: "이미지 업로드 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
+  message: { message: "이미지 업로드 요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
 });
 
 function setNoStoreHeaders(res) {
@@ -1409,21 +1409,21 @@ async function ensureDefaultTeacherLetter() {
 
 // DB 연결 테스트
 app.get("/db-test", requireAdmin, async (req, res) => {
-  try { await prisma.$connect(); res.send("DB 연결 성공"); }
-  catch (err) { res.status(500).send("DB 연결 실패"); }
+  try { await prisma.$connect(); res.send("DB 연결을 확인했습니다."); }
+  catch (err) { res.status(500).send("DB 연결을 확인하지 못했습니다."); }
 });
 
 // 1. 아이디 중복 확인
 app.post("/check-username", authLimiter, async (req, res) => {
   const userid = String(req.body.userid || "").trim();
-  if (!userid) return res.status(400).json({ available: false, message: "아이디를 입력해주세요." });
+  if (!userid) return res.status(400).json({ available: false, message: "아이디를 입력해 주세요." });
   if (userid.length > USERID_MAX_LENGTH) return res.status(400).json({ available: false, message: `아이디는 ${USERID_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (!USERID_REGEX.test(userid)) return res.status(400).json({ available: false, message: "영어와 숫자만 가능합니다." });
+  if (!USERID_REGEX.test(userid)) return res.status(400).json({ available: false, message: "아이디는 영어와 숫자만 사용할 수 있습니다." });
   try {
     const existing = await prisma.member.findUnique({ where: { userid } });
     if (existing) return res.status(400).json({ available: false, message: "이미 사용 중인 아이디입니다." });
-    res.status(200).json({ available: true, message: "사용 가능한 아이디입니다." });
-  } catch { res.status(500).json({ message: "서버 오류" }); }
+    res.status(200).json({ available: true, message: "사용하실 수 있는 아이디입니다." });
+  } catch { res.status(500).json({ message: "서버에서 요청을 처리하지 못했습니다." }); }
 });
 
 // 2. 회원가입
@@ -1432,7 +1432,7 @@ app.post("/register", authLimiter, async (req, res) => {
   const userid = String(req.body.userid || "").trim();
   const password = String(req.body.password || "");
   const email = String(req.body.email || "").trim().toLowerCase();
-  if (!name || !userid || !password || !email) return res.status(400).json({ message: "모든 값을 입력해주세요." });
+  if (!name || !userid || !password || !email) return res.status(400).json({ message: "가입에 필요한 내용을 모두 입력해 주세요." });
   if (name.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (userid.length > USERID_MAX_LENGTH) return res.status(400).json({ message: `아이디는 ${USERID_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (!USERID_REGEX.test(userid)) return res.status(400).json({ message: "아이디는 영어와 숫자만 사용할 수 있습니다." });
@@ -1448,11 +1448,11 @@ app.post("/register", authLimiter, async (req, res) => {
     if (!teacherLetterResult.sent) {
       console.warn("signup teacher letter not sent:", { memberId: member.id, reason: teacherLetterResult.reason });
     }
-    res.status(201).json({ message: "회원가입 성공!" });
+    res.status(201).json({ message: "가입이 완료되었습니다." });
   } catch (err) {
     if (err.code === "P2002") return res.status(400).json({ message: "이미 사용 중인 아이디 또는 이메일입니다." });
     console.error("register error:", err);
-    res.status(400).json({ message: "회원가입 실패" });
+    res.status(400).json({ message: "가입하지 못했습니다. 입력하신 내용을 다시 확인해 주세요." });
   }
 });
 
@@ -1461,7 +1461,7 @@ app.post("/login", authLimiter, async (req, res) => {
   const userid = String(req.body.userid || "").trim();
   const password = String(req.body.password || "");
   const invalidLoginMessage = "아이디 또는 비밀번호가 올바르지 않습니다.";
-  if (!userid || !password) return res.status(400).json({ message: "아이디와 비밀번호를 입력해주세요." });
+  if (!userid || !password) return res.status(400).json({ message: "아이디와 비밀번호를 입력해 주세요." });
   if (userid.length > USERID_MAX_LENGTH || password.length > PASSWORD_MAX_LENGTH) {
     return res.status(401).json({ message: invalidLoginMessage });
   }
@@ -1474,28 +1474,28 @@ app.post("/login", authLimiter, async (req, res) => {
     req.session.regenerate(err => {
       if (err) {
         console.error("session regenerate error:", err);
-        return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다." });
+        return res.status(500).json({ message: "로그인 처리 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요." });
       }
 
       req.session.user = { id: member.id, userid: member.userid, name: member.name, email: member.email || "" };
       req.session.save(saveErr => {
         if (saveErr) {
           console.error("session save error:", saveErr);
-          return res.status(500).json({ message: "로그인 처리 중 오류가 발생했습니다." });
+          return res.status(500).json({ message: "로그인 처리 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요." });
         }
-        res.status(200).json({ message: "로그인 성공", name: member.name });
+        res.status(200).json({ message: "로그인되었습니다.", name: member.name });
       });
     });
   } catch (err) {
     console.error("login error:", err);
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    res.status(500).json({ message: "서버에서 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요." });
   }
 });
 
 // 4. 유저 정보 (이름 + 이메일)
 app.get("/get-user-info", (req, res) => {
   setNoStoreHeaders(res);
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   res.json({
     userid: req.session.user.userid,
     name: req.session.user.name,
@@ -1513,7 +1513,7 @@ app.post("/support-messages", writeLimiter, async (req, res) => {
   const sessionUser = req.session.user || {};
   const content = normalizePublicText(req.body.content || "");
 
-  if (!content) return res.status(400).json({ message: "남기고 싶은 마음을 입력해주세요." });
+  if (!content) return res.status(400).json({ message: "전하고 싶은 마음을 입력해 주세요." });
   if (content.length > SUPPORT_MESSAGE_CONTENT_MAX_LENGTH) {
     return res.status(400).json({ message: `남길 수 있는 글은 ${SUPPORT_MESSAGE_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   }
@@ -1576,31 +1576,31 @@ app.get("/logout", (req, res) => {
 
 // 6. 이메일 변경
 app.put("/update-email", async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const email = String(req.body.email || "").trim().toLowerCase();
-  if (!email) return res.status(400).json({ message: "이메일을 입력해주세요." });
+  if (!email) return res.status(400).json({ message: "이메일을 입력해 주세요." });
   if (!isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
     if (existingEmail && existingEmail.id !== req.session.user.id) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
     await prisma.member.update({ where: { id: req.session.user.id }, data: { email } });
     req.session.user.email = email;
-    req.session.save(() => res.json({ message: "이메일이 변경되었습니다." }));
+    req.session.save(() => res.json({ message: "이메일을 변경했습니다." }));
   } catch (err) {
     if (err.code === "P2002") return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
-    res.status(500).json({ message: "서버 오류" });
+    res.status(500).json({ message: "서버에서 요청을 처리하지 못했습니다." });
   }
 });
 
 // 6-1. 이름/이메일 변경
 app.put("/update-profile", async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const name = String(req.body.name || "").trim();
   const email = String(req.body.email || "").trim().toLowerCase();
 
-  if (!name) return res.status(400).json({ message: "이름을 입력해주세요." });
+  if (!name) return res.status(400).json({ message: "이름을 입력해 주세요." });
   if (name.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (!email) return res.status(400).json({ message: "이메일을 입력해주세요." });
+  if (!email) return res.status(400).json({ message: "이메일을 입력해 주세요." });
   if (!isValidEmail(email)) {
     return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   }
@@ -1614,19 +1614,19 @@ app.put("/update-profile", async (req, res) => {
     });
     req.session.user.name = updated.name;
     req.session.user.email = updated.email || "";
-    req.session.save(() => res.json({ message: "프로필이 변경되었습니다.", name: updated.name, email: updated.email || "" }));
+    req.session.save(() => res.json({ message: "프로필을 저장했습니다.", name: updated.name, email: updated.email || "" }));
   } catch (err) {
     if (err.code === "P2002") return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
-    res.status(500).json({ message: "서버 오류" });
+    res.status(500).json({ message: "서버에서 요청을 처리하지 못했습니다." });
   }
 });
 
 app.put("/change-password", authLimiter, async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const currentPassword = String(req.body.currentPassword || "");
   const nextPassword = String(req.body.nextPassword || "");
   const nextPasswordConfirm = String(req.body.nextPasswordConfirm || "");
-  if (!currentPassword || !nextPassword || !nextPasswordConfirm) return res.status(400).json({ message: "현재 비밀번호와 새 비밀번호를 입력해주세요." });
+  if (!currentPassword || !nextPassword || !nextPasswordConfirm) return res.status(400).json({ message: "현재 비밀번호와 새 비밀번호를 모두 입력해 주세요." });
   if (nextPassword !== nextPasswordConfirm) return res.status(400).json({ message: "새 비밀번호가 서로 일치하지 않습니다." });
   if (currentPassword.length > PASSWORD_MAX_LENGTH) return res.status(400).json({ message: "현재 비밀번호가 올바르지 않습니다." });
   const passwordError = validatePassword(nextPassword);
@@ -1636,15 +1636,15 @@ app.put("/change-password", authLimiter, async (req, res) => {
     const member = await prisma.member.findUnique({ where: { id: req.session.user.id } });
     if (!member) return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
     const isMatch = await bcrypt.compare(currentPassword, member.password);
-    if (!isMatch) return res.status(400).json({ message: "현재 비밀번호가 틀렸습니다." });
-    if (currentPassword === nextPassword) return res.status(400).json({ message: "새 비밀번호는 현재 비밀번호와 다르게 입력해주세요." });
+    if (!isMatch) return res.status(400).json({ message: "현재 비밀번호가 올바르지 않습니다." });
+    if (currentPassword === nextPassword) return res.status(400).json({ message: "새 비밀번호는 현재 비밀번호와 다르게 입력해 주세요." });
 
     const hashedPassword = await bcrypt.hash(nextPassword, 10);
     await prisma.member.update({ where: { id: member.id }, data: { password: hashedPassword } });
     res.json({ message: "비밀번호가 변경되었습니다." });
   } catch (err) {
     console.error("change password error:", err);
-    res.status(500).json({ message: "비밀번호 변경에 실패했습니다." });
+    res.status(500).json({ message: "비밀번호를 변경하지 못했습니다. 잠시 후 다시 시도해 주세요." });
   }
 });
 
@@ -1659,7 +1659,7 @@ app.get("/get-upload-url", uploadLimiter, async (req, res) => {
   try {
     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
     res.json({ uploadUrl, publicUrl: publicAssetUrl(fileName) });
-  } catch (err) { console.error(err); res.status(500).json({ message: "URL 발급 실패" }); }
+  } catch (err) { console.error(err); res.status(500).json({ message: "업로드 준비를 하지 못했습니다." }); }
 });
 
 // 8. 이미지 업로드 presigned URL
@@ -1676,7 +1676,7 @@ app.get("/get-image-upload-url", uploadLimiter, async (req, res) => {
   try {
     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
     res.json({ uploadUrl, publicUrl: publicAssetUrl(fileName) });
-  } catch (err) { console.error(err); res.status(500).json({ message: "URL 발급 실패" }); }
+  } catch (err) { console.error(err); res.status(500).json({ message: "업로드 준비를 하지 못했습니다." }); }
 });
 
 app.post("/public-image-upload-url", publicUploadLimiter, async (req, res) => {
@@ -1693,7 +1693,7 @@ app.post("/public-image-upload-url", publicUploadLimiter, async (req, res) => {
     res.json({ uploadUrl, publicUrl: publicAssetUrl(fileName) });
   } catch (err) {
     console.error("public image upload url error:", err);
-    res.status(500).json({ message: "URL 발급 실패" });
+    res.status(500).json({ message: "업로드 준비를 하지 못했습니다." });
   }
 });
 
@@ -1733,10 +1733,10 @@ app.post("/public-letters", publicLetterLimiter, async (req, res) => {
   const pin = String(req.body.pin || "");
 
   if (!nickname || nickname.length > PUBLIC_LETTER_NICKNAME_MAX_LENGTH) {
-    return res.status(400).json({ message: `닉네임은 1-${PUBLIC_LETTER_NICKNAME_MAX_LENGTH}자로 입력해주세요.` });
+    return res.status(400).json({ message: `닉네임은 1-${PUBLIC_LETTER_NICKNAME_MAX_LENGTH}자로 입력해 주세요.` });
   }
   if (!validatePublicLetterPin(pin)) {
-    return res.status(400).json({ message: "수정/삭제에 사용할 4자리 PIN을 입력해주세요." });
+    return res.status(400).json({ message: "나중에 수정하거나 삭제할 때 사용할 4자리 PIN을 입력해 주세요." });
   }
   if (!ALLOWED_PUBLIC_LETTER_TYPES.has(type)) {
     return res.status(400).json({ message: "지원하지 않는 열린 편지 형식입니다." });
@@ -1745,7 +1745,7 @@ app.post("/public-letters", publicLetterLimiter, async (req, res) => {
     return res.status(400).json({ message: `내용은 ${PUBLIC_LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   }
   if (type === "text" && !content) {
-    return res.status(400).json({ message: "내용을 입력해주세요." });
+    return res.status(400).json({ message: "편지에 남길 내용을 입력해 주세요." });
   }
 
   const moderationError = validatePublicLetterText({ nickname, content });
@@ -1791,9 +1791,9 @@ app.put("/public-letters/:id", publicLetterLimiter, async (req, res) => {
 
   if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "잘못된 열린 편지입니다." });
   if (!nickname || nickname.length > PUBLIC_LETTER_NICKNAME_MAX_LENGTH) {
-    return res.status(400).json({ message: `닉네임은 1-${PUBLIC_LETTER_NICKNAME_MAX_LENGTH}자로 입력해주세요.` });
+    return res.status(400).json({ message: `닉네임은 1-${PUBLIC_LETTER_NICKNAME_MAX_LENGTH}자로 입력해 주세요.` });
   }
-  if (!validatePublicLetterPin(pin)) return res.status(400).json({ message: "4자리 PIN을 입력해주세요." });
+  if (!validatePublicLetterPin(pin)) return res.status(400).json({ message: "4자리 PIN을 입력해 주세요." });
   if (content.length > PUBLIC_LETTER_CONTENT_MAX_LENGTH) {
     return res.status(400).json({ message: `내용은 ${PUBLIC_LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   }
@@ -1808,7 +1808,7 @@ app.put("/public-letters/:id", publicLetterLimiter, async (req, res) => {
     });
     if (!existing) return res.status(404).json({ message: "열린 편지를 찾을 수 없습니다." });
     if (!existing.pinHash) return res.status(403).json({ message: "이 편지는 PIN이 없어 관리자만 수정할 수 있습니다." });
-    if (existing.type === "text" && !content) return res.status(400).json({ message: "내용을 입력해주세요." });
+    if (existing.type === "text" && !content) return res.status(400).json({ message: "편지에 남길 내용을 입력해 주세요." });
 
     const pinMatches = await bcrypt.compare(pin, existing.pinHash);
     if (!pinMatches) return res.status(403).json({ message: "PIN이 올바르지 않습니다." });
@@ -1850,7 +1850,7 @@ app.delete("/public-letters/:id", publicLetterLimiter, async (req, res) => {
   const pin = String(req.body.pin || "");
 
   if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "잘못된 열린 편지입니다." });
-  if (!validatePublicLetterPin(pin)) return res.status(400).json({ message: "4자리 PIN을 입력해주세요." });
+  if (!validatePublicLetterPin(pin)) return res.status(400).json({ message: "4자리 PIN을 입력해 주세요." });
 
   try {
     const existing = await prisma.publicLetter.findFirst({
@@ -1897,7 +1897,7 @@ app.get("/letter-draft", async (req, res) => {
     res.json({ draft });
   } catch (err) {
     console.error("letter draft get error:", err);
-    res.status(500).json({ message: "임시저장을 불러오지 못했습니다." });
+    res.status(500).json({ message: "초안을 불러오지 못했습니다." });
   }
 });
 
@@ -1915,10 +1915,10 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
 
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받는 사람 이메일 형식이 올바르지 않습니다." });
+  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (req.body.openDate && !parsedOpenDate) return res.status(400).json({ message: "개봉일 형식이 올바르지 않습니다." });
+  if (req.body.openDate && !parsedOpenDate) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
 
   const videoUrl = req.body.videoUrl ? normalizePublicAssetUrl(req.body.videoUrl) : null;
   const imageUrl = req.body.imageUrl ? normalizePublicAssetUrl(req.body.imageUrl) : null;
@@ -1935,7 +1935,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
     });
     const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
     if (!toOther && !accountEmail) {
-      return res.status(400).json({ message: "계정 이메일을 먼저 등록해주세요." });
+      return res.status(400).json({ message: "편지를 받을 계정 이메일을 먼저 등록해 주세요." });
     }
     const draftDeliveryEmail = toOther ? null : (accountEmail || null);
 
@@ -1987,10 +1987,10 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
         updatedAt: true,
       },
     });
-    res.json({ message: "임시저장했습니다.", draft });
+    res.json({ message: "초안을 저장했습니다.", draft });
   } catch (err) {
     console.error("letter draft save error:", err);
-    res.status(500).json({ message: "임시저장에 실패했습니다." });
+    res.status(500).json({ message: "초안을 저장하지 못했습니다." });
   }
 });
 
@@ -1999,10 +1999,10 @@ app.delete("/letter-draft", writeLimiter, async (req, res) => {
 
   try {
     await prisma.letterDraft.deleteMany({ where: { authorId: req.session.user.id } });
-    res.json({ message: "임시저장을 삭제했습니다." });
+    res.json({ message: "초안을 삭제했습니다." });
   } catch (err) {
     console.error("letter draft delete error:", err);
-    res.status(500).json({ message: "임시저장을 삭제하지 못했습니다." });
+    res.status(500).json({ message: "초안을 삭제하지 못했습니다." });
   }
 });
 
@@ -2018,7 +2018,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   const emailTheme = normalizeEmailTheme(req.body.emailTheme);
   const authorId = req.session.user.id;
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
-  if (type === "text" && !content.trim()) return res.status(400).json({ message: "내용을 입력해주세요." });
+  if (type === "text" && !content.trim()) return res.status(400).json({ message: "편지에 남길 내용을 입력해 주세요." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
 
   const cleanVideoUrl = type === "video" ? normalizePublicAssetUrl(req.body.videoUrl) : null;
@@ -2035,15 +2035,15 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   if (type === "text" && req.body.signatureData && !cleanSignatureUrl) return res.status(400).json({ message: "서명 이미지 URL을 확인할 수 없습니다." });
 
   const parsedOpenDate = parseOpenDate(openDate);
-  if (!parsedOpenDate) return res.status(400).json({ message: "개봉일을 선택해주세요." });
+  if (!parsedOpenDate) return res.status(400).json({ message: "편지를 열어 볼 날짜를 선택해 주세요." });
   const maxOpenDate = new Date();
   maxOpenDate.setFullYear(maxOpenDate.getFullYear() + 100);
-  if (parsedOpenDate > maxOpenDate) return res.status(400).json({ message: "개봉일은 100년 이내로 선택해주세요." });
+  if (parsedOpenDate > maxOpenDate) return res.status(400).json({ message: "편지를 열어 볼 날짜는 100년 이내로 선택해 주세요." });
 
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (recipientName && !recipientEmail) return res.status(400).json({ message: "받는 사람 이메일을 입력해주세요." });
-  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받는 사람 이메일 형식이 올바르지 않습니다." });
+  if (recipientName && !recipientEmail) return res.status(400).json({ message: "받을 분의 이메일을 입력해 주세요." });
+  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
 
   try {
     const member = await prisma.member.findUnique({
@@ -2052,7 +2052,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
     });
     const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
     if (!recipientEmail && !accountEmail) {
-      return res.status(400).json({ message: "계정 이메일을 먼저 등록해주세요." });
+      return res.status(400).json({ message: "편지를 받을 계정 이메일을 먼저 등록해 주세요." });
     }
 
     const letter = await prisma.letter.create({
@@ -2081,16 +2081,16 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
       delivery = await sendDueLetters({ letterId: letter.id, force: true });
       delivery.message = deliveryResultMessage(delivery);
     }
-    res.status(201).json({ message: "편지 저장 성공!", delivery });
+    res.status(201).json({ message: "편지를 소중히 보관했습니다.", delivery });
   } catch (err) {
     console.error("편지 저장 에러:", err);
-    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+    res.status(500).json({ message: "서버에서 요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요." });
   }
 });
 
 // 10. 내 편지 목록
 app.get("/my-letters", async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   try {
     const now = new Date();
     const letters = await prisma.letter.findMany({
@@ -2117,11 +2117,11 @@ app.get("/my-letters", async (req, res) => {
         signatureData: null,
       };
     }));
-  } catch { res.status(500).json({ message: "서버 오류" }); }
+  } catch { res.status(500).json({ message: "서버에서 요청을 처리하지 못했습니다." }); }
 });
 
 app.get("/received-letters", async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
 
   try {
     const member = await prisma.member.findUnique({
@@ -2191,20 +2191,20 @@ app.get("/received-letters", async (req, res) => {
     }));
   } catch (err) {
     console.error("received letters error:", err);
-    res.status(500).json({ message: "받은 편지를 불러오지 못했습니다." });
+    res.status(500).json({ message: "도착한 편지를 불러오지 못했습니다." });
   }
 });
 
 app.patch("/letters/:id/favorite", writeLimiter, async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const id = Number(req.params.id);
   const favorite = Boolean(req.body.favorite);
-  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "잘못된 편지입니다." });
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "편지 정보를 확인해 주세요." });
 
   try {
     const letter = await prisma.letter.findUnique({ where: { id }, select: { id: true, authorId: true } });
     if (!letter) return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
-    if (letter.authorId !== req.session.user.id) return res.status(403).json({ message: "권한이 없습니다." });
+    if (letter.authorId !== req.session.user.id) return res.status(403).json({ message: "이 편지에 접근할 권한이 없습니다." });
 
     const updated = await prisma.letter.update({
       where: { id },
@@ -2214,30 +2214,30 @@ app.patch("/letters/:id/favorite", writeLimiter, async (req, res) => {
     res.json(updated);
   } catch (err) {
     console.error("letter favorite error:", err);
-    res.status(500).json({ message: "즐겨찾기를 변경하지 못했습니다." });
+    res.status(500).json({ message: "다시 보고 싶은 편지 표시를 바꾸지 못했습니다." });
   }
 });
 
 // 11. 편지 삭제 (개봉 전 편지만)
 app.delete("/delete-letter/:id", async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const id = parseInt(req.params.id);
-  if (isNaN(id)) return res.status(400).json({ message: "잘못된 요청" });
+  if (isNaN(id)) return res.status(400).json({ message: "요청 내용을 확인해 주세요." });
   try {
     const letter = await prisma.letter.findUnique({ where: { id } });
     if (!letter) return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
-    if (letter.authorId !== req.session.user.id) return res.status(403).json({ message: "권한이 없습니다." });
-    if (new Date(letter.openDate) <= new Date()) return res.status(400).json({ message: "이미 개봉된 편지는 삭제할 수 없습니다." });
+    if (letter.authorId !== req.session.user.id) return res.status(403).json({ message: "이 편지에 접근할 권한이 없습니다." });
+    if (new Date(letter.openDate) <= new Date()) return res.status(400).json({ message: "이미 열람한 편지는 삭제할 수 없습니다." });
     await prisma.letter.delete({ where: { id } });
-    res.json({ message: "편지가 삭제되었습니다." });
-  } catch { res.status(500).json({ message: "서버 오류" }); }
+    res.json({ message: "편지를 삭제했습니다." });
+  } catch { res.status(500).json({ message: "서버에서 요청을 처리하지 못했습니다." }); }
 });
 
 // 개봉일 편지 즉시 발송 (테스트용)
 app.post("/trigger-send", async (req, res) => {
-  if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const result = await sendDueLetters({ authorId: req.session.user.id });
-  res.json({ message: deliveryResultMessage(result) || "발송 요청이 접수되었습니다.", ...result });
+  res.json({ message: deliveryResultMessage(result) || "발송 요청을 접수했습니다.", ...result });
 });
 
 app.post("/teacher-letters", requireAdmin, async (req, res) => {
@@ -2344,7 +2344,7 @@ app.post("/teacher-letters/:id/test-send", requireAdmin, async (req, res) => {
       to: TEACHER_TEST_EMAIL,
       ...serializeMailError(err),
     });
-    res.status(500).json({ message: err.message || "테스트 이메일 발송 실패" });
+    res.status(500).json({ message: err.message || "테스트 이메일을 보내지 못했습니다." });
   }
 });
 
@@ -2462,7 +2462,7 @@ app.delete("/admin/users/:id", adminLimiter, requireAdmin, async (req, res) => {
     res.json({ message: "사용자 계정을 삭제했습니다." });
   } catch (err) {
     console.error("admin user delete error:", err);
-    res.status(500).json({ message: "사용자 삭제에 실패했습니다." });
+    res.status(500).json({ message: "사용자 계정을 삭제하지 못했습니다." });
   }
 });
 
@@ -2471,7 +2471,7 @@ app.patch("/admin/users/:id/password", adminLimiter, requireAdmin, async (req, r
   const nextPassword = String(req.body.nextPassword || "");
   if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 사용자입니다." });
   if (id === req.session.user.id) return res.status(400).json({ message: "현재 로그인한 관리자 비밀번호는 여기서 변경할 수 없습니다." });
-  if (!nextPassword) return res.status(400).json({ message: "새 비밀번호를 입력해주세요." });
+  if (!nextPassword) return res.status(400).json({ message: "새 비밀번호를 입력해 주세요." });
   const passwordError = validatePassword(nextPassword);
   if (passwordError) return res.status(400).json({ message: passwordError });
 
@@ -2484,7 +2484,7 @@ app.patch("/admin/users/:id/password", adminLimiter, requireAdmin, async (req, r
     res.json({ message: "사용자 비밀번호를 변경했습니다." });
   } catch (err) {
     console.error("admin password update error:", err);
-    res.status(500).json({ message: "비밀번호 변경에 실패했습니다." });
+    res.status(500).json({ message: "비밀번호를 변경하지 못했습니다. 잠시 후 다시 시도해 주세요." });
   }
 });
 
@@ -2516,11 +2516,11 @@ app.get("/admin/letters", requireAdmin, async (req, res) => {
 app.patch("/admin/letters/:id/open-date", adminLimiter, requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   const { openDate } = req.body;
-  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 편지입니다." });
-  if (!openDate) return res.status(400).json({ message: "날짜를 입력해주세요." });
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "편지 정보를 확인해 주세요." });
+  if (!openDate) return res.status(400).json({ message: "수정할 열람일을 입력해 주세요." });
 
   const nextDate = new Date(openDate);
-  if (Number.isNaN(nextDate.getTime())) return res.status(400).json({ message: "날짜 형식이 올바르지 않습니다." });
+  if (Number.isNaN(nextDate.getTime())) return res.status(400).json({ message: "날짜 형식을 확인해 주세요." });
 
   try {
     const letter = await prisma.letter.update({
@@ -2540,14 +2540,14 @@ app.patch("/admin/letters/:id/open-date", adminLimiter, requireAdmin, async (req
     res.json({ message: "편지 날짜를 수정했습니다.", letter });
   } catch (err) {
     console.error("admin letter date update error:", err);
-    res.status(500).json({ message: "편지 날짜 수정에 실패했습니다." });
+    res.status(500).json({ message: "편지 날짜를 수정하지 못했습니다." });
   }
 });
 
 app.patch("/admin/letters/:id/delivery-email", adminLimiter, requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   const deliveryEmail = String(req.body.deliveryEmail || "").trim().toLowerCase();
-  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 편지입니다." });
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "편지 정보를 확인해 주세요." });
   if (deliveryEmail && !isValidEmail(deliveryEmail)) {
     return res.status(400).json({ message: "발송 이메일 형식이 올바르지 않습니다." });
   }
@@ -2568,23 +2568,23 @@ app.patch("/admin/letters/:id/delivery-email", adminLimiter, requireAdmin, async
   } catch (err) {
     console.error("admin letter delivery email update error:", err);
     if (err.code === "P2025") return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
-    res.status(500).json({ message: "발송 이메일 저장에 실패했습니다." });
+    res.status(500).json({ message: "발송 이메일을 저장하지 못했습니다." });
   }
 });
 
 app.post("/admin/letters/send-due", adminLimiter, requireAdmin, async (req, res) => {
   try {
     const result = await sendDueLetters();
-    res.json({ message: deliveryResultMessage(result) || "개봉일이 지난 편지 발송 요청을 실행했습니다.", ...result });
+    res.json({ message: deliveryResultMessage(result) || "열람일이 지난 편지 발송 요청을 실행했습니다.", ...result });
   } catch (err) {
     console.error("admin due letter send error:", err);
-    res.status(500).json({ message: "편지 발송에 실패했습니다." });
+    res.status(500).json({ message: "편지를 발송하지 못했습니다." });
   }
 });
 
 app.post("/admin/letters/:id/send", adminLimiter, requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
-  if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 편지입니다." });
+  if (!Number.isInteger(id)) return res.status(400).json({ message: "편지 정보를 확인해 주세요." });
 
   try {
     const letter = await prisma.letter.findUnique({
@@ -2593,7 +2593,7 @@ app.post("/admin/letters/:id/send", adminLimiter, requireAdmin, async (req, res)
     });
     if (!letter) return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
     if (letter.type === "call") return res.status(400).json({ message: "통화 편지는 메일 발송 대상이 아닙니다." });
-    if (letter.sentAt) return res.status(400).json({ message: "이미 발송된 편지입니다." });
+    if (letter.sentAt) return res.status(400).json({ message: "이미 발송한 편지입니다." });
     const sendAt = new Date();
     if (letter.openDate > sendAt) {
       await prisma.letter.update({
@@ -2604,13 +2604,13 @@ app.post("/admin/letters/:id/send", adminLimiter, requireAdmin, async (req, res)
 
     const result = await sendDueLetters({ letterId: id });
     if (result.sent > 0) {
-      return res.json({ message: deliveryResultMessage(result) || "편지 발송 요청이 접수되었습니다.", ...result });
+      return res.json({ message: deliveryResultMessage(result) || "편지 발송 요청을 접수했습니다.", ...result });
     }
     const status = result.failed > 0 ? 500 : 400;
     res.status(status).json({ message: "발송할 수 있는 편지가 없거나 이메일이 없습니다.", ...result });
   } catch (err) {
     console.error("admin single letter send error:", err);
-    res.status(500).json({ message: "편지 발송에 실패했습니다." });
+    res.status(500).json({ message: "편지를 발송하지 못했습니다." });
   }
 });
 

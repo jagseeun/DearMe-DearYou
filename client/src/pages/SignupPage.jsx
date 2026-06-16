@@ -35,11 +35,11 @@ export default function SignupPage() {
   }
 
   function getMissingSignupMessage() {
-    if (!name.trim()) return '이름을 적어 주세요.';
-    if (!userid.trim()) return '아이디를 적어 주세요.';
-    if (!password) return '비밀번호를 적어 주세요.';
-    if (!passwordConfirm) return '비밀번호 확인을 적어 주세요.';
-    if (!email.trim()) return '편지를 받을 이메일을 적어 주세요.';
+    if (!name.trim()) return '이름을 입력해 주세요.';
+    if (!userid.trim()) return '아이디를 입력해 주세요.';
+    if (!password) return '비밀번호를 입력해 주세요.';
+    if (!passwordConfirm) return '비밀번호를 한 번 더 입력해 주세요을 입력해 주세요.';
+    if (!email.trim()) return '편지를 받을 이메일을 입력해 주세요.';
     return '';
   }
 
@@ -59,7 +59,7 @@ export default function SignupPage() {
       setIdMsg({ text: data.message || '', ok: Boolean(data.available) });
       setIdChecked(Boolean(data.available));
     } catch {
-      setIdMsg({ text: '서버 연결에 실패했습니다.', ok: false });
+      setIdMsg({ text: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', ok: false });
       setIdChecked(false);
     }
   }
@@ -69,12 +69,12 @@ export default function SignupPage() {
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
     const missingMessage = getMissingSignupMessage();
-    if (missingMessage) return setNotice({ title: '아직 비어 있는 칸이 있어요', message: missingMessage });
+    if (missingMessage) return setNotice({ title: '아직 적지 않은 칸이 있습니다', message: missingMessage });
     if (!EMAIL_PATTERN.test(nextEmail)) return setNotice({ title: '이메일 확인', message: '편지가 닿을 이메일 형식으로 적어 주세요.' });
     if (!idChecked) return setNotice({ title: '아이디 확인', message: '아이디 중복 확인을 진행해 주세요.' });
-    if (password.length < 6) return setNotice({ title: '비밀번호 확인', message: '비밀번호는 6자 이상으로 입력해 주세요.' });
-    if (password.length > PASSWORD_MAX_LENGTH) return setNotice({ title: '비밀번호 확인', message: `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
-    if (password !== passwordConfirm) return setNotice({ title: '비밀번호 확인', message: '비밀번호가 서로 일치하지 않습니다. 다시 확인해 주세요.' });
+    if (password.length < 6) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: '비밀번호는 6자 이상으로 입력해 주세요.' });
+    if (password.length > PASSWORD_MAX_LENGTH) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
+    if (password !== passwordConfirm) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: '비밀번호가 서로 일치하지 않습니다. 다시 확인해 주세요.' });
     setConfirmingPasswordNote(true);
   }
 
@@ -92,15 +92,15 @@ export default function SignupPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setNotice({
-          title: '회원가입 완료',
-          message: '회원가입이 완료되었습니다.',
+          title: '가입이 완료되었습니다',
+          message: '이제 남기고 싶은 마음을 편지로 기록하실 수 있습니다.',
           afterClose: () => navigate('/login'),
         });
       } else {
-        setNotice({ title: '회원가입 실패', message: data.message || '회원가입에 실패했습니다.' });
+        setNotice({ title: '가입하지 못했습니다', message: data.message || '가입 정보를 다시 확인해 주세요.' });
       }
     } catch {
-      setNotice({ title: '연결 실패', message: '서버 연결에 실패했습니다.' });
+      setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     }
   }
 
@@ -118,7 +118,7 @@ export default function SignupPage() {
         <span className="from">Dear You</span>
       </motion.h1>
 
-      <motion.p variants={item} className="home-subtitle">소중한 마음을 기록하고 전하는 편지</motion.p>
+      <motion.p variants={item} className="home-subtitle">마음을 기록하고, 약속한 날에 다시 전하는 편지</motion.p>
 
       <motion.form
         className="form-container"
@@ -130,7 +130,7 @@ export default function SignupPage() {
           variants={item}
           className="input-field"
           type="text"
-          placeholder="이름 (최대 10자)"
+          placeholder="이름을 입력해 주세요 (최대 10자)"
           maxLength={10}
           value={name}
           onChange={e => setName(e.target.value)}
@@ -140,7 +140,7 @@ export default function SignupPage() {
           <input
             className="input-field"
             type="text"
-            placeholder="아이디 (영어, 숫자 / 최대 20자)"
+            placeholder="아이디를 입력해 주세요 (영어, 숫자 / 최대 20자)"
             maxLength={20}
             value={userid}
             onChange={e => {
@@ -149,7 +149,7 @@ export default function SignupPage() {
               setIdMsg({ text: '', ok: false });
             }}
           />
-          <button type="button" className="check-btn" onClick={checkUsername}>중복확인</button>
+          <button type="button" className="check-btn" onClick={checkUsername}>중복 확인</button>
         </motion.div>
 
         {idMsg.text && (
@@ -169,7 +169,7 @@ export default function SignupPage() {
 
         <PasswordField
           variants={item}
-          placeholder="비밀번호 (6자 이상)"
+          placeholder="비밀번호를 입력해 주세요 (6자 이상)"
           maxLength={PASSWORD_MAX_LENGTH}
           value={password}
           onChange={e => setPassword(e.target.value)}
@@ -177,7 +177,7 @@ export default function SignupPage() {
 
         <PasswordField
           variants={item}
-          placeholder="비밀번호 확인"
+          placeholder="비밀번호를 한 번 더 입력해 주세요"
           maxLength={PASSWORD_MAX_LENGTH}
           value={passwordConfirm}
           onChange={e => setPasswordConfirm(e.target.value)}
@@ -187,25 +187,25 @@ export default function SignupPage() {
           variants={item}
           className="input-field"
           type="email"
-          placeholder="이메일"
+          placeholder="편지를 받을 이메일"
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
 
         <motion.button variants={item} className="submit-btn" type="submit">
-          회원가입
+          가입하기
         </motion.button>
       </motion.form>
 
       <motion.button variants={item} className="back-link" onClick={() => navigate('/')}>
-        ← 돌아가기
+        ← 처음으로 돌아가기
       </motion.button>
 
       <motion.button
         type="button"
         className="open-mailbox-floating-button"
-        aria-label="열린 편지함"
-        title="열린 편지함"
+        aria-label="열린 편지함으로 가기"
+        title="열린 편지함으로 가기"
         onClick={() => navigate('/open-mailbox')}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -222,9 +222,9 @@ export default function SignupPage() {
       />
       <NoticeModal
         open={confirmingPasswordNote}
-        title="비밀번호 확인"
-        message="비밀번호는 로그인에 꼭 필요합니다. 잊지 않도록 안전한 곳에 기록해두셨나요?"
-        cancelLabel="돌아가기"
+        title="비밀번호를 확인해 주세요"
+        message="비밀번호는 편지함을 다시 열 때 꼭 필요합니다. 잊지 않도록 안전한 곳에 기억해 두셨나요?"
+        cancelLabel="다시 확인하기"
         confirmLabel="가입하기"
         onClose={() => setConfirmingPasswordNote(false)}
         onConfirm={submitRegister}

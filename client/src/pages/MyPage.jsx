@@ -39,7 +39,7 @@ export default function MyPage() {
         setEmail(data?.email || '');
       } catch {
         if (!cancelled) {
-          setNotice({ title: '불러오기 실패', message: '계정 정보를 불러오지 못했습니다.' });
+          setNotice({ title: '불러오지 못했습니다', message: '편지 계정 정보를 불러오지 못했습니다.' });
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -58,19 +58,19 @@ export default function MyPage() {
     const nextEmail = email.trim().toLowerCase();
 
     if (!nextName) {
-      setNotice({ title: '이름 확인', message: '이름을 입력해 주세요.' });
+      setNotice({ title: '이름을 확인해 주세요', message: '이름을 입력해 주세요.' });
       return;
     }
     if (nextName.length > 10) {
-      setNotice({ title: '이름 확인', message: '이름은 10자를 넘을 수 없습니다.' });
+      setNotice({ title: '이름을 확인해 주세요', message: '이름은 10자를 넘을 수 없습니다.' });
       return;
     }
     if (!nextEmail) {
-      setNotice({ title: '이메일 확인', message: '이메일을 입력해 주세요.' });
+      setNotice({ title: '이메일을 확인해 주세요', message: '이메일을 입력해 주세요.' });
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
-      setNotice({ title: '이메일 확인', message: '이메일 형식이 올바르지 않습니다.' });
+      setNotice({ title: '이메일을 확인해 주세요', message: '이메일 형식이 올바르지 않습니다.' });
       return;
     }
 
@@ -82,13 +82,13 @@ export default function MyPage() {
         body: JSON.stringify({ name: nextName, email: nextEmail }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.message || '프로필을 저장하지 못했습니다.');
+      if (!response.ok) throw new Error(data.message || '프로필을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.');
       setName(data.name || nextName);
       setEmail(data.email ?? nextEmail);
       await refresh();
-      setNotice({ title: '저장 완료', message: '이름과 이메일이 정리되었습니다.' });
+      setNotice({ title: '프로필을 저장했습니다', message: '편지함에서 사용할 이름과 편지 받을 이메일을 정리했습니다.' });
     } catch (error) {
-      setNotice({ title: '저장 실패', message: error.message || '프로필을 저장하지 못했습니다.' });
+      setNotice({ title: '저장하지 못했습니다', message: error.message || '프로필을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     } finally {
       setProfileSaving(false);
     }
@@ -98,23 +98,23 @@ export default function MyPage() {
     event.preventDefault();
 
     if (!currentPassword || !nextPassword || !nextPasswordConfirm) {
-      setNotice({ title: '비밀번호 확인', message: '현재 비밀번호와 새 비밀번호를 모두 입력해 주세요.' });
+      setNotice({ title: '비밀번호를 확인해 주세요', message: '현재 비밀번호와 새 비밀번호를 모두 입력해 주세요.' });
       return;
     }
     if (nextPassword.length < 6) {
-      setNotice({ title: '비밀번호 확인', message: '새 비밀번호는 6자 이상으로 입력해 주세요.' });
+      setNotice({ title: '비밀번호를 확인해 주세요', message: '새 비밀번호는 6자 이상으로 입력해 주세요.' });
       return;
     }
     if (nextPassword.length > PASSWORD_MAX_LENGTH) {
-      setNotice({ title: '비밀번호 확인', message: `새 비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
+      setNotice({ title: '비밀번호를 확인해 주세요', message: `새 비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
       return;
     }
     if (nextPassword !== nextPasswordConfirm) {
-      setNotice({ title: '비밀번호 확인', message: '새 비밀번호가 서로 일치하지 않습니다.' });
+      setNotice({ title: '비밀번호를 확인해 주세요', message: '새 비밀번호가 서로 일치하지 않습니다.' });
       return;
     }
     if (currentPassword === nextPassword) {
-      setNotice({ title: '비밀번호 확인', message: '새 비밀번호는 현재 비밀번호와 다르게 입력해 주세요.' });
+      setNotice({ title: '비밀번호를 확인해 주세요', message: '새 비밀번호는 현재 비밀번호와 다르게 입력해 주세요.' });
       return;
     }
 
@@ -126,13 +126,13 @@ export default function MyPage() {
         body: JSON.stringify({ currentPassword, nextPassword, nextPasswordConfirm }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(data.message || '비밀번호 변경에 실패했습니다.');
+      if (!response.ok) throw new Error(data.message || '비밀번호를 변경하지 못했습니다. 잠시 후 다시 시도해 주세요.');
       setCurrentPassword('');
       setNextPassword('');
       setNextPasswordConfirm('');
-      setNotice({ title: '변경 완료', message: '비밀번호가 변경되었습니다.' });
+      setNotice({ title: '비밀번호를 변경했습니다', message: '비밀번호가 변경되었습니다.' });
     } catch (error) {
-      setNotice({ title: '변경 실패', message: error.message || '비밀번호 변경에 실패했습니다.' });
+      setNotice({ title: '변경하지 못했습니다', message: error.message || '비밀번호를 변경하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     } finally {
       setPasswordSaving(false);
     }
@@ -167,7 +167,7 @@ export default function MyPage() {
       </motion.div>
 
       <div className="mypage-top-actions">
-        <button type="button" onClick={() => navigate('/letters')}>나의 편지</button>
+        <button type="button" onClick={() => navigate('/letters')}>내 편지함</button>
         <button type="button" onClick={goBack}>돌아가기</button>
         <button type="button" className="mypage-logout-button" onClick={() => setShowLogoutModal(true)}>로그아웃</button>
       </div>
@@ -180,8 +180,8 @@ export default function MyPage() {
           transition={{ duration: 0.55, ease }}
         >
           <span>MY PAGE</span>
-          <h1>계정 관리</h1>
-          <p>{loading ? '계정 정보를 불러오는 중입니다.' : `${name || '사용자'}님의 계정 정보를 관리할 수 있습니다.`}</p>
+          <h1>내 편지 계정</h1>
+          <p>{loading ? '편지 계정 정보를 불러오는 중입니다.' : `${name || '사용자'}님의 편지 계정을 정리하실 수 있습니다.`}</p>
         </motion.header>
 
         <div className="mypage-grid">
@@ -194,7 +194,7 @@ export default function MyPage() {
           >
             <div className="mypage-panel-heading">
               <span>PROFILE</span>
-              <h2>이름과 이메일</h2>
+              <h2>이름과 편지 받을 이메일</h2>
             </div>
             <label>
               <span>이름</span>
@@ -219,7 +219,7 @@ export default function MyPage() {
               />
             </label>
             <button type="submit" disabled={loading || profileSaving}>
-              {profileSaving ? '저장 중...' : '프로필 저장'}
+              {profileSaving ? '저장하고 있습니다...' : '프로필 저장하기'}
             </button>
           </motion.form>
 
@@ -259,19 +259,19 @@ export default function MyPage() {
               />
             </label>
             <label>
-              <span>새 비밀번호 확인</span>
+              <span>새 비밀번호를 확인해 주세요</span>
               <PasswordField
                 wrapperClassName="password-field mypage-password-field"
                 className="mypage-password-input"
                 value={nextPasswordConfirm}
                 maxLength={PASSWORD_MAX_LENGTH}
                 onChange={event => setNextPasswordConfirm(event.target.value)}
-                placeholder="새 비밀번호 확인"
+                placeholder="새 비밀번호를 확인해 주세요"
                 disabled={passwordSaving}
               />
             </label>
             <button type="submit" disabled={passwordSaving}>
-              {passwordSaving ? '변경 중...' : '비밀번호 변경'}
+              {passwordSaving ? '변경하고 있습니다...' : '비밀번호 변경'}
             </button>
           </motion.form>
         </div>
@@ -281,7 +281,7 @@ export default function MyPage() {
           className="mypage-support-link"
           onClick={() => navigate('/support', { state: { from: '/mypage' } })}
         >
-          개발자에게 응원 메시지 보내기
+          프로젝트에 응원 메시지 남기기
         </button>
       </section>
 
@@ -295,8 +295,8 @@ export default function MyPage() {
       <NoticeModal
         open={showLogoutModal}
         title="로그아웃하시겠습니까?"
-        message="계정에서 나가도 편지는 그대로 보관됩니다."
-        cancelLabel="취소"
+        message="지금 계정에서 나가도 남겨 두신 편지는 그대로 보관됩니다."
+        cancelLabel="머무르기"
         confirmLabel="로그아웃"
         onClose={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}

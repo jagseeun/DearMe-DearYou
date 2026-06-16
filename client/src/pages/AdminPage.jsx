@@ -130,7 +130,7 @@ export default function AdminPage() {
         setAuthorized(true);
         await loadAll();
       } catch {
-        setMessage('서버 연결을 확인해 주세요.');
+        setMessage('서버와의 연결을 확인해 주세요.');
       } finally {
         setChecking(false);
       }
@@ -168,7 +168,7 @@ export default function AdminPage() {
   async function saveTeacherLetter(e) {
     e.preventDefault();
     if (!form.content.trim()) {
-      setMessage('편지 내용을 입력해 주세요.');
+      setMessage('선생님 편지 내용을 입력해 주세요.');
       return;
     }
 
@@ -185,7 +185,7 @@ export default function AdminPage() {
       setEditingTeacherId(null);
       await loadTeacherLetters();
     } catch (err) {
-      setMessage(err.message || (editingTeacherId ? '수정 실패' : '저장 실패'));
+      setMessage(err.message || (editingTeacherId ? '수정하지 못했습니다' : '저장하지 못했습니다'));
     } finally {
       setSaving(false);
     }
@@ -209,7 +209,7 @@ export default function AdminPage() {
   }
 
   async function sendRandom() {
-    if (!window.confirm('아직 받지 않은 로그인 사용자에게 선생님 편지를 1개씩 랜덤 발송할까요?')) return;
+    if (!window.confirm('아직 받지 않은 로그인 사용자에게 선생님 편지를 1개씩 랜덤 발송하시겠습니까?')) return;
 
     setSending(true);
     setMessage('');
@@ -220,14 +220,14 @@ export default function AdminPage() {
       setMessage('랜덤 발송을 실행했습니다.');
       await loadTeacherLetters();
     } catch (err) {
-      setMessage(err.message || '발송 실패');
+      setMessage(err.message || '발송하지 못했습니다');
     } finally {
       setSending(false);
     }
   }
 
   async function resendAll() {
-    if (!window.confirm('이미 선생님 편지를 받은 기존 대상에게 다시 이메일을 보낼까요?')) return;
+    if (!window.confirm('이미 선생님 편지를 받은 대상에게 이메일을 다시 보내시겠습니까?')) return;
 
     setResending(true);
     setMessage('');
@@ -238,14 +238,14 @@ export default function AdminPage() {
       setMessage('기존 대상에게 선생님 편지를 다시 보냈습니다.');
       await loadTeacherLetters();
     } catch (err) {
-      setMessage(err.message || '재발송 실패');
+      setMessage(err.message || '재발송하지 못했습니다');
     } finally {
       setResending(false);
     }
   }
 
   async function sendTeacherTest(letter) {
-    if (!window.confirm(`이 편지를 s2468@e-mirim.hs.kr로 테스트 발송할까요?`)) return;
+    if (!window.confirm(`이 편지를 s2468@e-mirim.hs.kr로 테스트 발송하시겠습니까?`)) return;
 
     setTeacherTestSendingId(letter.id);
     setMessage('');
@@ -253,7 +253,7 @@ export default function AdminPage() {
       const data = await fetchJsonWithTimeout(`/teacher-letters/${letter.id}/test-send`, { method: 'POST' }, 30000);
       setMessage(data.message || '테스트 이메일을 보냈습니다.');
     } catch (err) {
-      setMessage(err.message || '테스트 이메일 발송 실패');
+      setMessage(err.message || '테스트 이메일 발송하지 못했습니다');
     } finally {
       setTeacherTestSendingId(null);
     }
@@ -272,14 +272,14 @@ export default function AdminPage() {
       setMessage(!letter.visible ? '열린 편지를 다시 공개했습니다.' : '열린 편지를 숨겼습니다.');
       await loadPublicLetters();
     } catch (err) {
-      setMessage(err.message || '열린 편지 상태 변경 실패');
+      setMessage(err.message || '열린 편지 상태를 바꾸지 못했습니다');
     } finally {
       setBusyId(null);
     }
   }
 
   async function deletePublicLetter(letter) {
-    if (!window.confirm(`${letter.nickname}님의 열린 편지를 삭제할까요?`)) return;
+    if (!window.confirm(`${letter.nickname}님의 열린 편지를 삭제하시겠습니까?`)) return;
     setBusyId(`delete-public-letter-${letter.id}`);
     setMessage('');
     try {
@@ -288,23 +288,23 @@ export default function AdminPage() {
       setMessage('열린 편지를 삭제했습니다.');
       await loadPublicLetters();
     } catch (err) {
-      setMessage(err.message || '열린 편지 삭제 실패');
+      setMessage(err.message || '열린 편지를 삭제하지 못했습니다');
     } finally {
       setBusyId(null);
     }
   }
 
   async function deleteUser(user) {
-    if (!window.confirm(`${user.name}(${user.userid}) 계정과 이 계정의 편지를 삭제할까요?`)) return;
+    if (!window.confirm(`${user.name}(${user.userid}) 계정과 이 계정의 편지를 삭제하시겠습니까?`)) return;
 
     setBusyId(`user-${user.id}`);
     setMessage('');
     try {
       const data = await fetchJson(`/admin/users/${user.id}`, { method: 'DELETE' });
-      setMessage(data.message || '사용자를 삭제했습니다.');
+      setMessage(data.message || '사용자 계정을 삭제했습니다.');
       await loadAll();
     } catch (err) {
-      setMessage(err.message || '사용자 삭제 실패');
+      setMessage(err.message || '사용자 계정을 삭제하지 못했습니다');
     } finally {
       setBusyId(null);
     }
@@ -337,7 +337,7 @@ export default function AdminPage() {
       setPasswordDrafts(prev => ({ ...prev, [user.id]: '' }));
       setMessage(data.message || '비밀번호를 변경했습니다.');
     } catch (err) {
-      setMessage(err.message || '비밀번호 변경 실패');
+      setMessage(err.message || '비밀번호를 변경하지 못했습니다');
     } finally {
       setBusyId(null);
     }
@@ -346,7 +346,7 @@ export default function AdminPage() {
   async function updateLetterDate(letter) {
     const draft = dateDrafts[letter.id];
     if (!draft) {
-      setMessage('수정할 날짜를 입력해 주세요.');
+      setMessage('수정할 열람일을 입력해 주세요.');
       return;
     }
 
@@ -361,7 +361,7 @@ export default function AdminPage() {
       setMessage(data.message || '편지 날짜를 수정했습니다.');
       await loadAdminLetters();
     } catch (err) {
-      setMessage(err.message || '편지 날짜 수정 실패');
+      setMessage(err.message || '편지 날짜 수정하지 못했습니다');
     } finally {
       setBusyId(null);
     }
@@ -381,14 +381,14 @@ export default function AdminPage() {
       setMessage(data.message || '발송 이메일을 저장했습니다.');
       await loadAdminLetters();
     } catch (err) {
-      setMessage(err.message || '발송 이메일 저장 실패');
+      setMessage(err.message || '발송 이메일을 저장하지 못했습니다');
     } finally {
       setBusyId(null);
     }
   }
 
   async function sendDueAdminLetters() {
-    if (!window.confirm('개봉일이 지난 미발송 편지를 지금 발송할까요?')) return;
+    if (!window.confirm('열람일이 지난 미발송 편지를 지금 발송하시겠습니까?')) return;
 
     setLetterSending(true);
     setMessage('');
@@ -396,10 +396,10 @@ export default function AdminPage() {
     try {
       const data = await fetchJsonWithTimeout('/admin/letters/send-due', { method: 'POST' }, 90000);
       setSendResult(data);
-      setMessage(data.message || `편지 발송 요청을 실행했습니다. 성공 ${data.sent}, 실패 ${data.failed}`);
+      setMessage(data.message || `편지 발송 요청을 실행했습니다. 발송 ${data.sent}, 미발송 ${data.failed}`);
       await loadAdminLetters();
     } catch (err) {
-      setMessage(err.message || '편지 발송 실패');
+      setMessage(err.message || '편지를 발송하지 못했습니다');
     } finally {
       setLetterSending(false);
     }
@@ -416,22 +416,22 @@ export default function AdminPage() {
       setMessage(data.message || '편지 발송 요청이 접수되었습니다.');
       await loadAdminLetters();
     } catch (err) {
-      setMessage(err.message || '편지 발송 실패');
+      setMessage(err.message || '편지 발송하지 못했습니다');
     } finally {
       setBusyId(null);
     }
   }
 
   if (checking || redirecting) {
-    return <div style={{ position: 'relative', zIndex: 1, padding: 48, color: '#fffcdf' }}>확인 중...</div>;
+    return <div style={{ position: 'relative', zIndex: 1, padding: 48, color: '#fffcdf' }}>권한을 확인하고 있습니다...</div>;
   }
 
   if (!authorized) {
     return (
       <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ ...panelStyle, maxWidth: 420, padding: 32, textAlign: 'center', color: '#fffcdf' }}>
-          <div style={{ fontSize: 24, marginBottom: 12 }}>관리자만 접근할 수 있습니다.</div>
-          <button style={buttonStyle} onClick={() => navigate('/')}>처음으로</button>
+          <div style={{ fontSize: 24, marginBottom: 12 }}>관리자만 접근하실 수 있습니다.</div>
+          <button style={buttonStyle} onClick={() => navigate('/')}>처음으로 돌아가기</button>
         </div>
       </div>
     );
@@ -447,9 +447,9 @@ export default function AdminPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
           <div>
             <div style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12, letterSpacing: 4, marginBottom: 8 }}>ADMIN</div>
-            <h1 style={{ margin: 0, fontSize: 34, fontWeight: 300 }}>관리자 콘솔</h1>
+            <h1 style={{ margin: 0, fontSize: 34, fontWeight: 300 }}>관리자 편지 콘솔</h1>
           </div>
-          <button style={{ ...buttonStyle, background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.18)' }} onClick={() => navigate('/')}>나가기</button>
+          <button style={{ ...buttonStyle, background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.18)' }} onClick={() => navigate('/')}>처음으로 돌아가기</button>
         </div>
 
         {message && (
@@ -459,7 +459,7 @@ export default function AdminPage() {
         <section style={{ ...panelStyle, padding: 24, display: 'grid', gap: 14 }}>
           <div>
             <h2 style={{ margin: 0, fontSize: 22, fontWeight: 300 }}>{editingTeacherId ? '선생님 편지 수정' : '선생님 편지 작성'}</h2>
-            <p style={{ margin: '8px 0 0', color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>작성 후 랜덤 발송 또는 기존 대상 재발송을 실행할 수 있습니다.</p>
+            <p style={{ margin: '8px 0 0', color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>작성 후 랜덤 발송 또는 기존 대상 재발송을 실행하실 수 있습니다.</p>
           </div>
 
           <form onSubmit={saveTeacherLetter} style={{ display: 'grid', gap: 12 }}>
@@ -493,13 +493,13 @@ export default function AdminPage() {
                 </button>
               )}
               <button style={buttonStyle} disabled={saving}>
-                {editingTeacherId ? (saving ? '수정 중...' : '수정 저장') : (saving ? '저장 중...' : '편지 저장')}
+                {editingTeacherId ? (saving ? '수정하고 있습니다...' : '수정 저장') : (saving ? '저장하고 있습니다...' : '편지 저장')}
               </button>
               <button type="button" style={buttonStyle} onClick={resendAll} disabled={resending || sending}>
-                {resending ? '재발송 중...' : '기존 대상 재발송'}
+                {resending ? '재발송하고 있습니다...' : '기존 대상 재발송'}
               </button>
               <button type="button" style={buttonStyle} onClick={sendRandom} disabled={sending || resending || teacherLetters.length === 0}>
-                {sending ? '발송 중...' : '랜덤 발송 실행'}
+                {sending ? '발송하고 있습니다...' : '랜덤 발송'}
               </button>
             </div>
           </form>
@@ -512,8 +512,8 @@ export default function AdminPage() {
             {sendResult.retried !== undefined && <span>재시도 {sendResult.retried}</span>}
             {sendResult.resent !== undefined && <span>재발송 대상 {sendResult.resent}</span>}
             <span>발송 성공 {sendResult.sent}</span>
-            <span>실패 {sendResult.failed}</span>
-            <span>이메일 없음 {sendResult.skippedNoEmail}</span>
+            <span>발송하지 못함 {sendResult.failed}</span>
+            <span>이메일 미등록 {sendResult.skippedNoEmail}</span>
           </div>
         )}
 
@@ -532,7 +532,7 @@ export default function AdminPage() {
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 7 }}>
                       <strong style={{ fontWeight: 500 }}>{letter.nickname}</strong>
                       <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>{letter.type === 'draw' ? '그림' : letter.type === 'photo' ? '사진' : '텍스트'}</span>
-                      <span style={{ color: letter.visible ? '#8fd19e' : '#ff9b9b', fontSize: 12 }}>{letter.visible ? '공개' : '숨김'}</span>
+                      <span style={{ color: letter.visible ? '#8fd19e' : '#ff9b9b', fontSize: 12 }}>{letter.visible ? '공개' : '숨기기'}</span>
                       <span style={{ color: 'rgba(255,252,223,0.38)', fontSize: 12 }}>{formatDate(letter.createdAt)}</span>
                     </div>
                     {letter.imageUrl && (
@@ -555,7 +555,7 @@ export default function AdminPage() {
                     disabled={busyId === `public-letter-${letter.id}` || busyId === `delete-public-letter-${letter.id}`}
                     onClick={() => togglePublicLetterVisible(letter)}
                   >
-                    {letter.visible ? '숨김' : '복구'}
+                    {letter.visible ? '숨기기' : '다시 공개'}
                   </button>
                   <button
                     type="button"
@@ -592,7 +592,7 @@ export default function AdminPage() {
                         onClick={() => sendTeacherTest(letter)}
                         disabled={teacherTestSendingId === letter.id}
                       >
-                        {teacherTestSendingId === letter.id ? '테스트 발송 중...' : '테스트 발송'}
+                        {teacherTestSendingId === letter.id ? '테스트 발송하고 있습니다...' : '테스트 발송'}
                       </button>
                       <button
                         type="button"
@@ -626,7 +626,7 @@ export default function AdminPage() {
                   {user.isCurrentUser && <span style={{ color: '#ffe8c4', fontSize: 12 }}>현재 계정</span>}
                 </div>
                 <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>
-                  {user.email || '이메일 없음'} · 편지 {user._count?.letters || 0} · 선생님 편지 작성 {user._count?.teacherLetters || 0} · 마지막 로그인 {formatDate(user.lastLoginAt)}
+                  {user.email || '이메일 미등록'} · 편지 {user._count?.letters || 0} · 선생님 편지 작성 {user._count?.teacherLetters || 0} · 마지막 로그인 {formatDate(user.lastLoginAt)}
                 </div>
               </div>
               <PasswordField
@@ -643,14 +643,14 @@ export default function AdminPage() {
                 disabled={busyId === `password-${user.id}`}
                 onClick={() => updateUserPassword(user)}
               >
-                {busyId === `password-${user.id}` ? '변경 중...' : '비번 변경'}
+                {busyId === `password-${user.id}` ? '변경 중...' : '비밀번호 변경'}
               </button>
               <button
                 style={dangerButtonStyle}
                 disabled={user.isCurrentUser || busyId === `user-${user.id}`}
                 onClick={() => deleteUser(user)}
               >
-                {busyId === `user-${user.id}` ? '삭제 중...' : '계정 삭제'}
+                {busyId === `user-${user.id}` ? '삭제하고 있습니다...' : '계정 삭제'}
               </button>
             </div>
           ))}
@@ -663,7 +663,7 @@ export default function AdminPage() {
           </div>
           <div style={{ padding: '12px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
             <button type="button" style={buttonStyle} onClick={sendDueAdminLetters} disabled={letterSending}>
-              {letterSending ? '발송 중...' : '개봉일 지난 편지 발송'}
+              {letterSending ? '발송하고 있습니다...' : '열람일 지난 편지 발송'}
             </button>
           </div>
           {letters.length === 0 ? (
@@ -685,7 +685,7 @@ export default function AdminPage() {
                     <span style={{ color: status.color, fontSize: 12 }}>{status.label}</span>
                   </div>
                   <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>
-                    받는 사람 {letter.recipientName || letter.recipientEmail || '미지정'} · 개봉일 {formatDate(letter.openDate)} · <span style={{ color: status.color }}>발송 {status.label}</span>
+                    받을 사람 {letter.recipientName || letter.recipientEmail || '미지정'} · 열람일 {formatDate(letter.openDate)} · <span style={{ color: status.color }}>발송 {status.label}</span>
                   </div>
                   <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13, overflowWrap: 'anywhere' }}>
                     발송 이메일 {deliveryEmail || '-'} · 실제 발송 {letter.sentToEmail || '-'} · 테마 {letter.emailTheme === 'pink' ? '핑크' : '다크'}
@@ -705,7 +705,7 @@ export default function AdminPage() {
                       disabled={savingThisEmail || sendingThisLetter}
                       onClick={() => updateLetterDeliveryEmail(letter)}
                     >
-                      {savingThisEmail ? '저장 중...' : '이메일 저장'}
+                      {savingThisEmail ? '저장하고 있습니다...' : '이메일 저장'}
                     </button>
                   </div>
                 </div>
@@ -720,14 +720,14 @@ export default function AdminPage() {
                   disabled={busyId === `letter-${letter.id}` || sendingThisLetter || savingThisEmail}
                   onClick={() => updateLetterDate(letter)}
                 >
-                  {busyId === `letter-${letter.id}` ? '수정 중...' : '날짜 저장'}
+                  {busyId === `letter-${letter.id}` ? '수정하고 있습니다...' : '날짜 저장'}
                 </button>
                 <button
                   style={{ ...buttonStyle, opacity: canSend ? 1 : 0.45 }}
                   disabled={!canSend || sendingThisLetter || busyId === `letter-${letter.id}` || savingThisEmail}
                   onClick={() => sendAdminLetter(letter)}
                 >
-                  {sendingThisLetter ? '발송 중...' : (status.key === 'scheduled' ? '바로 발송' : status.label)}
+                  {sendingThisLetter ? '발송하고 있습니다...' : (status.key === 'scheduled' ? '바로 발송' : status.label)}
                 </button>
               </div>
               );
@@ -762,7 +762,7 @@ export default function AdminPage() {
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 7 }}>
                     <strong style={{ fontWeight: 500, fontSize: 18 }}>{selectedPublicLetter.nickname}</strong>
                     <span style={{ color: selectedPublicLetter.visible ? '#8fd19e' : '#ff9b9b', fontSize: 12 }}>
-                      {selectedPublicLetter.visible ? '공개' : '숨김'}
+                      {selectedPublicLetter.visible ? '공개' : '숨기기'}
                     </span>
                     <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>
                       {selectedPublicLetter.type === 'draw' ? '그림' : selectedPublicLetter.type === 'photo' ? '사진' : '텍스트'}
@@ -814,7 +814,7 @@ export default function AdminPage() {
                   disabled={busyId === `public-letter-${selectedPublicLetter.id}` || busyId === `delete-public-letter-${selectedPublicLetter.id}`}
                   onClick={() => togglePublicLetterVisible(selectedPublicLetter)}
                 >
-                  {selectedPublicLetter.visible ? '숨기기' : '복구'}
+                  {selectedPublicLetter.visible ? '숨기기' : '다시 공개'}
                 </button>
                 <button
                   type="button"
