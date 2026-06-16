@@ -368,8 +368,8 @@ export default function LetterViewPage() {
                     style={{
                       border: letterBoxBorder,
                       background: isPink
-                        ? 'linear-gradient(180deg, rgba(255,249,244,0.98), rgba(255,238,232,0.96))'
-                        : 'linear-gradient(180deg, rgba(255,253,247,0.98), rgba(255,246,231,0.96))',
+                        ? 'linear-gradient(180deg, rgba(255,255,255,0.99), rgba(255,248,252,0.98))'
+                        : 'linear-gradient(180deg, rgba(255,255,255,0.99), rgba(255,250,253,0.98))',
                     }}
                   >
                     <img className="letter-draw-image" src={letter.imageUrl} alt="그림 편지" />

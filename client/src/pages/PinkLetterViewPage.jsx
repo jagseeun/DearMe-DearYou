@@ -88,9 +88,15 @@ export default function PinkLetterViewPage() {
     setLogoutConfirm(true);
   }
 
-  function confirmLogoutLetters() {
+  async function confirmLogoutLetters() {
+    setLogoutConfirm(false);
     clearLetterAuth();
-    window.location.assign('/logout');
+    try {
+      await fetch('/logout', { cache: 'no-store', credentials: 'include' });
+      window.location.replace('/');
+    } catch {
+      window.location.replace('/logout');
+    }
   }
 
   function handleCardClick(letter, unlocked, event) {

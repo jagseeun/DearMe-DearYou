@@ -171,9 +171,15 @@ export default function LettersPage() {
     setLogoutConfirm(true);
   }
 
-  function confirmLogoutLetters() {
+  async function confirmLogoutLetters() {
+    setLogoutConfirm(false);
     clearLetterAuth();
-    window.location.assign('/logout');
+    try {
+      await fetch('/logout', { cache: 'no-store', credentials: 'include' });
+      window.location.replace('/');
+    } catch {
+      window.location.replace('/logout');
+    }
   }
 
   async function toggleFavorite(letter, event) {

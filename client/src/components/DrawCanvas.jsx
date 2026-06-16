@@ -15,7 +15,7 @@ const BRUSH_SIZES = [
   { value: 12, dot: 15, label: '굵은 선' },
 ];
 
-const CANVAS_BG = '#fdf6e8';
+const CANVAS_BG = '#fffafd';
 const MAX_HISTORY = 50;
 const DRAW_WIDTH = 1440;
 const DRAW_HEIGHT = 1080;

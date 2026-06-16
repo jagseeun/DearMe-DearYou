@@ -1534,7 +1534,7 @@ canvas {
   height: 100%;
   display: block;
   object-fit: contain;
-  background: #fdf6e8;
+  background: #fffafd;
 }
 
 .letter-content-text {
@@ -4112,7 +4112,7 @@ canvas {
   overflow: hidden !important;
   border-radius: 16px !important;
   border: 1px solid rgba(255, 236, 205, 0.22) !important;
-  background: #fdf6e8 !important;
+  background: #fffafd !important;
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22), 0 0 28px rgba(232, 194, 138, 0.14) !important;
 }
 
@@ -17779,4 +17779,99 @@ select:focus,
   .letter-draw-frame {
     max-width: min(100%, calc((100svh - 168px) * 4 / 3)) !important;
   }
+}
+
+/* Absolute final interaction/input lock. Keep this after every earlier override. */
+.letter-login-page .input-field,
+.letter-login-page .pink-password-input,
+.letter-login-page input {
+  background: rgba(255, 232, 240, 0.94) !important;
+  color: #351724 !important;
+  -webkit-text-fill-color: #351724 !important;
+  caret-color: #6d2f48 !important;
+  text-shadow: none !important;
+}
+
+.letter-login-page .input-field::placeholder,
+.letter-login-page .pink-password-input::placeholder,
+.letter-login-page input::placeholder {
+  color: rgba(88, 42, 62, 0.58) !important;
+  -webkit-text-fill-color: rgba(88, 42, 62, 0.58) !important;
+}
+
+.letter-login-page .input-field:focus,
+.letter-login-page .pink-password-input:focus,
+.letter-login-page input:focus {
+  background: rgba(255, 239, 245, 0.98) !important;
+  color: #2f1320 !important;
+  -webkit-text-fill-color: #2f1320 !important;
+  caret-color: #7b3550 !important;
+}
+
+.letter-login-page input:-webkit-autofill,
+.letter-login-page .input-field:-webkit-autofill,
+.letter-login-page .pink-password-input:-webkit-autofill {
+  -webkit-text-fill-color: #351724 !important;
+  caret-color: #6d2f48 !important;
+  box-shadow: 0 0 0 1000px rgba(255, 232, 240, 0.98) inset !important;
+  transition: background-color 9999s ease-out 0s !important;
+}
+
+.letter-draw-frame {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(255, 250, 253, 0.98)) !important;
+}
+
+.draw-editor.draw-editor-clean .draw-canvas-wrap,
+.write-stage.write-stage-draw .draw-canvas-wrap {
+  background: #fffafd !important;
+  border-color: rgba(255, 220, 234, 0.34) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2), 0 0 24px rgba(218, 157, 176, 0.12) !important;
+}
+
+.letter-draw-image {
+  background: #fffafd !important;
+}
+
+.motion-ready :where(
+  button,
+  [role="button"],
+  .glass-btn,
+  .submit-btn,
+  .primary-cta,
+  .soft-button,
+  .write-submit,
+  .done-button,
+  .letter-view-button,
+  .letter-open-arrow,
+  .letter-back-floating,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .letter-delete-modal-button,
+  .notice-modal-actions button,
+  .modal-actions button
+):not(.password-toggle):not(:disabled):hover,
+.motion-ready :where(
+  button,
+  [role="button"],
+  .glass-btn,
+  .submit-btn,
+  .primary-cta,
+  .soft-button,
+  .write-submit,
+  .done-button,
+  .letter-view-button,
+  .letter-open-arrow,
+  .letter-back-floating,
+  .letter-delete-button,
+  .letter-favorite-button,
+  .letter-delete-modal-button,
+  .notice-modal-actions button,
+  .modal-actions button
+):not(.password-toggle):not(:disabled):active {
+  transform: none !important;
+}
+
+.password-toggle:hover,
+.password-toggle:active {
+  transform: translateY(-50%) !important;
 }

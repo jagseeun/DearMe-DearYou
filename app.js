@@ -212,21 +212,21 @@ function plainArrivalLine({ type, isToOther, senderName }) {
   const kind = letterKindLabel(type);
   return isToOther
     ? `${senderName}님이 남겨 주신 ${kind}가 조용히 도착했습니다.`
-    : `기다려 온 ${kind}가 조용히 도착했습니다.`;
+    : `나에게 보낸 ${kind}가 조용히 도착했습니다.`;
 }
 
 function htmlArrivalLine({ type, isToOther, safeSenderName }) {
   const kind = letterKindLabel(type);
   return isToOther
     ? `<strong>${safeSenderName}</strong>님이 남겨 주신 ${kind}가 조용히 도착했습니다.`
-    : `기다려 온 ${kind}가 조용히 도착했습니다.`;
+    : `나에게 보낸 ${kind}가 조용히 도착했습니다.`;
 }
 
 function recipientArrivalSubject({ type, isToOther, senderName }) {
   const kind = letterKindLabel(type);
   return isToOther
     ? `${senderName}님이 남겨 주신 ${kind}가 도착했습니다`
-    : `기다려 온 ${kind}가 도착했습니다`;
+    : `나에게 보낸 ${kind}가 도착했습니다`;
 }
 
 async function sendBrevoMail(options) {
@@ -836,7 +836,7 @@ function buildRecipientIntroHtml(safeRecipientName, headerMsg, themeStyles, alig
       <div style="text-align:${align};font-size:14px;color:${themeStyles.soft};line-height:1.9;margin-bottom:28px">
         안녕하세요, <strong style="color:${themeStyles.text}">${safeRecipientName}</strong>님.<br>
         ${headerMsg}<br>
-        오래 머문 마음을 천천히 열어 보세요.
+        남겨 둔 마음을 천천히 열어 보세요.
       </div>`;
 }
 
