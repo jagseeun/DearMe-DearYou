@@ -906,26 +906,27 @@ function personalizeTeacherLetterForMember(teacherLetter, memberName) {
 function buildTeacherLetterEmail(memberName, teacherLetter) {
   const personalizedTeacherLetter = personalizeTeacherLetterForMember(teacherLetter, memberName);
   const rawTeacherName = String(personalizedTeacherLetter.teacherName || "").trim();
-  const rawMemberName = String(memberName || "").trim() || "여러분";
   const rawTitle = personalizedTeacherLetter.title || `${rawTeacherName || "선생님"}의 편지`;
-  const safeMemberName = escapeHtml(rawMemberName);
   const teacherName = escapeHtml(rawTeacherName);
   const title = escapeHtml(rawTitle);
   const content = escapeHtml(personalizedTeacherLetter.content);
 
-  return buildEmailShell({
-    theme: "dark",
-    subtitle: `${rawTeacherName || "선생님"}의 편지`,
-    maxWidth: 680,
-    body: themeStyles => `
-    <div style="padding:40px 42px 44px">
-      <div style="margin:0 0 22px;border-top:1px solid ${themeStyles.cardBorder};height:1px;line-height:1px"></div>
-      <div style="margin-bottom:8px;color:${themeStyles.muted};font-size:13px;line-height:1.5">To. ${safeMemberName}</div>
-      <div style="margin-bottom:24px;color:${themeStyles.text};font-size:23px;line-height:1.45;font-weight:300">${title}</div>
-      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:18px;padding:34px 36px;font-size:16px;line-height:2;color:${themeStyles.cardText};white-space:pre-wrap">${content}</div>
-      <div style="margin-top:20px;text-align:right;color:${themeStyles.muted};font-size:14px;line-height:1.6">From. ${teacherName || "선생님"}</div>
-    </div>`,
-  });
+  return `
+  <div style="margin:0;background:#07101f;padding:30px 12px;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#fff7ed">
+    <div style="max-width:680px;margin:0 auto;background:#0d1830;border:1px solid #263656;border-radius:28px;overflow:hidden;box-shadow:0 26px 70px #030713">
+      <div style="padding:38px 34px 30px;text-align:center;background:#091426">
+        <div style="margin-bottom:16px;color:#b9c7e8;font-size:15px;line-height:1">✦ &nbsp; · &nbsp; ✧ &nbsp; · &nbsp; ✦</div>
+        <div style="font-size:30px;font-weight:300;line-height:1.25;color:#fff7ed">Dear Me<span style="color:#aebce0;margin:0 8px">;</span><span style="color:#dbe6ff">Dear You</span></div>
+        <div style="width:72px;height:1px;background:#334565;margin:20px auto 0;line-height:1px"></div>
+      </div>
+      <div style="padding:38px 40px 44px">
+        <div style="margin:0 0 20px;color:#dbe6ff;font-size:22px;line-height:1.5;font-weight:300">${title}</div>
+        <div style="background:#111d36;border:1px solid #2f4165;border-radius:22px;padding:34px 36px;font-size:16px;line-height:2;color:#fff7ed;white-space:pre-wrap">${content}</div>
+        <div style="margin-top:22px;text-align:right;color:#b7c4df;font-size:14px;line-height:1.6">${teacherName || "선생님"}</div>
+      </div>
+      <div style="padding:0 40px 38px;text-align:center;color:#8f9dbb;font-size:12px;line-height:1.7">Dear Me; Dear You</div>
+    </div>
+  </div>`;
 }
 
 async function sendTeacherDelivery(delivery) {
@@ -948,7 +949,7 @@ async function sendTeacherDelivery(delivery) {
       replyTo: emailReplyTo,
       to: member.email,
       subject: mailHeader(teacherIntro),
-      text: `To. ${member.name}\n\n${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
+      text: `${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
       html: buildTeacherLetterEmail(member.name, personalizedTeacherLetter),
     });
 
@@ -2237,7 +2238,7 @@ app.post("/teacher-letters/:id/test-send", requireAdmin, async (req, res) => {
       replyTo: emailReplyTo,
       to: TEACHER_TEST_EMAIL,
       subject: mailHeader(`[테스트] ${teacherIntro}`),
-      text: `[테스트 발송]\n받는 사람: ${testName} <${TEACHER_TEST_EMAIL}>\n\nTo. ${testName}\n\n${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
+      text: `[테스트 발송]\n받는 사람: ${testName} <${TEACHER_TEST_EMAIL}>\n\n${teacherIntro}\n\n${personalizedTeacherLetter.content}`,
       html: buildTeacherLetterEmail(testName, personalizedTeacherLetter),
     });
 
