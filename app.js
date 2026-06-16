@@ -768,7 +768,7 @@ function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 600 }) {
   <div style="margin:0;background:${themeStyles.outerBg};padding:28px 12px">
     <div style="max-width:${maxWidth}px;margin:0 auto;background:${themeStyles.panelBg};color:${themeStyles.text};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;border:1px solid ${themeStyles.metaBorder};border-radius:22px;overflow:hidden;box-shadow:${themeStyles.shadow}">
       <div style="background:${themeStyles.headerBg};padding:44px 34px 36px;text-align:center">
-        <div style="margin-bottom:14px;color:${themeStyles.star};font-size:16px;line-height:1">✦  ✧  ✦</div>
+        <div style="margin-bottom:14px;color:${themeStyles.star};font-size:16px;line-height:1">* &nbsp; * &nbsp; *</div>
         <div style="font-size:31px;font-weight:300;color:${themeStyles.brandMain};line-height:1.25">Dear Me<span style="color:${themeStyles.semicolon};margin:0 8px">;</span><span style="color:${themeStyles.brandSecond}">Dear You</span></div>
         <div style="margin:12px auto 0;max-width:360px;color:${themeStyles.muted};font-size:14px;line-height:1.7">${escapeHtml(headerSubtitle)}</div>
       </div>
@@ -912,19 +912,19 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
   const content = escapeHtml(personalizedTeacherLetter.content);
 
   return `
-  <div style="margin:0;background:#170f2f;background-image:radial-gradient(circle at 18% 0%,#4b2f7e 0,#241741 32%,#120d25 68%),linear-gradient(180deg,#1b1038,#0d1025);padding:32px 12px;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#fff7ed">
-    <div style="max-width:680px;margin:0 auto;background:#17112f;background-image:linear-gradient(180deg,#241946 0%,#17112f 52%,#11142b 100%);border:1px solid #5c477b;border-radius:28px;overflow:hidden;box-shadow:0 28px 76px #080713">
-      <div style="padding:42px 34px 32px;text-align:center;background:#22183f;background-image:radial-gradient(circle at 50% 0%,#6b4b9a 0,#2a1d4b 44%,#1a1535 100%)">
-        <div style="margin-bottom:16px;color:#e7d8ff;font-size:15px;line-height:1">✦ &nbsp; ˚ &nbsp; ✧ &nbsp; ⋆ &nbsp; ✦</div>
-        <div style="font-size:30px;font-weight:300;line-height:1.25;color:#fff7ed">Dear Me<span style="color:#cdb7f0;margin:0 8px">;</span><span style="color:#eadfff">Dear You</span></div>
-        <div style="width:82px;height:1px;background:#75619b;margin:20px auto 0;line-height:1px;box-shadow:0 0 18px #bda4e9"></div>
+  <div style="margin:0;background:#0d1026;background-image:linear-gradient(180deg,#21143f 0%,#11122b 48%,#090d20 100%);padding:30px 12px;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;color:#fff7ed">
+    <div style="max-width:680px;margin:0 auto;background:#111831;background-image:linear-gradient(180deg,#1c2443 0%,#111831 64%,#0d1328 100%);border:1px solid #38486e;border-radius:28px;overflow:hidden;box-shadow:0 26px 70px #050713">
+      <div style="padding:40px 34px 30px;text-align:center;background:#101731;background-image:radial-gradient(circle at 50% 0%,#3e2f63 0%,#17203d 48%,#101731 100%)">
+        <div style="margin-bottom:16px;color:#c8b7e6;font-size:15px;line-height:1">* &nbsp; &nbsp; * &nbsp; &nbsp; *</div>
+        <div style="font-size:30px;font-weight:300;line-height:1.25;color:#fff7ed">Dear Me<span style="color:#b7a6dc;margin:0 8px">;</span><span style="color:#e6ddff">Dear You</span></div>
+        <div style="width:74px;height:1px;background:#56628b;margin:20px auto 0;line-height:1px;box-shadow:0 0 16px #7562a3"></div>
       </div>
       <div style="padding:38px 40px 44px">
-        <div style="margin:0 0 20px;color:#f1e8ff;font-size:22px;line-height:1.5;font-weight:300">${title}</div>
-        <div style="background:#20173b;background-image:linear-gradient(180deg,#2b2050,#171832);border:1px solid #6f5a91;border-radius:22px;padding:34px 36px;font-size:16px;line-height:2;color:#fff8f1;white-space:pre-wrap;box-shadow:inset 0 1px 0 #7a6798,0 18px 42px #0b0a17">${content}</div>
-        <div style="margin-top:22px;text-align:right;color:#d5c5ee;font-size:14px;line-height:1.6">${teacherName || "선생님"}</div>
+        <div style="margin:0 0 20px;color:#e7dcff;font-size:22px;line-height:1.5;font-weight:300">${title}</div>
+        <div style="background:#121a34;background-image:linear-gradient(180deg,#1a2242,#101731);border:1px solid #3e4d74;border-radius:22px;padding:34px 36px;font-size:16px;line-height:2;color:#fff7ed;white-space:pre-wrap;box-shadow:inset 0 1px 0 #4d5b82,0 18px 42px #080b18">${content}</div>
+        <div style="margin-top:22px;text-align:right;color:#c9bde2;font-size:14px;line-height:1.6">${teacherName || "선생님"}</div>
       </div>
-      <div style="padding:0 40px 38px;text-align:center;color:#ad9acb;font-size:12px;line-height:1.7">✧ Dear Me; Dear You ✧</div>
+      <div style="padding:0 40px 38px;text-align:center;color:#9fafd4;font-size:12px;line-height:1.7">Dear Me; Dear You</div>
     </div>
   </div>`;
 }
