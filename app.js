@@ -495,7 +495,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
             stats.errors.push({
               letterId: letter.id,
               reason: "sender_notify_failed",
-              message: "수신자 이메일 발송 요청은 접수했지만, 보낸 분께 드리는 알림 메일은 보내지 못했습니다.",
+              message: "수신자 메일은 요청했지만 알림 메일은 보내지 못했습니다.",
             });
             console.error(`✉ 발신자 알림 실패: ${letter.author.email}`, notifyErr.message);
           }
@@ -571,7 +571,7 @@ function publicMailErrorMessage(err) {
 
 function deliveryResultMessage(delivery) {
   if (!delivery) return "";
-  if (delivery.sent > 0) return "이메일 발송 요청을 접수했습니다. 받은편지함에 보이지 않으면 스팸함이나 프로모션함도 함께 확인해 주세요.";
+  if (delivery.sent > 0) return "이메일 발송을 요청했습니다.";
   if (delivery.checked === 0) return "발송할 편지를 찾지 못했습니다. 관리자 화면에서 편지 상태를 확인해 주세요.";
   if (delivery.skippedNoEmail > 0) return "발송할 이메일 주소가 없거나 형식이 올바르지 않습니다.";
   if (delivery.errors?.[0]?.message) return delivery.errors[0].message;

@@ -90,7 +90,7 @@ export default function PinkLoginPage() {
             inputStyle={{ ...inputStyle, paddingRight: 58 }}
           />
           <motion.button variants={item} type="submit" style={btnStyle}>
-            편지 열람하기
+            편지 읽기
           </motion.button>
         </motion.form>
 
@@ -115,7 +115,7 @@ export default function PinkLoginPage() {
           }}
           whileHover={{ background: 'rgba(91,52,78,0.56)', color: 'rgba(255,245,240,0.98)' }}
         >
-          ← 처음으로 돌아가기
+          ← 처음으로
         </motion.button>
       </motion.div>
       <NoticeModal

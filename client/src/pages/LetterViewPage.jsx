@@ -322,7 +322,7 @@ export default function LetterViewPage() {
                 onClick={() => setPhase('content')}
                 whileHover={{ scale: 1.018 }}
                 style={{ ...btnStyle, position: 'absolute', bottom: 40, left: '50%', translate: '-50% 0', transformOrigin: 'center center' }}>
-                {letter.type === 'video' ? '영상 편지 열람하기' : letter.type === 'draw' ? '그림 편지 열람하기' : '편지 열람하기'}
+                {letter.type === 'video' ? '영상 보기' : letter.type === 'draw' ? '그림 보기' : '편지 읽기'}
               </motion.button>
             </motion.div>
           </motion.div>
@@ -426,7 +426,7 @@ export default function LetterViewPage() {
                 whileHover={{ scale: 1.018 }}
                 className="letter-view-button"
                 style={btnStyle}>
-                확인했습니다
+                확인
               </motion.button>
             </div>
           </motion.div>
@@ -455,7 +455,7 @@ export default function LetterViewPage() {
                   whileHover={{ scale: 1.018 }}
                   onClick={() => navigate(returnTo || '/letters')}
                   style={{ ...btnStyle, background: backBg, border: backBorder, color: backColor }}>
-                  편지함으로 돌아가기
+                  편지함
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.018 }}
@@ -479,7 +479,7 @@ export default function LetterViewPage() {
         open={logoutConfirm}
         title="로그아웃하시겠습니까?"
         message="지금 계정에서 나가도 남겨 두신 편지는 그대로 보관됩니다."
-        cancelLabel="머무르기"
+        cancelLabel="취소"
         confirmLabel="로그아웃"
         onClose={() => setLogoutConfirm(false)}
         onConfirm={confirmFinishAndLogout}

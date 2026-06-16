@@ -107,7 +107,7 @@ export default function SupportPage() {
           </div>
 
           <button type="submit" className="support-submit" disabled={saving}>
-            {saving ? '전하고 있습니다...' : '전하기'}
+            {saving ? '전송 중...' : '전하기'}
           </button>
         </motion.form>
       </section>

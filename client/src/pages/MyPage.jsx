@@ -181,7 +181,7 @@ export default function MyPage() {
         >
           <span>MY PAGE</span>
           <h1>내 편지 계정</h1>
-          <p>{loading ? '편지 계정 정보를 불러오는 중입니다.' : `${name || '사용자'}님의 편지 계정을 정리하실 수 있습니다.`}</p>
+          <p>{loading ? '불러오는 중...' : `${name || '사용자'}님의 편지 계정을 정리하실 수 있습니다.`}</p>
         </motion.header>
 
         <div className="mypage-grid">
@@ -219,7 +219,7 @@ export default function MyPage() {
               />
             </label>
             <button type="submit" disabled={loading || profileSaving}>
-              {profileSaving ? '저장하고 있습니다...' : '프로필 저장하기'}
+              {profileSaving ? '저장 중...' : '프로필 저장'}
             </button>
           </motion.form>
 
@@ -296,7 +296,7 @@ export default function MyPage() {
         open={showLogoutModal}
         title="로그아웃하시겠습니까?"
         message="지금 계정에서 나가도 남겨 두신 편지는 그대로 보관됩니다."
-        cancelLabel="머무르기"
+        cancelLabel="취소"
         confirmLabel="로그아웃"
         onClose={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}

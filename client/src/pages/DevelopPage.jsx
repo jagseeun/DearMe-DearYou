@@ -86,7 +86,7 @@ export default function DevelopPage() {
             <strong>도착한 응원</strong>
           </div>
           <button type="button" onClick={loadMessages} disabled={loading || checking}>
-            {loading ? '도착한 응원을 불러오는 중입니다...' : '새로고침'}
+            {loading ? '불러오는 중...' : '새로고침'}
           </button>
         </div>
 

@@ -431,7 +431,7 @@ export default function AdminPage() {
       <div style={{ position: 'relative', zIndex: 1, minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ ...panelStyle, maxWidth: 420, padding: 32, textAlign: 'center', color: '#fffcdf' }}>
           <div style={{ fontSize: 24, marginBottom: 12 }}>관리자만 접근하실 수 있습니다.</div>
-          <button style={buttonStyle} onClick={() => navigate('/')}>처음으로 돌아가기</button>
+          <button style={buttonStyle} onClick={() => navigate('/')}>처음으로</button>
         </div>
       </div>
     );
@@ -449,7 +449,7 @@ export default function AdminPage() {
             <div style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12, letterSpacing: 4, marginBottom: 8 }}>ADMIN</div>
             <h1 style={{ margin: 0, fontSize: 34, fontWeight: 300 }}>관리자 편지 콘솔</h1>
           </div>
-          <button style={{ ...buttonStyle, background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.18)' }} onClick={() => navigate('/')}>처음으로 돌아가기</button>
+          <button style={{ ...buttonStyle, background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.18)' }} onClick={() => navigate('/')}>처음으로</button>
         </div>
 
         {message && (
@@ -493,13 +493,13 @@ export default function AdminPage() {
                 </button>
               )}
               <button style={buttonStyle} disabled={saving}>
-                {editingTeacherId ? (saving ? '수정하고 있습니다...' : '수정 저장') : (saving ? '저장하고 있습니다...' : '편지 저장')}
+                {editingTeacherId ? (saving ? '수정 중...' : '수정 저장') : (saving ? '저장 중...' : '편지 저장')}
               </button>
               <button type="button" style={buttonStyle} onClick={resendAll} disabled={resending || sending}>
-                {resending ? '재발송하고 있습니다...' : '기존 대상 재발송'}
+                {resending ? '재발송 중...' : '기존 대상 재발송'}
               </button>
               <button type="button" style={buttonStyle} onClick={sendRandom} disabled={sending || resending || teacherLetters.length === 0}>
-                {sending ? '발송하고 있습니다...' : '랜덤 발송'}
+                {sending ? '발송 중...' : '랜덤 발송'}
               </button>
             </div>
           </form>
@@ -592,7 +592,7 @@ export default function AdminPage() {
                         onClick={() => sendTeacherTest(letter)}
                         disabled={teacherTestSendingId === letter.id}
                       >
-                        {teacherTestSendingId === letter.id ? '테스트 발송하고 있습니다...' : '테스트 발송'}
+                        {teacherTestSendingId === letter.id ? '발송 중...' : '테스트 발송'}
                       </button>
                       <button
                         type="button"
@@ -663,7 +663,7 @@ export default function AdminPage() {
           </div>
           <div style={{ padding: '12px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
             <button type="button" style={buttonStyle} onClick={sendDueAdminLetters} disabled={letterSending}>
-              {letterSending ? '발송하고 있습니다...' : '열람일 지난 편지 발송'}
+              {letterSending ? '발송 중...' : '열람일 지난 편지 발송'}
             </button>
           </div>
           {letters.length === 0 ? (
@@ -705,7 +705,7 @@ export default function AdminPage() {
                       disabled={savingThisEmail || sendingThisLetter}
                       onClick={() => updateLetterDeliveryEmail(letter)}
                     >
-                      {savingThisEmail ? '저장하고 있습니다...' : '이메일 저장'}
+                      {savingThisEmail ? '저장 중...' : '이메일 저장'}
                     </button>
                   </div>
                 </div>
@@ -720,14 +720,14 @@ export default function AdminPage() {
                   disabled={busyId === `letter-${letter.id}` || sendingThisLetter || savingThisEmail}
                   onClick={() => updateLetterDate(letter)}
                 >
-                  {busyId === `letter-${letter.id}` ? '수정하고 있습니다...' : '날짜 저장'}
+                  {busyId === `letter-${letter.id}` ? '수정 중...' : '날짜 저장'}
                 </button>
                 <button
                   style={{ ...buttonStyle, opacity: canSend ? 1 : 0.45 }}
                   disabled={!canSend || sendingThisLetter || busyId === `letter-${letter.id}` || savingThisEmail}
                   onClick={() => sendAdminLetter(letter)}
                 >
-                  {sendingThisLetter ? '발송하고 있습니다...' : (status.key === 'scheduled' ? '바로 발송' : status.label)}
+                  {sendingThisLetter ? '발송 중...' : (status.key === 'scheduled' ? '바로 발송' : status.label)}
                 </button>
               </div>
               );

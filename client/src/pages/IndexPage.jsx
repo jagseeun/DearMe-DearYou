@@ -56,13 +56,13 @@ export default function IndexPage() {
         variants={item}
         className="home-actions"
       >
-        <button className="glass-btn" onClick={openLogin}>편지함 로그인</button>
+        <button className="glass-btn" onClick={openLogin}>로그인</button>
         <button className="glass-btn" onClick={openSignup}>가입하기</button>
         <button
           className="glass-btn"
           onClick={openLetterBox}
         >
-          편지 열람하기
+          편지 읽기
         </button>
         {status === 'authenticated' && (
           <motion.p variants={item} className="home-session-note">

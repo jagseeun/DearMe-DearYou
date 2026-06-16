@@ -271,7 +271,7 @@ export default function LettersPage() {
         )}
 
         {loading ? (
-          <div className="letter-empty">편지함을 불러오는 중입니다...</div>
+          <div className="letter-empty">불러오는 중...</div>
         ) : activeLetters.length === 0 ? (
           <motion.div
             className="letter-empty"
@@ -418,7 +418,7 @@ export default function LettersPage() {
           onClick={goHome}
           whileHover={{ boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
         >
-          홈으로 돌아가기
+          홈으로
         </motion.button>
         <motion.button
           type="button"
@@ -463,7 +463,7 @@ export default function LettersPage() {
         open={logoutConfirm}
         title="로그아웃하시겠습니까?"
         message="지금 계정에서 나가도 남겨 두신 편지는 그대로 보관됩니다."
-        cancelLabel="머무르기"
+        cancelLabel="취소"
         confirmLabel="로그아웃"
         onClose={() => setLogoutConfirm(false)}
         onConfirm={confirmLogoutLetters}

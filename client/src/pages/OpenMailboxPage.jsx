@@ -506,7 +506,7 @@ export default function OpenMailboxPage() {
       className="open-mailbox-page"
       {...pageMotion}
     >
-      <button type="button" className="open-mailbox-back" onClick={() => navigate('/')}>처음으로 돌아가기</button>
+      <button type="button" className="open-mailbox-back" onClick={() => navigate('/')}>처음으로</button>
 
       <OpenMailboxLogo />
 
@@ -531,7 +531,7 @@ export default function OpenMailboxPage() {
           </div>
 
           {loading ? (
-            <div className="open-empty-letter">열린 편지함을 불러오는 중입니다...</div>
+            <div className="open-empty-letter">불러오는 중...</div>
           ) : letters.length === 0 ? (
             <div className="open-empty-letter">
               <strong>첫 마음을 기다리는 중입니다</strong>
@@ -673,7 +673,7 @@ export default function OpenMailboxPage() {
                 <div className="open-compose-footer">
                   <span>{mode === 'text' ? `${content.length}/${CONTENT_MAX_LENGTH}` : mode === 'photo' ? '사진 1장' : '그림 1장'}</span>
                   <button type="submit" disabled={saving || photoUploading}>
-                    {saving ? '저장하고 있습니다...' : '남기기'}
+                    {saving ? '저장 중...' : '남기기'}
                   </button>
                 </div>
               </form>
@@ -746,7 +746,7 @@ export default function OpenMailboxPage() {
                   />
                   <div className="open-letter-actions">
                     <button type="button" onClick={() => setEditingSelected(false)} disabled={editSaving}>돌아가기</button>
-                    <button type="submit" disabled={editSaving}>{editSaving ? '저장하고 있습니다...' : '수정 내용 저장하기'}</button>
+                    <button type="submit" disabled={editSaving}>{editSaving ? '저장 중...' : '수정 저장'}</button>
                   </div>
                 </form>
               ) : (

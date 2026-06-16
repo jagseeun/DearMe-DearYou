@@ -18000,3 +18000,65 @@ input:disabled,
 .check-btn:active {
   right: 6px !important;
 }
+
+/* Compact copy safeguards: keep buttons readable without forcing cramped layouts. */
+.notice-modal-panel {
+  width: min(460px, calc(100vw - 32px)) !important;
+  max-height: calc(100dvh - 48px) !important;
+  overflow-y: auto !important;
+}
+
+.notice-modal-actions {
+  flex-wrap: wrap !important;
+}
+
+.notice-modal-actions button {
+  min-width: 92px !important;
+  min-height: 42px !important;
+  height: auto !important;
+  padding: 10px 16px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+}
+
+.write-modal-panel {
+  width: min(520px, calc(100vw - 32px)) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: clamp(28px, 5vw, 44px) clamp(22px, 6vw, 52px) !important;
+}
+
+.write-modal-actions {
+  width: 100% !important;
+}
+
+.write-modal-actions button {
+  min-width: 140px !important;
+  max-width: 100% !important;
+  white-space: nowrap !important;
+}
+
+.letter-list-action-row {
+  flex-wrap: wrap !important;
+}
+
+.letter-list-action-row > span {
+  max-width: min(100%, 420px) !important;
+  line-height: 1.45 !important;
+}
+
+@media (max-width: 520px) {
+  .notice-modal-actions,
+  .write-modal-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .notice-modal-actions button,
+  .write-modal-actions button {
+    width: 100% !important;
+    min-width: 0 !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+}

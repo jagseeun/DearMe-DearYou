@@ -169,7 +169,7 @@ export default function HelloPage() {
               <strong>{deliveryNotice.title}</strong>
               <span>{deliveryNotice.message}</span>
             </div>
-            <button type="button" onClick={() => setDeliveryNotice(null)}>확인했습니다</button>
+            <button type="button" onClick={() => setDeliveryNotice(null)}>확인</button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -178,7 +178,7 @@ export default function HelloPage() {
         open={showLogoutModal}
         title="로그아웃하시겠습니까?"
         message="다시 로그인하시면 편지를 이어서 확인하실 수 있습니다."
-        cancelLabel="머무르기"
+        cancelLabel="취소"
         confirmLabel="로그아웃"
         onClose={() => setShowLogoutModal(false)}
         onConfirm={confirmLogout}

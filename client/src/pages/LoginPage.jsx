@@ -52,7 +52,10 @@ export default function LoginPage({ letterMode = false }) {
     if (preparingForcedLogin) return;
     const nextUserid = userid.trim();
     if (!nextUserid || !password) {
-      setNotice({ title: '편지함 로그인이 필요합니다', message: '편지함에 들어가시려면 아이디와 비밀번호를 입력해 주세요.' });
+      setNotice({
+        title: isLetterMode ? '편지함 로그인' : '로그인 확인',
+        message: '아이디와 비밀번호를 입력해 주세요.',
+      });
       return;
     }
     try {
@@ -67,7 +70,10 @@ export default function LoginPage({ letterMode = false }) {
         if (isLetterMode) rememberLetterAuth(currentUser);
         navigate(returnTo, { replace: true });
       }
-      else setNotice({ title: '편지함 로그인하지 못했습니다', message: data.message || '아이디와 비밀번호를 다시 확인해 주세요.' });
+      else setNotice({
+        title: isLetterMode ? '편지함에 들어가지 못했습니다' : '로그인 실패',
+        message: data.message || '아이디와 비밀번호를 다시 확인해 주세요.',
+      });
     } catch {
       setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     }
@@ -88,7 +94,7 @@ export default function LoginPage({ letterMode = false }) {
       </motion.h1>
 
       <motion.p variants={item} className="home-subtitle">
-        {isLetterMode ? '도착한 편지를 조용히 열어 보는 공간입니다' : '마음을 기록하고, 약속한 날에 다시 전하는 편지'}
+        {isLetterMode ? '도착한 편지를 다시 확인하는 로그인입니다' : '마음을 기록하고, 약속한 날에 다시 전하는 편지'}
       </motion.p>
 
       <motion.form
@@ -115,12 +121,12 @@ export default function LoginPage({ letterMode = false }) {
           onChange={e => setPassword(e.target.value)}
         />
         <motion.button variants={item} className="submit-btn" type="submit" disabled={preparingForcedLogin}>
-          {preparingForcedLogin ? '준비하고 있습니다...' : '편지함 로그인'}
+          {preparingForcedLogin ? '준비 중...' : isLetterMode ? '편지함 로그인' : '로그인'}
         </motion.button>
       </motion.form>
 
       <motion.button variants={item} className="back-link" onClick={() => navigate('/')}>
-        ← 처음으로 돌아가기
+        ← 처음으로
       </motion.button>
 
       <motion.button

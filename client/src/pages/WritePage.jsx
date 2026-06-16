@@ -856,7 +856,7 @@ export default function WritePage() {
         {stage === 'uploading' && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', color: '#fffcdf', fontSize: 18 }}>
-            올리는 중입니다...
+            업로드 중...
           </motion.div>
         )}
 
@@ -1013,7 +1013,7 @@ export default function WritePage() {
                 <div className="write-tools-row">
                   <button onClick={imageUploading ? undefined : openPhotoCamera} disabled={imageUploading} className="write-tool-button-inline"
                     style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: imageUploading ? 'default' : 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.65)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, opacity: imageUploading ? 0.6 : 1 }}>
-                    {imageUploading ? '올리는 중입니다...' : (
+                    {imageUploading ? '업로드 중...' : (
                       <>
                         <WriteIcon name="camera" />
                         <span>사진 담기</span>
@@ -1072,7 +1072,7 @@ export default function WritePage() {
             disabled={draftSaving || drawUploading || imageUploading}
             className="write-draft-save"
           >
-            {draftSaving ? '저장하고 있습니다...' : (
+            {draftSaving ? '저장 중...' : (
               <>
                 <WriteIcon name="save" />
                 <span>초안 저장</span>
@@ -1153,7 +1153,7 @@ export default function WritePage() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <button type="button" onClick={() => setSendNow(false)}
                     style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: !sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: !sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: !sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
-                    날짜에 맞춰 보내기
+                    예약 보내기
                   </button>
                   <button type="button" onClick={() => setSendNow(true)}
                     style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
@@ -1162,7 +1162,7 @@ export default function WritePage() {
                 </div>
                 {sendNow ? (
                   <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', color: 'rgba(255,252,223,0.72)' }}>
-                    저장하면 이메일을 바로 보내드립니다
+                    저장 후 바로 이메일을 보냅니다
                   </div>
                 ) : (
                   <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
@@ -1263,12 +1263,12 @@ export default function WritePage() {
                 <motion.button whileHover={{ background: 'rgba(255,255,255,0.14)' }}
                   onClick={() => setShowModal(false)}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', backdropFilter: 'blur(6px)', transition: 'all 0.3s' }}>
-                  돌아가기
+                  취소
                 </motion.button>
                 <motion.button whileHover={{ scale: 1.018, boxShadow: '0 0 24px rgba(231,207,161,.7)' }}
                   onClick={handleSave} disabled={saving}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg, #e7cfa1, #cfa874)', color: '#2b1e10', boxShadow: '0 0 16px rgba(231,207,161,.4)', transition: 'all 0.3s', opacity: saving ? 0.6 : 1 }}>
-                  {saving ? '저장하고 있습니다...' : '보관하기'}
+                  {saving ? '저장 중...' : '보관하기'}
                 </motion.button>
               </div>
             </motion.div>

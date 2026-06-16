@@ -9,7 +9,7 @@ export default function NoticeModal({
   open,
   title = '안내드립니다',
   message = '',
-  confirmLabel = '확인했습니다',
+  confirmLabel = '확인',
   cancelLabel = '',
   onClose,
   onConfirm,

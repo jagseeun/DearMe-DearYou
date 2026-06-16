@@ -50,7 +50,7 @@ export default function PinkLetterViewPage() {
       const res = await fetch('/trigger-send', { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || '발송하지 못했습니다');
-      setSendMsg(data.sent ? '이메일 발송 요청을 접수했습니다. 받은편지함에 보이지 않으면 스팸함이나 프로모션함도 함께 확인해 주세요.' : '지금 발송할 편지가 없습니다');
+      setSendMsg(data.sent ? '이메일 발송을 요청했습니다.' : '보낼 편지가 없습니다.');
       setTimeout(() => setSendMsg(''), 3000);
     } catch (err) {
       setSendMsg(err.message || '발송하지 못했습니다');
@@ -114,7 +114,7 @@ export default function PinkLetterViewPage() {
 
       <div className="letter-list-shell compact">
         {loading ? (
-          <div className="letter-empty">편지함을 불러오는 중입니다...</div>
+          <div className="letter-empty">불러오는 중...</div>
         ) : letters.length === 0 ? (
           <div className="letter-empty">
             <strong>아직 열람할 편지가 없습니다.</strong>
@@ -127,7 +127,7 @@ export default function PinkLetterViewPage() {
             {...panelMotion}
           >
             <button type="button" className="soft-button pink-send-button" onClick={triggerSend} disabled={sending}>
-              {sending ? '메일을 보내는 중입니다...' : '이메일로 다시 받기'}
+              {sending ? '발송 중...' : '메일 받기'}
             </button>
             {sendMsg && <span style={{ fontSize: 13, color: 'rgba(255,232,226,0.82)' }}>{sendMsg}</span>}
           </motion.div>
@@ -206,7 +206,7 @@ export default function PinkLetterViewPage() {
             className="letter-back-floating pink-letter-exit"
             onClick={goHome}
           >
-            홈으로 돌아가기
+            홈으로
           </motion.button>
           <motion.button
             type="button"
@@ -221,7 +221,7 @@ export default function PinkLetterViewPage() {
         open={logoutConfirm}
         title="로그아웃하시겠습니까?"
         message="지금 계정에서 나가도 남겨 두신 편지는 그대로 보관됩니다."
-        cancelLabel="머무르기"
+        cancelLabel="취소"
         confirmLabel="로그아웃"
         onClose={() => setLogoutConfirm(false)}
         onConfirm={confirmLogoutLetters}
