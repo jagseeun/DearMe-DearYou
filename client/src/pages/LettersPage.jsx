@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
 import NoticeModal from '../components/NoticeModal.jsx';
@@ -404,6 +405,7 @@ export default function LettersPage() {
         )}
       </div>
 
+      {!logoutConfirm && deleteConfirm === null && !notice && typeof document !== 'undefined' && createPortal((
       <motion.div
         className="letters-main-exit-actions"
         initial={{ opacity: 0, y: 8 }}
@@ -427,6 +429,7 @@ export default function LettersPage() {
           로그아웃
         </motion.button>
       </motion.div>
+      ), document.body)}
 
       <AnimatePresence>
         {deleteConfirm !== null && (
