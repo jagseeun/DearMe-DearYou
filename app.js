@@ -677,55 +677,89 @@ function formatMailDate(value) {
   });
 }
 
+function formatMailDateOnly(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 function getLetterEmailTheme(theme) {
   if (normalizeEmailTheme(theme) === "pink") {
     return {
-      outerBg: "linear-gradient(180deg,#fff7fb 0%,#ffe9f0 48%,#f7d8e5 100%)",
-      panelBg: "#fffaf8",
-      text: "#4f3240",
-      muted: "rgba(119,74,90,0.68)",
-      soft: "#674052",
-      headerBg: "linear-gradient(145deg,#fffaf6 0%,#ffe3ed 52%,#f7cadb 100%)",
-      brandMain: "#df9ab2",
-      brandSecond: "#7a5665",
-      semicolon: "#c98aa1",
-      star: "#d79aac",
-      cardBg: "#fff7ef",
-      cardBorder: "#edd5cf",
-      cardText: "#4f3941",
-      metaBg: "rgba(255,255,255,0.62)",
-      metaBorder: "rgba(190,128,145,0.2)",
-      metaLabel: "rgba(141,86,101,0.64)",
-      metaValue: "#4f3941",
-      buttonBg: "linear-gradient(135deg,#f6bfd1,#d98fa8)",
-      buttonText: "#3d2430",
-      footer: "rgba(116,73,88,0.52)",
-      shadow: "0 22px 54px rgba(168,86,116,0.18)",
+      name: "pink",
+      outerBg: "linear-gradient(160deg,#3d2249 0%,#6b3a5a 20%,#8c5265 35%,#7a5878 55%,#4a4872 75%,#2e3560 90%,#1e2848 100%)",
+      glowBg: "radial-gradient(ellipse 80% 40% at 15% 10%,rgba(220,160,180,0.18) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 80%,rgba(160,120,200,0.14) 0%,transparent 60%)",
+      panelBg: "rgba(20,10,35,0.52)",
+      panelBorder: "rgba(255,180,210,0.2)",
+      panelShadow: "0 30px 80px rgba(10,4,22,0.6),inset 0 1px 0 rgba(255,200,230,0.12)",
+      headerBg: "rgba(255,255,255,0.025)",
+      headerBorder: "rgba(255,175,205,0.1)",
+      text: "rgba(248,228,238,0.95)",
+      muted: "rgba(218,185,208,0.72)",
+      soft: "rgba(218,188,208,0.78)",
+      brandMain: "#f2c8da",
+      brandMainShadow: "0 0 22px rgba(230,130,180,0.32),0 0 48px rgba(200,100,150,0.13)",
+      brandSecond: "rgba(245,240,255,0.88)",
+      brandSecondShadow: "0 0 20px rgba(225,218,255,0.22)",
+      semicolon: "rgba(200,168,218,0.35)",
+      star: "rgba(255,210,190,0.32)",
+      rule: "linear-gradient(to right,transparent,rgba(210,150,185,0.38),transparent)",
+      ruleShadow: "0 0 8px rgba(210,130,170,0.18)",
+      cardBg: "rgba(10,4,22,0.38)",
+      cardBorder: "rgba(220,162,192,0.15)",
+      cardShadow: "inset 0 1px 0 rgba(240,188,218,0.06)",
+      cardText: "rgba(248,228,236,0.97)",
+      metaBorder: "rgba(255,175,205,0.1)",
+      metaLabel: "rgba(200,168,218,0.52)",
+      metaValue: "rgba(248,228,238,0.95)",
+      signature: "rgba(202,172,218,0.58)",
+      buttonBg: "linear-gradient(135deg,#f2c8da,#c8b7f0)",
+      buttonText: "#24132d",
+      footer: "rgba(188,158,208,0.28)",
+      skyA: "rgba(255,235,210,0.55)",
+      skyB: "rgba(240,220,255,0.48)",
     };
   }
 
   return {
-    outerBg: "#070d1d",
-    panelBg: "#101a2d",
-    text: "#fff8ef",
-    muted: "#c9bdd0",
-    soft: "#f0dce6",
-    headerBg: "#101a2d",
-    brandMain: "#f6cdda",
-    brandSecond: "#fff8ef",
-    semicolon: "#e5aabd",
-    star: "#e9bdcc",
-    cardBg: "#0b1325",
-    cardBorder: "#2a3857",
-    cardText: "#fff8ef",
-    metaBg: "#0b1325",
-    metaBorder: "#2a3857",
-    metaLabel: "#bda9bd",
-    metaValue: "#fff8ef",
-    buttonBg: "#f1c7d6",
-    buttonText: "#121827",
-    footer: "#a998b0",
-    shadow: "0 24px 60px #050817",
+    name: "dark",
+    outerBg: "linear-gradient(180deg,#0a1018 0%,#0d1520 25%,#111c2a 50%,#1e1c14 75%,#2a2010 100%)",
+    glowBg: "radial-gradient(ellipse 100% 45% at 50% 100%,rgba(150,110,50,0.28) 0%,transparent 65%),radial-gradient(ellipse 70% 35% at 30% 40%,rgba(15,35,60,0.5) 0%,transparent 70%)",
+    panelBg: "rgba(8,12,22,0.58)",
+    panelBorder: "rgba(190,185,220,0.14)",
+    panelShadow: "0 30px 80px rgba(2,4,12,0.75),inset 0 1px 0 rgba(205,200,255,0.07)",
+    headerBg: "rgba(255,255,255,0.018)",
+    headerBorder: "rgba(185,180,220,0.1)",
+    text: "rgba(232,228,250,0.92)",
+    muted: "rgba(188,182,225,0.58)",
+    soft: "rgba(188,182,225,0.62)",
+    brandMain: "rgba(245,240,255,0.88)",
+    brandMainShadow: "0 0 20px rgba(220,215,255,0.25)",
+    brandSecond: "#eed28e",
+    brandSecondShadow: "0 0 22px rgba(210,175,80,0.3),0 0 48px rgba(185,145,55,0.12)",
+    semicolon: "rgba(185,178,220,0.3)",
+    star: "rgba(205,200,240,0.28)",
+    rule: "linear-gradient(to right,transparent,rgba(185,178,225,0.32),transparent)",
+    ruleShadow: "none",
+    cardBg: "rgba(5,7,16,0.52)",
+    cardBorder: "rgba(178,172,218,0.13)",
+    cardShadow: "inset 0 1px 0 rgba(200,195,250,0.05)",
+    cardText: "rgba(232,228,248,0.95)",
+    metaBorder: "rgba(182,176,220,0.1)",
+    metaLabel: "rgba(172,165,210,0.48)",
+    metaValue: "rgba(232,228,250,0.92)",
+    signature: "rgba(178,170,215,0.52)",
+    buttonBg: "linear-gradient(135deg,#eed28e,#b89958)",
+    buttonText: "#16150f",
+    footer: "rgba(172,165,210,0.26)",
+    skyA: "rgba(210,215,240,0.55)",
+    skyB: "rgba(205,210,238,0.42)",
   };
 }
 
@@ -743,37 +777,56 @@ function formatMailPerson(name, email) {
   return cleanName || cleanEmail || "-";
 }
 
+function buildEmailStarField(themeStyles) {
+  const a = themeStyles.skyA;
+  const b = themeStyles.skyB;
+  return `
+  <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none" viewBox="0 0 700 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="60" cy="28" r="0.7" fill="${a}"/><circle cx="158" cy="15" r="1.0" fill="${b}"/><circle cx="235" cy="68" r="0.5" fill="${a}"/><circle cx="325" cy="24" r="0.8" fill="${b}"/>
+    <circle cx="418" cy="12" r="0.6" fill="${a}"/><circle cx="505" cy="55" r="1.1" fill="${b}"/><circle cx="582" cy="22" r="0.5" fill="${a}"/><circle cx="655" cy="78" r="0.8" fill="${b}"/>
+    <circle cx="108" cy="148" r="1.0" fill="${b}"/><circle cx="245" cy="185" r="0.5" fill="${a}"/><circle cx="365" cy="148" r="0.7" fill="${b}"/><circle cx="472" cy="170" r="1.0" fill="${a}"/>
+    <circle cx="188" cy="318" r="0.9" fill="${a}"/><circle cx="312" cy="268" r="0.6" fill="${b}"/><circle cx="428" cy="295" r="0.9" fill="${a}"/><circle cx="622" cy="302" r="0.7" fill="${b}"/>
+  </svg>`;
+}
+
 function buildLetterMetaHtml(meta = {}, themeStyles) {
   const rows = [
-    ...(meta.emailSubject ? [["메일 제목", meta.emailSubject]] : []),
-    ["보낸 날", formatMailDate(meta.createdAt)],
-    ["개봉일", formatMailDate(meta.openDate)],
+    ["보낸 날", formatMailDateOnly(meta.createdAt)],
+    ["개봉일", formatMailDateOnly(meta.openDate)],
+    ["받는 사람", meta.recipientName || meta.recipientEmail],
   ];
 
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;background:${themeStyles.metaBg};border:1px solid ${themeStyles.metaBorder};border-radius:14px;border-collapse:separate;overflow:hidden">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin:0 0 24px">
       ${rows.map(([label, value], index) => `
         <tr>
-          <td style="width:92px;padding:12px 0 12px 16px;${index < rows.length - 1 ? `border-bottom:1px solid ${themeStyles.metaBorder};` : ""}color:${themeStyles.metaLabel};font-weight:600;font-size:14px;line-height:1.5;vertical-align:top">${escapeHtml(label)}</td>
-          <td style="padding:12px 16px;${index < rows.length - 1 ? `border-bottom:1px solid ${themeStyles.metaBorder};` : ""}color:${themeStyles.metaValue || themeStyles.text};font-size:14px;line-height:1.5;word-break:break-word;vertical-align:top">${escapeHtml(value || "-")}</td>
+          <td style="width:80px;padding:10px 0;${index < rows.length - 1 ? `border-bottom:1px solid ${themeStyles.metaBorder};` : ""}color:${themeStyles.metaLabel};font-size:12px;line-height:1.5;vertical-align:top">${escapeHtml(label)}</td>
+          <td style="padding:10px 0;${index < rows.length - 1 ? `border-bottom:1px solid ${themeStyles.metaBorder};` : ""}color:${themeStyles.metaValue || themeStyles.text};font-size:13px;line-height:1.5;word-break:break-word;vertical-align:top">${escapeHtml(value || "-")}</td>
         </tr>
       `).join("")}
     </table>`;
 }
 
-function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 600 }) {
+function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 620 }) {
   const themeStyles = getLetterEmailTheme(theme);
-  const headerSubtitle = subtitle || `${formatMailDate(openDate)} 개봉`;
+  const headerSubtitle = subtitle || "미래의 나에게 보내는 편지";
   return `
-  <div style="margin:0;background:${themeStyles.outerBg};padding:28px 12px">
-    <div style="max-width:${maxWidth}px;margin:0 auto;background:${themeStyles.panelBg};color:${themeStyles.text};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;border:1px solid ${themeStyles.metaBorder};border-radius:22px;overflow:hidden;box-shadow:${themeStyles.shadow}">
-      <div style="background:${themeStyles.headerBg};padding:44px 34px 36px;text-align:center">
-        <div style="margin-bottom:14px;color:${themeStyles.star};font-size:16px;line-height:1">* &nbsp; * &nbsp; *</div>
-        <div style="font-size:31px;font-weight:300;color:${themeStyles.brandMain};line-height:1.25">Dear Me<span style="color:${themeStyles.semicolon};margin:0 8px">;</span><span style="color:${themeStyles.brandSecond}">Dear You</span></div>
-        <div style="margin:12px auto 0;max-width:360px;color:${themeStyles.muted};font-size:14px;line-height:1.7">${escapeHtml(headerSubtitle)}</div>
+  <div style="padding:40px 16px 56px;background:${themeStyles.outerBg};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;pointer-events:none;background:${themeStyles.glowBg}"></div>
+    ${buildEmailStarField(themeStyles)}
+    <div style="max-width:${maxWidth}px;margin:0 auto;position:relative;z-index:1;background:${themeStyles.panelBg};border:1px solid ${themeStyles.panelBorder};border-radius:28px;overflow:hidden;box-shadow:${themeStyles.panelShadow}">
+      <div style="padding:44px 40px 32px;text-align:center;border-bottom:1px solid ${themeStyles.headerBorder};background:${themeStyles.headerBg}">
+        <div style="margin-bottom:18px;color:${themeStyles.star};font-size:8px;letter-spacing:14px">✦ &nbsp; ✦ &nbsp; ✦</div>
+        <div style="font-size:24px;font-weight:300;letter-spacing:0.05em;line-height:1">
+          <span style="color:${themeStyles.brandMain};text-shadow:${themeStyles.brandMainShadow}">Dear Me</span>
+          <span style="margin:0 9px;color:${themeStyles.semicolon};font-weight:300">;</span>
+          <span style="color:${themeStyles.brandSecond};text-shadow:${themeStyles.brandSecondShadow}">Dear You</span>
+        </div>
+        <div style="margin-top:18px;font-size:13px;color:${themeStyles.muted};letter-spacing:0.03em;line-height:1.6">${escapeHtml(headerSubtitle)}</div>
+        <div style="width:48px;height:1px;margin:18px auto 0;background:${themeStyles.rule};box-shadow:${themeStyles.ruleShadow}"></div>
       </div>
       ${body(themeStyles)}
-      <div style="padding:8px 40px 42px;text-align:center;color:${themeStyles.footer};font-size:12px;line-height:1.7">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
+      <div style="padding:0 40px 36px;text-align:center;font-size:11px;letter-spacing:0.12em;color:${themeStyles.footer}">Dear Me ; Dear You</div>
     </div>
   </div>`;
 }
@@ -785,13 +838,13 @@ function buildSenderNotifyEmail(senderName, recipientName, openDate, emailTheme 
     theme: emailTheme,
     openDate,
     body: themeStyles => `
-    <div style="padding:36px 40px">
-      <p style="font-size:16px;line-height:1.9;color:${themeStyles.soft};margin:0 0 24px">
-        안녕하세요, <strong>${safeSenderName}</strong>님.<br><br>
-        <strong>${safeRecipientName}</strong>님에게 보낸 편지가 오늘 전달되었습니다.<br>
-        소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두셔도 괜찮습니다.
-      </p>
+    <div style="padding:36px 40px 44px">
+      <div style="font-size:14px;color:${themeStyles.soft};line-height:1.85;margin-bottom:28px">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
       ${buildLetterMetaHtml(meta, themeStyles)}
+      <div style="padding:30px 32px;border:1px solid ${themeStyles.cardBorder};border-radius:16px;background:${themeStyles.cardBg};box-shadow:${themeStyles.cardShadow};color:${themeStyles.cardText};font-size:15px;line-height:2.1;white-space:pre-wrap">안녕하세요, ${safeSenderName}님.
+
+${safeRecipientName}님에게 보낸 편지가 오늘 전달되었습니다.
+소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두셔도 괜찮습니다.</div>
     </div>`,
   });
 }
@@ -809,12 +862,13 @@ function buildTextEmail(recipientName, senderName, content, openDate, isToOther,
     openDate,
     subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
-    <div style="padding:40px">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.85;margin:0 0 24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">천천히 읽어보셔도 괜찮습니다. 오늘의 마음이 조용히 곁에 도착했습니다.</span></p>
+    <div style="padding:36px 40px 44px">
+      <div style="font-size:14px;color:${themeStyles.soft};line-height:1.85;margin-bottom:28px">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
       ${buildLetterMetaHtml(meta, themeStyles)}
-      <div style="background:${themeStyles.cardBg};border:1px solid ${themeStyles.cardBorder};border-radius:16px;padding:30px;font-size:16px;line-height:1.9;color:${themeStyles.cardText};white-space:pre-wrap">${safeContent}</div>
+      <div style="padding:30px 32px;border:1px solid ${themeStyles.cardBorder};border-radius:16px;background:${themeStyles.cardBg};box-shadow:${themeStyles.cardShadow};color:${themeStyles.cardText};font-size:15px;line-height:2.1;white-space:pre-wrap">${safeContent}</div>
       ${safeImageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${escapeHtml(safeImageUrl)}" style="max-width:100%;border-radius:14px" /></div>` : ""}
       ${safeSignatureUrl ? `<div style="margin-top:20px;text-align:right"><img src="${escapeHtml(safeSignatureUrl)}" style="max-height:80px" /></div>` : ""}
+      <div style="margin-top:20px;text-align:right;font-size:12.5px;color:${themeStyles.signature};line-height:1.75">${formatMailDateOnly(meta.createdAt)}의 ${safeSenderName}으로부터</div>
     </div>`,
   });
 }
@@ -830,12 +884,13 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
     openDate,
     subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
-    <div style="padding:40px">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.85;margin:0 0 24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">말보다 먼저 도착한 마음을 천천히 열어보세요.</span></p>
+    <div style="padding:36px 40px 44px">
+      <div style="font-size:14px;color:${themeStyles.soft};line-height:1.85;margin-bottom:28px">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
       ${buildLetterMetaHtml(meta, themeStyles)}
       <div style="border-radius:16px;overflow:hidden;border:1px solid ${themeStyles.cardBorder};background:${themeStyles.cardBg}">
         ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" style="width:100%;display:block" />` : `<div style="padding:24px;text-align:center;color:${themeStyles.muted}">그림 URL을 확인할 수 없습니다.</div>`}
       </div>
+      <div style="margin-top:20px;text-align:right;font-size:12.5px;color:${themeStyles.signature};line-height:1.75">${formatMailDateOnly(meta.createdAt)}의 ${safeSenderName}으로부터</div>
     </div>`,
   });
 }
@@ -851,10 +906,11 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
     openDate,
     subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
-    <div style="padding:40px;text-align:center">
-      <p style="font-size:18px;color:${themeStyles.soft};line-height:1.85;margin:0 0 24px">안녕하세요, <strong>${safeRecipientName}</strong>님.<br>${headerMsg}<br><span style="font-size:15px;color:${themeStyles.muted}">목소리와 표정까지 담긴 마음이 도착했습니다.</span></p>
+    <div style="padding:36px 40px 44px;text-align:center">
+      <div style="text-align:left;font-size:14px;color:${themeStyles.soft};line-height:1.85;margin-bottom:28px">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
       <div style="text-align:left">${buildLetterMetaHtml(meta, themeStyles)}</div>
       ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>` : `<p style="color:${themeStyles.muted}">영상 URL을 확인할 수 없습니다.</p>`}
+      <div style="margin-top:20px;text-align:right;font-size:12.5px;color:${themeStyles.signature};line-height:1.75">${formatMailDateOnly(meta.createdAt)}의 ${safeSenderName}으로부터</div>
     </div>`,
   });
 }
