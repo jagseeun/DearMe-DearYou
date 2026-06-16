@@ -809,7 +809,7 @@ function buildLetterMetaHtml(meta = {}, themeStyles) {
 
 function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 620 }) {
   const themeStyles = getLetterEmailTheme(theme);
-  const headerSubtitle = subtitle || "미래의 나에게 보내는 편지";
+  const headerSubtitle = subtitle || "마음을 담아 전하는 편지";
   return `
   <div style="padding:40px 16px 56px;background:${themeStyles.outerBg};font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;position:relative;overflow:hidden">
     <div style="position:absolute;inset:0;pointer-events:none;background:${themeStyles.glowBg}"></div>
