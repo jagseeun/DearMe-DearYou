@@ -65,13 +65,21 @@ function LogoHomeNavigator() {
   const location = useLocation();
 
   useEffect(() => {
+    const isHome = location.pathname === '/';
     const markLogos = () => {
       document.querySelectorAll(LOGO_HOME_SELECTOR).forEach(logo => {
-        logo.classList.add('logo-home-link');
+        logo.classList.toggle('logo-home-link', !isHome);
         logo.removeAttribute('role');
         logo.removeAttribute('tabindex');
         logo.removeAttribute('aria-label');
         logo.querySelectorAll('span').forEach(part => {
+          if (isHome) {
+            part.classList.remove('logo-home-hit');
+            part.removeAttribute('role');
+            part.removeAttribute('tabindex');
+            part.removeAttribute('aria-label');
+            return;
+          }
           part.classList.add('logo-home-hit');
           part.setAttribute('role', 'button');
           part.setAttribute('tabindex', '0');
@@ -94,15 +102,17 @@ function LogoHomeNavigator() {
 
     const handleClick = event => {
       if (!findLogo(event.target)) return;
+      if (location.pathname === '/') return;
       event.preventDefault();
-      navigate('/hello');
+      navigate('/');
     };
 
     const handleKeyDown = event => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
       if (!findLogo(event.target)) return;
+      if (location.pathname === '/') return;
       event.preventDefault();
-      navigate('/hello');
+      navigate('/');
     };
 
     document.addEventListener('click', handleClick);
@@ -111,7 +121,7 @@ function LogoHomeNavigator() {
       document.removeEventListener('click', handleClick);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [navigate]);
+  }, [location.pathname, navigate]);
 
   return null;
 }

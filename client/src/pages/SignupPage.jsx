@@ -201,19 +201,6 @@ export default function SignupPage() {
         ← 처음으로
       </motion.button>
 
-      <motion.button
-        type="button"
-        className="open-mailbox-floating-button"
-        aria-label="열린 편지함으로 가기"
-        title="열린 편지함으로 가기"
-        onClick={() => navigate('/open-mailbox')}
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9, duration: 0.45, ease }}
-      >
-        💌
-      </motion.button>
-
       <NoticeModal
         open={Boolean(notice)}
         title={notice?.title}

@@ -174,6 +174,21 @@ export default function HelloPage() {
         )}
       </AnimatePresence>
 
+      {!showLogoutModal && (
+        <motion.button
+          type="button"
+          className="open-mailbox-floating-button"
+          aria-label="열린 편지함으로 가기"
+          title="열린 편지함으로 가기"
+          onClick={() => navigate('/open-mailbox')}
+          initial={false}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.45, ease }}
+        >
+          💌
+        </motion.button>
+      )}
+
       <NoticeModal
         open={showLogoutModal}
         title="로그아웃하시겠습니까?"

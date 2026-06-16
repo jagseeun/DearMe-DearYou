@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { fetchJson } from '../utils/api.js';
 import { listItemMotion, modalBackdropMotion, modalPanelMotion, motionEase, pageMotion } from '../utils/motion.js';
@@ -206,6 +206,7 @@ function OpenDrawCanvas({ canvasRef, onDrawn, initialImageUrl = '' }) {
 
 export default function OpenMailboxPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [letters, setLetters] = useState([]);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(8);
@@ -432,6 +433,14 @@ export default function OpenMailboxPage() {
     setContent(value.slice(0, CONTENT_MAX_LENGTH));
   }
 
+  function goBack() {
+    if (location.key === 'default') {
+      navigate('/');
+      return;
+    }
+    navigate(-1);
+  }
+
   async function updateSelectedLetter(event) {
     event.preventDefault();
     if (!selected) return;
@@ -506,7 +515,7 @@ export default function OpenMailboxPage() {
       className="open-mailbox-page"
       {...pageMotion}
     >
-      <button type="button" className="open-mailbox-back" onClick={() => navigate('/')}>처음으로</button>
+      <button type="button" className="open-mailbox-back" onClick={goBack}>← 뒤로가기</button>
 
       <OpenMailboxLogo />
 
