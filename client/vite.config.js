@@ -58,6 +58,7 @@ export default defineConfig({
       '/update-profile': apiProxy(),
       '/change-password': apiProxy(),
       '/write-letter': apiProxy(),
+      '/letter-email-preview': apiProxy(),
       '/letter-draft': apiProxy(),
       '/get-upload-url': apiProxy(),
       '/get-image-upload-url': apiProxy(),

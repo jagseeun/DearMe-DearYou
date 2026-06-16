@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import fixWebmDuration from 'fix-webm-duration';
@@ -111,13 +111,6 @@ function tomorrow() {
   const d = new Date();
   d.setDate(d.getDate() + 1);
   return d.toISOString().split('T')[0];
-}
-
-function formatPreviewDate(value) {
-  if (!value) return '선택한 날';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '선택한 날';
-  return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 // ── 글자 하나씩 페이드인 글 편지 입력 컴포넌트 ──
@@ -405,6 +398,7 @@ export default function WritePage() {
   const [drawHasDrawn, setDrawHasDrawn] = useState(false);
   const [drawUploading, setDrawUploading] = useState(false);
   const [drawDraftImageUrl, setDrawDraftImageUrl] = useState('');
+  const [drawPreviewImageUrl, setDrawPreviewImageUrl] = useState('');
 
   // 서명
   const [signatureData, setSignatureData] = useState(null);
@@ -427,19 +421,10 @@ export default function WritePage() {
   const [draft, setDraft] = useState(null);
   const [draftSaving, setDraftSaving] = useState(false);
   const [notice, setNotice] = useState(null);
-
-  const previewRecipient = toOther
-    ? (recipientName.trim() || recipientEmail.trim() || '받을 사람')
-    : (name || '나');
-  const previewSender = name || '나';
-  const previewSubject = emailSubject.trim() || `${previewSender}님의 편지가 도착했습니다`;
-  const previewSchedule = sendNow ? '바로 발송' : `${formatPreviewDate(openDate)} 발송 예정`;
-  const previewTypeLabel = mode === 'video' ? '영상 편지' : mode === 'draw' ? '그림 편지' : '글 편지';
-  const previewSnippet = mode === 'video'
-    ? '영상 편지는 이메일 안의 버튼으로 열어 볼 수 있습니다.'
-    : mode === 'draw'
-      ? '그림 편지는 이메일 안에서 바로 확인할 수 있습니다.'
-      : (text.trim() || '편지 내용이 이곳에 미리 표시됩니다.').slice(0, 120);
+  const [showEmailPreview, setShowEmailPreview] = useState(false);
+  const [emailPreview, setEmailPreview] = useState({ subject: '', html: '' });
+  const [emailPreviewLoading, setEmailPreviewLoading] = useState(false);
+  const [emailPreviewError, setEmailPreviewError] = useState('');
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -482,6 +467,12 @@ export default function WritePage() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!showEmailPreview) return;
+    setShowEmailPreview(false);
+    setEmailPreviewError('');
+  }, [mode, text, videoUrl, imageUrl, drawHasDrawn, openDate, sendNow, emailSubject, emailTheme, toOther, recipientEmail, recipientName]);
 
   useEffect(() => { return () => { streamRef.current?.getTracks().forEach(t => t.stop()); }; }, []);
 
@@ -556,6 +547,7 @@ export default function WritePage() {
 
   function handleModeSwitch(m) {
     setMode(m);
+    setDrawPreviewImageUrl('');
     if (m !== 'draw') setDrawDraftImageUrl('');
     if (m === 'text' && streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
@@ -653,6 +645,7 @@ export default function WritePage() {
     setVideoUrl(nextDraft.videoUrl || '');
     setImageUrl(nextMode === 'text' ? (nextDraft.imageUrl || '') : '');
     setDrawDraftImageUrl(nextMode === 'draw' ? (nextDraft.imageUrl || '') : '');
+    setDrawPreviewImageUrl('');
     setSignatureData(nextDraft.signatureData || null);
     setEmailTheme(nextDraft.emailTheme === 'pink' ? 'pink' : 'dark');
     setEmail(accountEmail || email);
@@ -670,8 +663,8 @@ export default function WritePage() {
   async function saveDraft() {
     setDraftSaving(true);
     try {
-      let draftImageUrl = mode === 'draw' ? (drawDraftImageUrl || undefined) : (imageUrl || undefined);
-      if (mode === 'draw' && drawHasDrawn && drawCanvasEl) {
+      let draftImageUrl = mode === 'draw' ? (drawPreviewImageUrl || drawDraftImageUrl || undefined) : (imageUrl || undefined);
+      if (mode === 'draw' && drawHasDrawn && drawCanvasEl && !drawPreviewImageUrl) {
         draftImageUrl = await uploadCanvas();
       }
       let draftSignatureData = mode === 'text' ? signatureData : undefined;
@@ -726,11 +719,70 @@ export default function WritePage() {
     }
   }
 
+  async function loadEmailPreview() {
+    setEmailPreviewLoading(true);
+    setEmailPreviewError('');
+
+    try {
+      let previewImageUrl = mode === 'draw' ? (drawPreviewImageUrl || drawDraftImageUrl) : imageUrl;
+      let previewSignatureData = signatureData;
+
+      if (mode === 'draw' && drawHasDrawn && drawCanvasEl && !drawPreviewImageUrl) {
+        previewImageUrl = await uploadCanvas();
+        setDrawPreviewImageUrl(previewImageUrl);
+      }
+
+      if (mode === 'text' && signatureData?.startsWith('data:')) {
+        previewSignatureData = await uploadSignature(signatureData);
+        setSignatureData(previewSignatureData);
+      }
+
+      const effectiveOpenDate = sendNow ? new Date().toISOString() : openDate;
+      const res = await fetch('/letter-email-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: mode,
+          content: mode === 'text' ? clampLetterText(text) : '',
+          videoUrl: mode === 'video' ? videoUrl : undefined,
+          imageUrl: mode === 'text' ? (previewImageUrl || undefined) : mode === 'draw' ? (previewImageUrl || undefined) : undefined,
+          signatureData: mode === 'text' ? (previewSignatureData || undefined) : undefined,
+          openDate: effectiveOpenDate,
+          emailSubject: emailSubject.trim(),
+          emailTheme,
+          toOther,
+          recipientEmail: toOther ? recipientEmail.trim().toLowerCase() : '',
+          recipientName: toOther ? recipientName.trim() : '',
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || '이메일 미리보기를 만들지 못했습니다.');
+      setEmailPreview({ subject: data.subject || '', html: data.html || '' });
+    } catch (err) {
+      setEmailPreviewError(err.message || '이메일 미리보기를 만들지 못했습니다.');
+    } finally {
+      setEmailPreviewLoading(false);
+    }
+  }
+
+  function toggleEmailPreview() {
+    if (showEmailPreview) {
+      setShowEmailPreview(false);
+      return;
+    }
+
+    setShowEmailPreview(true);
+    loadEmailPreview();
+  }
+
   async function handleFromMe() {
     if (mode === 'text' && !text.trim()) return showNotice('편지에 남길 내용을 입력해 주세요.');
     if (mode === 'video' && !videoUrl) return showNotice('먼저 영상 편지를 촬영해 주세요.');
     if (mode === 'draw' && !drawHasDrawn) return showNotice('그림 편지에 남길 그림을 그려 주세요.');
     setNotice(null);
+    setShowEmailPreview(false);
+    setEmailPreview({ subject: '', html: '' });
+    setEmailPreviewError('');
     setShowModal(true);
   }
 
@@ -763,7 +815,7 @@ export default function WritePage() {
       // 그림 편지 캔버스 업로드
       let drawImageUrl;
       if (mode === 'draw') {
-        drawImageUrl = await uploadCanvas();
+        drawImageUrl = drawPreviewImageUrl || await uploadCanvas();
       }
 
       const body = {
@@ -1077,7 +1129,12 @@ export default function WritePage() {
               className="write-stage write-stage-draw"
               style={{ marginBottom: 20 }}
             >
-              <DrawCanvas initialImageUrl={mode === 'draw' ? drawDraftImageUrl : ''} onHasDrawn={setDrawHasDrawn} onCanvasReady={setDrawCanvasEl} />
+              <DrawCanvas
+                initialImageUrl={mode === 'draw' ? drawDraftImageUrl : ''}
+                onHasDrawn={setDrawHasDrawn}
+                onCanvasReady={setDrawCanvasEl}
+                onCanvasChange={() => setDrawPreviewImageUrl('')}
+              />
             </motion.div>
           ) : (
             cameraUI
@@ -1159,17 +1216,15 @@ export default function WritePage() {
           >
             <motion.div
               className="write-modal-panel"
+              role="dialog"
+              aria-label="편지 전송 설정"
+              aria-modal="true"
               initial={{ opacity: 0, y: 30, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 20, scale: 0.96 }}
               transition={{ duration: 0.4, ease }}
               style={{ background: 'rgba(30,40,55,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 28, padding: '44px 52px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22, minWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}
             >
-              <div style={{ order: -1, fontSize: 32, fontWeight: 400, color: '#e9dcc6', textShadow: '0 0 12px rgba(255,252,223,.3)' }}>
-                편지 전송 설정
-              </div>
-
               {/* 열람일 */}
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={labelStyle}>📅 열람일</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <button type="button" onClick={() => setSendNow(false)}
                     style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: !sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: !sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: !sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
@@ -1193,8 +1248,8 @@ export default function WritePage() {
                 <label style={labelStyle}>편지 분위기</label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {[
-                    { value: 'dark', label: '밤빛' },
-                    { value: 'pink', label: '분홍빛' },
+                    { value: 'dark', label: '다크' },
+                    { value: 'pink', label: '핑크' },
                   ].map(option => {
                     const selected = emailTheme === option.value;
                     return (
@@ -1240,7 +1295,6 @@ export default function WritePage() {
 
               {/* 수신인 토글 */}
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <label style={labelStyle}>📬 받을 사람</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[{ val: false, label: '나에게' }, { val: true, label: '다른 분에게' }].map(({ val, label }) => (
                     <button key={String(val)} onClick={() => setToOther(val)}
@@ -1279,27 +1333,57 @@ export default function WritePage() {
               )}
 
               <section className={`write-email-preview ${emailTheme}`}>
-                <div className="write-email-preview-kicker">이메일 미리보기</div>
-                <div className="write-email-preview-card">
-                  <div className="write-email-preview-head">
-                    <span>{previewTypeLabel}</span>
-                    <em>{previewSchedule}</em>
-                  </div>
-                  <strong>{previewSubject}</strong>
-                  <p>
-                    안녕하세요, {previewRecipient}님.<br />
-                    {previewSender}님이 남겨 주신 마음이 도착합니다.
-                  </p>
-                  <div className="write-email-preview-body">
-                    {previewSnippet}
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  className={`write-email-preview-toggle ${showEmailPreview ? 'is-open' : ''}`}
+                  onClick={toggleEmailPreview}
+                  disabled={emailPreviewLoading || drawUploading}
+                  aria-expanded={showEmailPreview}
+                >
+                  <span>{showEmailPreview ? '이메일 미리보기 닫기' : '이메일 미리보기 보기'}</span>
+                  <em>{emailPreviewLoading || drawUploading ? '만드는 중' : '실제 발송 화면'}</em>
+                </button>
+
+                <AnimatePresence initial={false}>
+                  {showEmailPreview && (
+                    <motion.div
+                      className="write-email-preview-frame-wrap"
+                      initial={{ opacity: 0, height: 0, y: -6 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -6 }}
+                      transition={{ duration: 0.24, ease }}
+                    >
+                      <div className="write-email-preview-toolbar">
+                        <span>메일 제목</span>
+                        <strong>{emailPreview.subject || '미리보기를 준비하고 있습니다'}</strong>
+                        <button type="button" onClick={loadEmailPreview} disabled={emailPreviewLoading || drawUploading}>
+                          새로고침
+                        </button>
+                      </div>
+
+                      {emailPreviewError ? (
+                        <div className="write-email-preview-message">{emailPreviewError}</div>
+                      ) : (
+                        <div className="write-email-preview-frame">
+                          {emailPreviewLoading || drawUploading ? (
+                            <div className="write-email-preview-message">이메일 화면을 만들고 있습니다...</div>
+                          ) : (
+                            <div
+                              className="write-email-preview-document"
+                              dangerouslySetInnerHTML={{ __html: emailPreview.html }}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </section>
 
               {/* 버튼 */}
               <div className="write-modal-actions">
                 <motion.button whileHover={{ background: 'rgba(255,255,255,0.14)' }}
-                  onClick={() => setShowModal(false)}
+                  onClick={() => { setShowModal(false); setShowEmailPreview(false); }}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', backdropFilter: 'blur(6px)', transition: 'all 0.3s' }}>
                   취소
                 </motion.button>

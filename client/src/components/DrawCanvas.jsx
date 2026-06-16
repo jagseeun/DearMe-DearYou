@@ -73,7 +73,7 @@ function DrawToolIcon({ name }) {
   );
 }
 
-export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasReady }) {
+export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasReady, onCanvasChange }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const lastPos = useRef(null);
@@ -150,6 +150,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     const prev = historyRef.current[historyRef.current.length - 1];
     getDrawContext(canvas).putImageData(prev, 0, 0);
     if (historyRef.current.length === 1) setDrawn(false);
+    onCanvasChange?.();
   }
 
   function getPos(e, canvas) {
@@ -207,6 +208,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     }
     lastPos.current = null;
     saveHistory();
+    onCanvasChange?.();
   }
 
   function clear() {
@@ -218,6 +220,7 @@ export default function DrawCanvas({ initialImageUrl = '', onHasDrawn, onCanvasR
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     historyRef.current = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
     setDrawn(false);
+    onCanvasChange?.();
   }
 
   return (

@@ -925,6 +925,48 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
   });
 }
 
+function buildLetterEmailPreview({ user, body, accountEmail }) {
+  const type = String(body.type || "text").trim().toLowerCase();
+  const content = typeof body.content === "string" ? body.content : "";
+  const recipientEmail = String(body.recipientEmail || "").trim().toLowerCase();
+  const recipientName = String(body.recipientName || "").trim();
+  const emailSubject = normalizeEmailSubject(body.emailSubject);
+  const emailTheme = normalizeEmailTheme(body.emailTheme);
+  const parsedOpenDate = parseOpenDate(body.openDate) || new Date();
+  const senderName = String(user?.name || "나").trim() || "나";
+  const isToOther = Boolean(body.toOther || recipientEmail);
+  const previewRecipientName = isToOther
+    ? (recipientName || recipientEmail || "받을 사람")
+    : senderName;
+  const previewRecipientEmail = isToOther ? recipientEmail : accountEmail;
+  const cleanVideoUrl = type === "video" && body.videoUrl ? normalizePublicAssetUrl(body.videoUrl) : null;
+  const cleanImageUrl = (type === "draw" || type === "text") && body.imageUrl
+    ? normalizePublicAssetUrl(body.imageUrl)
+    : null;
+  const cleanSignatureUrl = type === "text" && body.signatureData
+    ? normalizePublicAssetUrl(body.signatureData)
+    : null;
+  const createdAt = new Date();
+  const meta = {
+    emailSubject,
+    recipientName: previewRecipientName,
+    recipientEmail: previewRecipientEmail,
+    senderName,
+    senderEmail: user?.email || "",
+    createdAt,
+    deliveredAt: parsedOpenDate <= createdAt ? createdAt : null,
+    openDate: parsedOpenDate,
+  };
+  const subject = mailHeader(emailSubject || recipientArrivalSubject({ type, isToOther, senderName }));
+  const html = type === "video"
+    ? buildVideoEmail(previewRecipientName, senderName, cleanVideoUrl, parsedOpenDate, isToOther, emailTheme, meta)
+    : type === "draw"
+      ? buildDrawEmail(previewRecipientName, senderName, cleanImageUrl, parsedOpenDate, isToOther, emailTheme, meta)
+      : buildTextEmail(previewRecipientName, senderName, content, parsedOpenDate, isToOther, cleanImageUrl, cleanSignatureUrl, emailTheme, meta);
+
+  return { subject, html };
+}
+
 function pickRandom(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
@@ -2003,6 +2045,43 @@ app.delete("/letter-draft", writeLimiter, async (req, res) => {
   } catch (err) {
     console.error("letter draft delete error:", err);
     res.status(500).json({ message: "초안을 삭제하지 못했습니다." });
+  }
+});
+
+app.post("/letter-email-preview", writeLimiter, async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
+
+  const type = String(req.body.type || "text").trim().toLowerCase();
+  const content = typeof req.body.content === "string" ? req.body.content : "";
+  const recipientEmail = String(req.body.recipientEmail || "").trim().toLowerCase();
+  const recipientName = String(req.body.recipientName || "").trim();
+  const emailSubject = normalizeEmailSubject(req.body.emailSubject);
+
+  if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
+  if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
+  if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (req.body.openDate && !parseOpenDate(req.body.openDate)) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
+  if (req.body.videoUrl && !normalizePublicAssetUrl(req.body.videoUrl)) return res.status(400).json({ message: "영상 URL을 확인할 수 없습니다." });
+  if (req.body.imageUrl && !normalizePublicAssetUrl(req.body.imageUrl)) return res.status(400).json({ message: "이미지 URL을 확인할 수 없습니다." });
+  if (req.body.signatureData && !normalizePublicAssetUrl(req.body.signatureData)) return res.status(400).json({ message: "서명 이미지 URL을 확인할 수 없습니다." });
+
+  try {
+    const member = await prisma.member.findUnique({
+      where: { id: req.session.user.id },
+      select: { email: true },
+    });
+    const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
+    const preview = buildLetterEmailPreview({
+      user: { ...req.session.user, email: accountEmail },
+      body: req.body,
+      accountEmail,
+    });
+    res.json(preview);
+  } catch (err) {
+    console.error("letter email preview error:", err);
+    res.status(500).json({ message: "이메일 미리보기를 만들지 못했습니다." });
   }
 });
 
