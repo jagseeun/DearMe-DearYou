@@ -17967,3 +17967,34 @@ input:disabled,
   -webkit-text-fill-color: rgba(255, 231, 239, 0.58) !important;
   text-shadow: 0 1px 5px rgba(24, 13, 28, 0.22) !important;
 }
+
+/* Centering lock for absolute inline buttons. Global hover transforms must not move them. */
+.password-toggle,
+.password-toggle:hover,
+.password-toggle:focus-visible,
+.password-toggle:active,
+.check-btn,
+.check-btn:hover,
+.check-btn:focus-visible,
+.check-btn:active {
+  top: 50% !important;
+  bottom: auto !important;
+  translate: 0 -50% !important;
+  transform: none !important;
+  scale: 1 !important;
+  rotate: 0deg !important;
+}
+
+.password-toggle,
+.password-toggle:hover,
+.password-toggle:focus-visible,
+.password-toggle:active {
+  right: 8px !important;
+}
+
+.check-btn,
+.check-btn:hover,
+.check-btn:focus-visible,
+.check-btn:active {
+  right: 6px !important;
+}
