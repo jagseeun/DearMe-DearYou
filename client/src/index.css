@@ -18593,3 +18593,119 @@ input:disabled,
     display: none !important;
   }
 }
+
+/* Inline input controls: align buttons from their input row, not page coordinates. */
+.password-field,
+.signup-page .input-group {
+  display: grid !important;
+  align-items: center !important;
+}
+
+.password-field > input,
+.password-field > .password-toggle,
+.signup-page .input-group > .input-field,
+.signup-page .input-group > .check-btn {
+  grid-area: 1 / 1 !important;
+}
+
+.password-field > input,
+.signup-page .input-group > .input-field {
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.password-field > .password-toggle,
+.signup-page .input-group > .check-btn {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  align-self: center !important;
+  justify-self: end !important;
+  transform: none !important;
+  translate: none !important;
+  scale: 1 !important;
+  rotate: 0deg !important;
+  z-index: 2 !important;
+}
+
+.password-field > .password-toggle {
+  margin-right: 8px !important;
+}
+
+.signup-page .input-group > .check-btn {
+  margin-right: 6px !important;
+}
+
+.password-field > .password-toggle:hover,
+.password-field > .password-toggle:focus-visible,
+.password-field > .password-toggle:active,
+.signup-page .input-group > .check-btn:hover,
+.signup-page .input-group > .check-btn:focus-visible,
+.signup-page .input-group > .check-btn:active {
+  transform: none !important;
+  translate: none !important;
+  scale: 1 !important;
+  rotate: 0deg !important;
+}
+
+/* Email preview: use a readable preview window and scroll the email itself when needed. */
+.write-modal-panel.has-email-preview {
+  width: min(760px, calc(100vw - 32px)) !important;
+  max-width: min(760px, calc(100vw - 32px)) !important;
+  max-height: calc(100dvh - 32px) !important;
+  align-items: stretch !important;
+}
+
+.write-modal-panel.has-email-preview > div,
+.write-modal-panel.has-email-preview .write-email-preview {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.write-modal-panel.has-email-preview .write-email-preview-frame {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 224, 180, 0.58) rgba(255, 255, 255, 0.06);
+  scrollbar-gutter: stable;
+}
+
+.write-email-preview-scale-box {
+  position: relative;
+  width: 100%;
+  min-height: 1px;
+}
+
+.write-modal-panel.has-email-preview .write-email-preview-frame::-webkit-scrollbar {
+  width: 9px;
+}
+
+.write-modal-panel.has-email-preview .write-email-preview-frame::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.write-modal-panel.has-email-preview .write-email-preview-frame::-webkit-scrollbar-thumb {
+  min-height: 48px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, rgba(255, 230, 190, 0.72), rgba(205, 154, 99, 0.56))
+    border-box;
+  background-clip: padding-box;
+}
+
+@media (max-width: 760px) {
+  .write-modal-panel.has-email-preview {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    padding: 22px 16px calc(20px + env(safe-area-inset-bottom)) !important;
+  }
+}

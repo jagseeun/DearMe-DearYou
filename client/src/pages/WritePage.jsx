@@ -428,6 +428,7 @@ export default function WritePage() {
   const [emailPreviewError, setEmailPreviewError] = useState('');
   const [emailPreviewScale, setEmailPreviewScale] = useState(0.6);
   const [emailPreviewHeight, setEmailPreviewHeight] = useState(0);
+  const [emailPreviewFrameHeight, setEmailPreviewFrameHeight] = useState(0);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -491,17 +492,43 @@ export default function WritePage() {
       const frameWidth = frame.clientWidth || 1;
       const contentWidth = documentEl.scrollWidth || 700;
       const contentHeight = documentEl.scrollHeight || 1;
-      const maxHeight = window.innerWidth <= 520 ? 318 : 392;
-      const nextScale = Math.min(1, frameWidth / contentWidth, maxHeight / contentHeight);
-      const safeScale = Math.max(0.32, Number(nextScale.toFixed(3)));
+      const nextScale = Math.min(1, frameWidth / contentWidth);
+      const safeScale = Number(nextScale.toFixed(3));
+      const scaledHeight = Math.ceil(contentHeight * safeScale);
+      const frameLimit = window.innerWidth <= 520
+        ? Math.max(260, Math.min(380, window.innerHeight - 220))
+        : Math.max(360, Math.min(560, window.innerHeight - 210));
+      const frameFloor = window.innerWidth <= 520 ? 260 : 340;
+      const nextFrameHeight = scaledHeight <= frameFloor
+        ? scaledHeight
+        : Math.min(scaledHeight, frameLimit);
+
       setEmailPreviewScale(safeScale);
-      setEmailPreviewHeight(Math.ceil(contentHeight * safeScale));
+      setEmailPreviewHeight(scaledHeight);
+      setEmailPreviewFrameHeight(Math.max(1, nextFrameHeight));
     }
 
     frameId = requestAnimationFrame(fitPreview);
+    const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fitPreview);
+    if (resizeObserver) {
+      if (emailPreviewFrameRef.current) resizeObserver.observe(emailPreviewFrameRef.current);
+      if (emailPreviewDocumentRef.current) resizeObserver.observe(emailPreviewDocumentRef.current);
+    }
+    const previewImages = Array.from(emailPreviewDocumentRef.current?.querySelectorAll('img') || []);
+    previewImages.forEach(image => {
+      image.addEventListener('load', fitPreview);
+      image.addEventListener('error', fitPreview);
+    });
+    const delayedFit = window.setTimeout(fitPreview, 300);
     window.addEventListener('resize', fitPreview);
     return () => {
       cancelAnimationFrame(frameId);
+      window.clearTimeout(delayedFit);
+      resizeObserver?.disconnect();
+      previewImages.forEach(image => {
+        image.removeEventListener('load', fitPreview);
+        image.removeEventListener('error', fitPreview);
+      });
       window.removeEventListener('resize', fitPreview);
     };
   }, [showEmailPreview, emailPreviewLoading, emailPreview.html]);
@@ -754,6 +781,8 @@ export default function WritePage() {
   async function loadEmailPreview() {
     setEmailPreviewLoading(true);
     setEmailPreviewError('');
+    setEmailPreviewHeight(0);
+    setEmailPreviewFrameHeight(0);
 
     try {
       let previewImageUrl = mode === 'draw' ? (drawPreviewImageUrl || drawDraftImageUrl) : imageUrl;
@@ -1247,7 +1276,7 @@ export default function WritePage() {
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
           >
             <motion.div
-              className="write-modal-panel"
+              className={`write-modal-panel ${showEmailPreview ? 'has-email-preview' : ''}`}
               role="dialog"
               aria-label="편지 전송 설정"
               aria-modal="true"
@@ -1407,17 +1436,19 @@ export default function WritePage() {
                           className="write-email-preview-frame"
                           style={{
                             '--email-preview-scale': emailPreviewScale,
-                            height: emailPreviewLoading || drawUploading ? undefined : (emailPreviewHeight || undefined),
+                            height: emailPreviewLoading || drawUploading ? undefined : (emailPreviewFrameHeight || undefined),
                           }}
                         >
                           {emailPreviewLoading || drawUploading ? (
                             <div className="write-email-preview-message">이메일 화면을 만들고 있습니다...</div>
                           ) : (
-                            <div
-                              ref={emailPreviewDocumentRef}
-                              className="write-email-preview-document"
-                              dangerouslySetInnerHTML={{ __html: emailPreview.html }}
-                            />
+                            <div className="write-email-preview-scale-box" style={{ height: emailPreviewHeight || undefined }}>
+                              <div
+                                ref={emailPreviewDocumentRef}
+                                className="write-email-preview-document"
+                                dangerouslySetInnerHTML={{ __html: emailPreview.html }}
+                              />
+                            </div>
                           )}
                         </div>
                       )}
