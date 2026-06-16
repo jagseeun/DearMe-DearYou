@@ -927,7 +927,7 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
       <div style="padding:34px 28px 40px">
         <div style="font-size:16px;font-weight:400;color:#ead9e5;margin:0 0 20px;line-height:1.7;overflow-wrap:anywhere;word-break:break-all">${title}</div>
         <div style="box-sizing:border-box;width:100%;max-width:100%;padding:28px 26px;border:1px solid rgba(237,208,228,0.14);border-radius:16px;background:#2b2038;box-shadow:inset 0 1px 0 rgba(255,232,246,0.07);color:#f6eaf1;font-size:15px;line-height:2.08;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-all">${content}</div>
-        <div style="margin-top:20px;text-align:right;font-size:14px;color:#d7c2d2;line-height:1.75;overflow-wrap:anywhere;word-break:break-all">${teacherName || "선생님"}</div>
+        <div style="margin-top:20px;text-align:left;font-size:14px;color:#d7c2d2;line-height:1.75;overflow-wrap:anywhere;word-break:break-all">${teacherName || "선생님"}</div>
       </div>
       <div style="padding:0 40px 36px;text-align:center;font-size:11.5px;font-weight:300;letter-spacing:0.12em;color:rgba(214,190,210,0.28)">Dear Me; Dear You</div>
     </div>
