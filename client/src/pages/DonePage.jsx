@@ -19,14 +19,14 @@ export default function DonePage() {
       return {
         kind: 'failed',
         title: '편지는 저장했지만 이메일은 보내지 못했습니다',
-        message: delivery?.message || '관리자 화면에서 다시 발송하실 수 있습니다.',
+        message: delivery?.message || '관리자 화면에서 다시 보낼 수 있습니다.',
       };
     }
     if (deliveryAccepted) {
       return {
         kind: 'success',
         title: '편지를 이메일로 보냈습니다',
-        message: '받은편지함에서 보이지 않으면 스팸함도 함께 확인해 주세요.',
+        message: '메일함을 확인해 주세요.',
       };
     }
     return {

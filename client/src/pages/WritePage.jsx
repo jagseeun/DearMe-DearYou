@@ -113,6 +113,13 @@ function tomorrow() {
   return d.toISOString().split('T')[0];
 }
 
+function formatPreviewDate(value) {
+  if (!value) return '선택한 날';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '선택한 날';
+  return date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 // ── 글자 하나씩 페이드인 글 편지 입력 컴포넌트 ──
 function AnimatedTextarea({ value, onChange, placeholder }) {
   const textareaRef = useRef(null);
@@ -393,7 +400,7 @@ export default function WritePage() {
   const photoVideoRef = useRef(null);
   const photoStreamRef = useRef(null);
 
-  // 그림 편지 편지
+  // 그림 편지
   const [drawCanvasEl, setDrawCanvasEl] = useState(null);
   const [drawHasDrawn, setDrawHasDrawn] = useState(false);
   const [drawUploading, setDrawUploading] = useState(false);
@@ -420,6 +427,19 @@ export default function WritePage() {
   const [draft, setDraft] = useState(null);
   const [draftSaving, setDraftSaving] = useState(false);
   const [notice, setNotice] = useState(null);
+
+  const previewRecipient = toOther
+    ? (recipientName.trim() || recipientEmail.trim() || '받을 사람')
+    : (name || '나');
+  const previewSender = name || '나';
+  const previewSubject = emailSubject.trim() || `${previewSender}님의 편지가 도착했습니다`;
+  const previewSchedule = sendNow ? '바로 발송' : `${formatPreviewDate(openDate)} 발송 예정`;
+  const previewTypeLabel = mode === 'video' ? '영상 편지' : mode === 'draw' ? '그림 편지' : '글 편지';
+  const previewSnippet = mode === 'video'
+    ? '영상 편지는 이메일 안의 버튼으로 열어 볼 수 있습니다.'
+    : mode === 'draw'
+      ? '그림 편지는 이메일 안에서 바로 확인할 수 있습니다.'
+      : (text.trim() || '편지 내용이 이곳에 미리 표시됩니다.').slice(0, 120);
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -708,8 +728,8 @@ export default function WritePage() {
 
   async function handleFromMe() {
     if (mode === 'text' && !text.trim()) return showNotice('편지에 남길 내용을 입력해 주세요.');
-    if (mode === 'video' && !videoUrl) return showNotice('먼저 영상 편지 편지를 촬영해 주세요.');
-    if (mode === 'draw' && !drawHasDrawn) return showNotice('그림 편지 편지에 남길 그림 편지을 그려 주세요.');
+    if (mode === 'video' && !videoUrl) return showNotice('먼저 영상 편지를 촬영해 주세요.');
+    if (mode === 'draw' && !drawHasDrawn) return showNotice('그림 편지에 남길 그림을 그려 주세요.');
     setNotice(null);
     setShowModal(true);
   }
@@ -740,7 +760,7 @@ export default function WritePage() {
         finalSignature = await uploadSignature(signatureData);
       }
 
-      // 그림 편지 편지 캔버스 업로드
+      // 그림 편지 캔버스 업로드
       let drawImageUrl;
       if (mode === 'draw') {
         drawImageUrl = await uploadCanvas();
@@ -1144,7 +1164,7 @@ export default function WritePage() {
               style={{ background: 'rgba(30,40,55,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 28, padding: '44px 52px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22, minWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}
             >
               <div style={{ order: -1, fontSize: 32, fontWeight: 400, color: '#e9dcc6', textShadow: '0 0 12px rgba(255,252,223,.3)' }}>
-                이 편지를 어떻게 보관할까요?
+                편지 전송 설정
               </div>
 
               {/* 열람일 */}
@@ -1162,7 +1182,7 @@ export default function WritePage() {
                 </div>
                 {sendNow ? (
                   <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', color: 'rgba(255,252,223,0.72)' }}>
-                    저장 후 바로 이메일을 보냅니다
+                    이메일을 바로 보냅니다
                   </div>
                 ) : (
                   <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
@@ -1258,6 +1278,24 @@ export default function WritePage() {
                 </div>
               )}
 
+              <section className={`write-email-preview ${emailTheme}`}>
+                <div className="write-email-preview-kicker">이메일 미리보기</div>
+                <div className="write-email-preview-card">
+                  <div className="write-email-preview-head">
+                    <span>{previewTypeLabel}</span>
+                    <em>{previewSchedule}</em>
+                  </div>
+                  <strong>{previewSubject}</strong>
+                  <p>
+                    안녕하세요, {previewRecipient}님.<br />
+                    {previewSender}님이 남겨 주신 마음이 도착합니다.
+                  </p>
+                  <div className="write-email-preview-body">
+                    {previewSnippet}
+                  </div>
+                </div>
+              </section>
+
               {/* 버튼 */}
               <div className="write-modal-actions">
                 <motion.button whileHover={{ background: 'rgba(255,255,255,0.14)' }}
@@ -1268,7 +1306,7 @@ export default function WritePage() {
                 <motion.button whileHover={{ scale: 1.018, boxShadow: '0 0 24px rgba(231,207,161,.7)' }}
                   onClick={handleSave} disabled={saving}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: 'none', background: 'linear-gradient(135deg, #e7cfa1, #cfa874)', color: '#2b1e10', boxShadow: '0 0 16px rgba(231,207,161,.4)', transition: 'all 0.3s', opacity: saving ? 0.6 : 1 }}>
-                  {saving ? '저장 중...' : '보관하기'}
+                  {saving ? '전송 중...' : '전송하기'}
                 </motion.button>
               </div>
             </motion.div>
