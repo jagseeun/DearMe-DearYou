@@ -3,16 +3,19 @@ import { useEffect, useRef, useState } from 'react';
 const PALETTE = [
   '#000000', '#2a1a0a', '#5a3a1a', '#8b5e3c',
   '#cd9a63', '#e8c99a', '#fffcdf', '#ffffff',
+  '#f7d7c4', '#f5b7b1', '#e89aa8', '#b76e79',
   '#c0392b', '#e74c3c', '#e67e22', '#f39c12',
-  '#f1c40f', '#27ae60', '#2ecc71', '#16a085',
-  '#2980b9', '#3498db', '#1a1a2e', '#34495e',
-  '#8e44ad', '#9b59b6', '#d87093', '#ff9fb2',
+  '#f1c40f', '#f7dc6f', '#b9d77a', '#7fb069',
+  '#27ae60', '#2ecc71', '#16a085', '#9adbc8',
+  '#2980b9', '#3498db', '#82ccdd', '#a8d8ff',
+  '#1a1a2e', '#34495e', '#6c7a89', '#aeb6bf',
+  '#8e44ad', '#9b59b6', '#c8a2c8', '#d87093',
 ];
 
 const BRUSH_SIZES = [
-  { value: 2, dot: 5, label: '얇은 선' },
-  { value: 5, dot: 9, label: '보통 선' },
-  { value: 12, dot: 15, label: '굵은 선' },
+  { value: 5, dot: 7, label: '얇은 선' },
+  { value: 12, dot: 13, label: '보통 선' },
+  { value: 24, dot: 21, label: '굵은 선' },
 ];
 
 const CANVAS_BG = '#fffafd';
