@@ -2,6 +2,36 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { Navigate, useLocation } from 'react-router-dom';
 
 const AuthContext = createContext(null);
+const LETTER_AUTH_STORAGE_KEY = 'dearme.letterAuthUser';
+let rememberedLetterAuthUser = '';
+
+export function clearLetterAuth() {
+  rememberedLetterAuthUser = '';
+  try {
+    sessionStorage.removeItem(LETTER_AUTH_STORAGE_KEY);
+  } catch {
+    // Ignore storage errors in restricted browser contexts.
+  }
+}
+
+export function rememberLetterAuth(user) {
+  const userid = user?.userid || '';
+  rememberedLetterAuthUser = userid;
+  try {
+    if (userid) sessionStorage.setItem(LETTER_AUTH_STORAGE_KEY, userid);
+  } catch {
+    // Ignore storage errors in restricted browser contexts.
+  }
+}
+
+function hasRememberedLetterAuth(user) {
+  if (user?.userid && rememberedLetterAuthUser === user.userid) return true;
+  try {
+    return Boolean(user?.userid) && sessionStorage.getItem(LETTER_AUTH_STORAGE_KEY) === user.userid;
+  } catch {
+    return false;
+  }
+}
 
 const loadingFrameStyle = {
   position: 'fixed',
@@ -61,6 +91,7 @@ export function AuthProvider({ children }) {
     try {
       const res = await fetch('/get-user-info', { cache: 'no-store' });
       if (res.status === 401) {
+        clearLetterAuth();
         setUser(null);
         setStatus('guest');
         return null;
@@ -71,6 +102,7 @@ export function AuthProvider({ children }) {
       setStatus('authenticated');
       return data;
     } catch {
+      clearLetterAuth();
       setUser(null);
       setStatus('guest');
       return null;
@@ -79,6 +111,15 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     refresh();
+  }, [refresh]);
+
+  useEffect(() => {
+    function handlePageShow() {
+      refresh();
+    }
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
   }, [refresh]);
 
   const value = useMemo(() => ({ user, status, refresh }), [user, status, refresh]);
@@ -100,11 +141,14 @@ export function ProtectedRoute({ children, requireAdmin = false, requireDevelope
   const { status, user } = useAuth();
   const location = useLocation();
   const letterPath = ['/letters', '/pink-letters', '/view-letter'].some(path => location.pathname.startsWith(path));
+  const from = `${location.pathname}${location.search}`;
 
   if (status === 'checking') return <AuthLoading pink={letterPath} />;
   if (status !== 'authenticated') {
-    const from = `${location.pathname}${location.search}`;
     return <Navigate to={letterPath ? '/letter-login' : '/login'} replace state={{ from }} />;
+  }
+  if (letterPath && !hasRememberedLetterAuth(user)) {
+    return <Navigate to="/letter-login" replace state={{ from, forceLogin: true }} />;
   }
   if (requireAdmin && !user?.isAdmin) return <Navigate to="/" replace />;
   if (requireDeveloper && !user?.isDeveloper) return <Navigate to="/" replace />;

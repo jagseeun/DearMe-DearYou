@@ -501,6 +501,18 @@ canvas {
   margin-top: -22px;
 }
 
+.home-session-note {
+  width: 100%;
+  max-width: 380px;
+  margin: 0;
+  color: rgba(255, 238, 205, 0.62);
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.55;
+  text-align: center;
+  word-break: keep-all;
+}
+
 .hello-shell {
   position: relative;
   z-index: 1;

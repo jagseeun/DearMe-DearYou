@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
-import { useAuth } from '../auth.jsx';
+import { rememberLetterAuth, useAuth } from '../auth.jsx';
 
 const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.055 } } };
@@ -18,15 +18,16 @@ export default function LoginPage({ letterMode = false }) {
   const [password, setPassword] = useState('');
   const [notice, setNotice] = useState(null);
   const isLetterMode = letterMode || location.pathname === '/letter-login';
+  const forceLogin = Boolean(location.state?.forceLogin);
   const returnTo = typeof location.state?.from === 'string'
     ? location.state.from
     : isLetterMode ? '/letters' : '/hello';
 
   useEffect(() => {
-    if (status === 'authenticated' && isLetterMode) {
+    if (status === 'authenticated' && isLetterMode && !forceLogin) {
       navigate(returnTo, { replace: true });
     }
-  }, [status, isLetterMode, navigate, returnTo]);
+  }, [status, isLetterMode, forceLogin, navigate, returnTo]);
 
   async function handleLogin() {
     const nextUserid = userid.trim();
@@ -42,7 +43,8 @@ export default function LoginPage({ letterMode = false }) {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        await refresh();
+        const currentUser = await refresh();
+        rememberLetterAuth(currentUser);
         navigate(returnTo, { replace: true });
       }
       else setNotice({ title: '로그인 실패', message: data.message || '로그인에 실패했습니다.' });

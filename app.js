@@ -1280,17 +1280,35 @@ const publicUploadLimiter = rateLimit({
   message: { message: "이미지 업로드 요청이 너무 많습니다. 잠시 후 다시 시도해주세요." },
 });
 
+function setNoStoreHeaders(res) {
+  const headers = {
+    "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+    Pragma: "no-cache",
+    Expires: "0",
+    "Surrogate-Control": "no-store",
+  };
+
+  if (typeof res.set === "function") {
+    res.set(headers);
+    return;
+  }
+
+  Object.entries(headers).forEach(([key, value]) => {
+    res.setHeader(key, value);
+  });
+}
+
 app.use(express.json({ limit: "1mb" }));
 app.use((req, res, next) => {
   if (req.path === "/" || req.path.endsWith(".html")) {
-    res.set("Cache-Control", "no-store");
+    setNoStoreHeaders(res);
   }
   next();
 });
 app.use(express.static(path.resolve("client/dist"), {
   setHeaders(res, filePath) {
     if (filePath.endsWith("index.html")) {
-      res.set("Cache-Control", "no-store");
+      setNoStoreHeaders(res);
     }
   },
 }));
@@ -1466,6 +1484,7 @@ app.post("/login", authLimiter, async (req, res) => {
 
 // 4. 유저 정보 (이름 + 이메일)
 app.get("/get-user-info", (req, res) => {
+  setNoStoreHeaders(res);
   if (!req.session.user) return res.status(401).json({ message: "로그인 필요" });
   res.json({
     userid: req.session.user.userid,
@@ -1534,6 +1553,7 @@ app.get("/developer/support-messages", requireDeveloper, async (_req, res) => {
 
 // 5. 로그아웃
 app.get("/logout", (req, res) => {
+  setNoStoreHeaders(res);
   req.session.destroy(() => {
     res.clearCookie(SESSION_COOKIE_NAME, {
       httpOnly: true,
@@ -1877,7 +1897,6 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
 
   const type = String(req.body.type || "text").trim().toLowerCase();
   const content = typeof req.body.content === "string" ? req.body.content : "";
-  const deliveryEmail = String(req.body.deliveryEmail || req.body.email || "").trim().toLowerCase();
   const recipientEmail = String(req.body.recipientEmail || "").trim().toLowerCase();
   const recipientName = String(req.body.recipientName || "").trim();
   const emailSubject = normalizeEmailSubject(req.body.emailSubject);
@@ -1887,7 +1906,6 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
 
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (deliveryEmail && !isValidEmail(deliveryEmail)) return res.status(400).json({ message: "발송 이메일 형식이 올바르지 않습니다." });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받는 사람 이메일 형식이 올바르지 않습니다." });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
@@ -1902,6 +1920,13 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
   if (signatureData && signatureData.length > 600000) return res.status(400).json({ message: "서명 데이터가 너무 큽니다." });
 
   try {
+    const member = await prisma.member.findUnique({
+      where: { id: req.session.user.id },
+      select: { email: true },
+    });
+    const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
+    const draftDeliveryEmail = toOther ? null : (accountEmail || null);
+
     const draft = await prisma.letterDraft.upsert({
       where: { authorId: req.session.user.id },
       create: {
@@ -1911,7 +1936,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
         videoUrl,
         imageUrl,
         signatureData,
-        deliveryEmail: deliveryEmail || null,
+        deliveryEmail: draftDeliveryEmail,
         emailSubject: emailSubject || null,
         emailTheme,
         recipientEmail: toOther ? (recipientEmail || null) : null,
@@ -1925,7 +1950,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
         videoUrl,
         imageUrl,
         signatureData,
-        deliveryEmail: deliveryEmail || null,
+        deliveryEmail: draftDeliveryEmail,
         emailSubject: emailSubject || null,
         emailTheme,
         recipientEmail: toOther ? (recipientEmail || null) : null,
@@ -1975,7 +2000,6 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   const type = String(req.body.type || "text");
   const content = typeof req.body.content === "string" ? req.body.content : "";
   const openDate = req.body.openDate;
-  const email = String(req.body.email || "").trim().toLowerCase();
   const recipientEmail = String(req.body.recipientEmail || "").trim().toLowerCase();
   const recipientName = String(req.body.recipientName || "").trim();
   const emailSubject = normalizeEmailSubject(req.body.emailSubject);
@@ -2004,17 +2028,17 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   maxOpenDate.setFullYear(maxOpenDate.getFullYear() + 100);
   if (parsedOpenDate > maxOpenDate) return res.status(400).json({ message: "개봉일은 100년 이내로 선택해주세요." });
 
-  if (email && !isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientName && !recipientEmail) return res.status(400).json({ message: "받는 사람 이메일을 입력해주세요." });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받는 사람 이메일 형식이 올바르지 않습니다." });
 
   try {
-    if (email) {
-      await prisma.member.update({ where: { id: authorId }, data: { email } });
-      req.session.user.email = email;
-    }
+    const member = await prisma.member.findUnique({
+      where: { id: authorId },
+      select: { email: true },
+    });
+    const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
 
     const letter = await prisma.letter.create({
       data: {
@@ -2023,7 +2047,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
         videoUrl: cleanVideoUrl,
         imageUrl: cleanImageUrl,
         signatureData: cleanSignatureUrl,
-        deliveryEmail: recipientEmail || email || null,
+        deliveryEmail: recipientEmail || accountEmail || null,
         emailSubject: emailSubject || null,
         recipientEmail: recipientEmail || null,
         recipientName: recipientName || null,
@@ -2625,7 +2649,7 @@ app.get("/my-teacher-letter", async (req, res) => {
 
 // SPA 라우팅
 app.get("/{*splat}", (req, res) => {
-  res.set("Cache-Control", "no-store");
+  setNoStoreHeaders(res);
   res.sendFile(path.resolve("client/dist/index.html"));
 });
 

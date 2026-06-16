@@ -438,7 +438,7 @@ export default function WritePage() {
   }
 
   useEffect(() => {
-    fetch('/get-user-info')
+    fetch('/get-user-info', { cache: 'no-store' })
       .then(r => { if (r.status === 401) { navigate('/login'); return null; } return r.json(); })
       .then(d => { if (!d) return; if (d.email) setEmail(d.email); if (d.name) setName(d.name); })
       .catch(() => {});
@@ -627,8 +627,8 @@ export default function WritePage() {
     setImageUrl(nextMode === 'text' ? (nextDraft.imageUrl || '') : '');
     setDrawDraftImageUrl(nextMode === 'draw' ? (nextDraft.imageUrl || '') : '');
     setSignatureData(nextDraft.signatureData || null);
-    setEmail(nextDraft.deliveryEmail || email);
     setEmailTheme(nextDraft.emailTheme === 'pink' ? 'pink' : 'dark');
+    setEmail(email);
     setEmailSubject(nextDraft.emailSubject || '');
     setToOther(Boolean(nextDraft.toOther));
     setRecipientName(nextDraft.recipientName || '');
@@ -1205,7 +1205,14 @@ export default function WritePage() {
               {!toOther && (
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <label style={labelStyle}>✉ 발송 이메일 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(개봉일에 자동 발송)</span></label>
-                  <input type="email" placeholder="이메일 주소" value={email} onChange={e => setEmail(e.target.value)} style={inputStyle} />
+                  <input
+                    type="email"
+                    placeholder="이메일 주소"
+                    value={email}
+                    readOnly
+                    aria-readonly="true"
+                    style={{ ...inputStyle, cursor: 'default', opacity: 0.82 }}
+                  />
                 </div>
               )}
 

@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '../auth.jsx';
+import { clearLetterAuth, useAuth } from '../auth.jsx';
 
 const ease = [0.16, 1, 0.3, 1];
 
@@ -17,12 +18,12 @@ export default function IndexPage() {
   const navigate = useNavigate();
   const { status } = useAuth();
 
+  useEffect(() => {
+    clearLetterAuth();
+  }, []);
+
   function openLetterBox() {
-    if (status === 'authenticated') {
-      navigate('/letters');
-      return;
-    }
-    navigate('/letter-login', { state: { from: '/letters' } });
+    navigate('/letter-login', { state: { from: '/letters', forceLogin: true } });
   }
 
   return (
@@ -55,6 +56,11 @@ export default function IndexPage() {
         >
           편지 읽기
         </button>
+        {status === 'authenticated' && (
+          <motion.p variants={item} className="home-session-note">
+            공용 기기 보호를 위해 편지함은 다시 로그인한 뒤 열립니다.
+          </motion.p>
+        )}
       </motion.div>
 
       <motion.button

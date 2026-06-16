@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import fixWebmDuration from 'fix-webm-duration';
 import { formatDate, daysSince } from '../utils/dates.js';
+import { clearLetterAuth } from '../auth.jsx';
 
 const ease = [0.22, 1, 0.36, 1];
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
@@ -1036,6 +1037,11 @@ export default function LetterViewPage() {
     textShadow: isPink ? '0 1px 7px rgba(24,13,28,0.42)' : '0 1px 7px rgba(24,13,34,0.4)',
   };
 
+  function finishAndLogout() {
+    clearLetterAuth();
+    window.location.assign('/logout');
+  }
+
   const backBtnStyle = {
     position: 'absolute', top: 28, left: 36, zIndex: 10,
     padding: '8px 20px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer',
@@ -1299,7 +1305,7 @@ export default function LetterViewPage() {
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.018 }}
-                  onClick={() => navigate('/')}
+                  onClick={finishAndLogout}
                   style={btnStyle}>
                   마무리
                 </motion.button>
