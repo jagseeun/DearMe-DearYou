@@ -1293,7 +1293,7 @@ export default function LetterViewPage() {
                 </motion.button>
                 <motion.button
                   whileHover={{ scale: 1.018 }}
-                  onClick={() => navigate('/write')}
+                  onClick={() => navigate('/write', { state: { emailTheme: isPink ? 'pink' : 'dark' } })}
                   style={{ ...btnStyle, background: backBg, border: backBorder, color: backColor }}>
                   편지 쓰기
                 </motion.button>

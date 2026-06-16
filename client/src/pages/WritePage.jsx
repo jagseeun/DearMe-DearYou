@@ -366,12 +366,16 @@ const sigBtnStyle = {
 export default function WritePage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const queryMode = new URLSearchParams(location.search).get('mode');
+  const queryParams = new URLSearchParams(location.search);
+  const queryMode = queryParams.get('mode');
+  const queryTheme = queryParams.get('theme');
   const requestedMode = location.state?.mode || queryMode;
+  const requestedTheme = location.state?.emailTheme || queryTheme;
   const initialMode = ['text', 'video', 'draw'].includes(requestedMode)
     ? requestedMode
     : 'text';
   const [mode, setMode] = useState(initialMode);
+  const [emailTheme, setEmailTheme] = useState(requestedTheme === 'pink' ? 'pink' : 'dark');
   const [text, setText] = useState('');
   const [textBorderTone, setTextBorderTone] = useState(0);
 
@@ -403,7 +407,6 @@ export default function WritePage() {
   const [showModal, setShowModal] = useState(false);
   const [openDate, setOpenDate] = useState(defaultOpenDate());
   const [sendNow, setSendNow] = useState(false);
-  const emailTheme = 'dark';
   const [email, setEmail] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [name, setName] = useState('');
@@ -625,6 +628,7 @@ export default function WritePage() {
     setDrawDraftImageUrl(nextMode === 'draw' ? (nextDraft.imageUrl || '') : '');
     setSignatureData(nextDraft.signatureData || null);
     setEmail(nextDraft.deliveryEmail || email);
+    setEmailTheme(nextDraft.emailTheme === 'pink' ? 'pink' : 'dark');
     setEmailSubject(nextDraft.emailSubject || '');
     setToOther(Boolean(nextDraft.toOther));
     setRecipientName(nextDraft.recipientName || '');
