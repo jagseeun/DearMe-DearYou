@@ -18459,14 +18459,38 @@ input:disabled,
 
 @media (min-width: 761px) {
   .write-stage.write-stage-draw .draw-editor.draw-editor-clean {
+    display: grid !important;
     grid-template-columns: minmax(0, 1fr) 156px !important;
+    grid-template-rows: auto !important;
     gap: 16px !important;
+    align-items: stretch !important;
   }
 
   .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-toolbar {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
     width: 156px !important;
     max-width: 156px !important;
     align-self: stretch !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    overflow-y: visible !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    align-content: start !important;
+    gap: 12px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-palette {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    padding: 9px 7px !important;
+  }
+
+  .write-stage.write-stage-draw .draw-editor.draw-editor-clean .draw-size-group {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 }
 
