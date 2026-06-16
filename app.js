@@ -914,20 +914,20 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
   return `
   <div style="margin:0;padding:36px 16px 44px;background:#3d2249;background-image:linear-gradient(160deg,#3d2249 0%,#6b3a5a 20%,#8c5265 35%,#7a5878 55%,#4a4872 75%,#2e3560 90%,#1e2848 100%);font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;position:relative;overflow:hidden;color:#fff7ed">
     <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 40% at 15% 10%,rgba(220,160,180,0.18) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 80%,rgba(200,170,100,0.15) 0%,transparent 60%);pointer-events:none"></div>
-    <div style="max-width:640px;margin:0 auto;position:relative;z-index:1;background:rgba(24,12,38,0.5);border:1px solid rgba(220,190,230,0.18);border-radius:28px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,180,215,0.05),0 30px 80px rgba(10,4,22,0.55),inset 0 1px 0 rgba(245,210,232,0.12)">
-      <div style="padding:44px 40px 34px;text-align:center;border-bottom:1px solid rgba(255,180,210,0.1);background:rgba(255,255,255,0.025)">
-        <div style="margin-bottom:20px;color:rgba(232,196,222,0.32);font-size:8px;line-height:1;letter-spacing:14px">***</div>
-        <div style="font-size:26px;font-weight:300;letter-spacing:0.05em;line-height:1">
-          <span style="color:#efbfd4;text-shadow:0 0 16px rgba(236,140,190,0.22)">Dear Me</span>
-          <span style="margin:0 10px;color:rgba(220,190,230,0.36);font-weight:300">;</span>
-          <span style="color:#dcc6ee;text-shadow:0 0 16px rgba(180,145,220,0.2)">Dear You</span>
+    <div style="max-width:640px;margin:0 auto;position:relative;z-index:1;background:rgba(18,9,31,0.72);border:1px solid rgba(255,210,232,0.24);border-radius:28px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,190,220,0.08),0 30px 76px rgba(8,3,20,0.62),inset 0 1px 0 rgba(255,225,238,0.14)">
+      <div style="padding:44px 40px 34px;text-align:center;border-bottom:1px solid rgba(255,205,230,0.14);background:rgba(36,17,48,0.32)">
+        <div style="margin-bottom:20px;color:rgba(255,220,236,0.56);font-size:9px;line-height:1;letter-spacing:13px">***</div>
+        <div style="font-size:28px;font-weight:300;letter-spacing:0.04em;line-height:1">
+          <span style="color:#ffd3e6;text-shadow:0 0 14px rgba(255,150,205,0.34),0 0 32px rgba(255,190,220,0.15)">Dear Me</span>
+          <span style="margin:0 10px;color:rgba(246,221,234,0.58);font-weight:300">;</span>
+          <span style="color:#e7d7ff;text-shadow:0 0 14px rgba(194,155,240,0.3),0 0 32px rgba(210,180,255,0.12)">Dear You</span>
         </div>
-        <div style="width:52px;height:1px;margin:26px auto 0;background:linear-gradient(to right,transparent,rgba(220,175,210,0.32),transparent);box-shadow:0 0 6px rgba(205,150,195,0.18);line-height:1px"></div>
+        <div style="width:58px;height:1px;margin:26px auto 0;background:linear-gradient(to right,transparent,rgba(255,205,232,0.45),transparent);box-shadow:0 0 8px rgba(230,160,205,0.24);line-height:1px"></div>
       </div>
       <div style="padding:40px 42px 48px">
-        <div style="font-size:14px;font-weight:400;color:rgba(238,204,222,0.74);margin:0 0 22px;line-height:1.85">${title}</div>
-        <div style="padding:32px 34px;border:1px solid rgba(220,165,195,0.16);border-radius:16px;background:rgba(10,4,22,0.4);box-shadow:inset 0 1px 0 rgba(240,190,220,0.07);color:rgba(248,228,236,0.97);font-size:15px;line-height:2.15;white-space:pre-wrap">${content}</div>
-        <div style="margin-top:20px;text-align:right;font-size:13px;color:rgba(218,188,210,0.58);line-height:1.75">${teacherName || "선생님"}</div>
+        <div style="font-size:16px;font-weight:400;color:#ffe1ee;margin:0 0 22px;line-height:1.7">${title}</div>
+        <div style="padding:32px 34px;border:1px solid rgba(235,180,210,0.2);border-radius:16px;background:rgba(10,4,22,0.5);box-shadow:inset 0 1px 0 rgba(250,205,230,0.09);color:rgba(248,228,236,0.97);font-size:15px;line-height:2.15;white-space:pre-wrap">${content}</div>
+        <div style="margin-top:20px;text-align:right;font-size:14px;color:rgba(244,206,224,0.84);line-height:1.75">${teacherName || "선생님"}</div>
       </div>
       <div style="padding:0 40px 38px;text-align:center;font-size:11.5px;font-weight:300;letter-spacing:0.12em;color:rgba(190,158,210,0.32)">Dear Me; Dear You</div>
     </div>
