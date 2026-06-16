@@ -211,22 +211,22 @@ function letterKindLabel(type) {
 function plainArrivalLine({ type, isToOther, senderName }) {
   const kind = letterKindLabel(type);
   return isToOther
-    ? `${senderName}님이 남긴 ${kind}가 도착했습니다.`
-    : `나에게 남긴 ${kind}가 도착했습니다.`;
+    ? `${senderName}님이 남겨 주신 ${kind}가 조용히 도착했습니다.`
+    : `기다려 온 ${kind}가 조용히 도착했습니다.`;
 }
 
 function htmlArrivalLine({ type, isToOther, safeSenderName }) {
   const kind = letterKindLabel(type);
   return isToOther
-    ? `<strong>${safeSenderName}</strong>님이 남긴 ${kind}가 도착했습니다.`
-    : `나에게 남긴 ${kind}가 도착했습니다.`;
+    ? `<strong>${safeSenderName}</strong>님이 남겨 주신 ${kind}가 조용히 도착했습니다.`
+    : `기다려 온 ${kind}가 조용히 도착했습니다.`;
 }
 
 function recipientArrivalSubject({ type, isToOther, senderName }) {
   const kind = letterKindLabel(type);
   return isToOther
-    ? `${senderName}님의 ${kind}가 도착했습니다`
-    : `나에게 남긴 ${kind}가 도착했습니다`;
+    ? `${senderName}님이 남겨 주신 ${kind}가 도착했습니다`
+    : `기다려 온 ${kind}가 도착했습니다`;
 }
 
 async function sendBrevoMail(options) {
@@ -486,8 +486,8 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
               from: emailFromHeader,
               replyTo: emailReplyTo,
               to: letter.author.email,
-              subject: mailHeader(`${recipientName}에게 보낸 편지가 전달되었습니다`),
-              text: `안녕하세요, ${senderName}님.\n${recipientName}에게 보낸 편지가 오늘 전달되었습니다.\n\n${metaText}`,
+              subject: mailHeader(`${recipientName}님께 보낸 편지가 전달되었습니다`),
+              text: `안녕하세요, ${senderName}님.\n${recipientName}님께 보낸 편지가 오늘 조용히 전달되었습니다.\n소중히 남겨 두신 마음이 제자리까지 닿았습니다.\n\n${metaText}`,
               html: senderHtml,
             });
           } catch (notifyErr) {
@@ -831,20 +831,30 @@ function buildEmailShell({ theme, openDate, subtitle, body, maxWidth = 620 }) {
   </div>`;
 }
 
+function buildRecipientIntroHtml(safeRecipientName, headerMsg, themeStyles, align = "left") {
+  return `
+      <div style="text-align:${align};font-size:14px;color:${themeStyles.soft};line-height:1.9;margin-bottom:28px">
+        안녕하세요, <strong style="color:${themeStyles.text}">${safeRecipientName}</strong>님.<br>
+        ${headerMsg}<br>
+        오래 머문 마음을 천천히 열어 보세요.
+      </div>`;
+}
+
 function buildSenderNotifyEmail(senderName, recipientName, openDate, emailTheme = "dark", meta = {}) {
   const safeSenderName = escapeHtml(senderName);
   const safeRecipientName = escapeHtml(recipientName);
   return buildEmailShell({
     theme: emailTheme,
     openDate,
+    subtitle: "보낸 편지가 전달되었습니다",
     body: themeStyles => `
     <div style="padding:36px 40px 44px">
-      <div style="font-size:14px;color:${themeStyles.soft};line-height:1.85;margin-bottom:28px">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
+      <div style="font-size:14px;color:${themeStyles.soft};line-height:1.9;margin-bottom:28px">안녕하세요, <strong style="color:${themeStyles.text}">${safeSenderName}</strong>님.<br>보내신 편지가 <strong style="color:${themeStyles.text}">${safeRecipientName}</strong>님께 차분히 전달되었습니다.</div>
       ${buildLetterMetaHtml(meta, themeStyles)}
       <div style="padding:30px 32px;border:1px solid ${themeStyles.cardBorder};border-radius:16px;background:${themeStyles.cardBg};box-shadow:${themeStyles.cardShadow};color:${themeStyles.cardText};font-size:15px;line-height:2.1;white-space:pre-wrap">안녕하세요, ${safeSenderName}님.
 
-${safeRecipientName}님에게 보낸 편지가 오늘 전달되었습니다.
-소중한 마음이 조용히 도착했으니, 이제 마음 편히 놓아두셔도 괜찮습니다.</div>
+${safeRecipientName}님께 보낸 편지가 오늘 전달되었습니다.
+소중히 남겨 두신 마음이 제자리까지 닿았습니다.</div>
     </div>`,
   });
 }
@@ -863,7 +873,7 @@ function buildTextEmail(recipientName, senderName, content, openDate, isToOther,
     subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
     <div style="padding:36px 40px 44px">
-      <div style="font-size:14px;color:${themeStyles.soft};line-height:1.85;margin-bottom:28px">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
+      ${buildRecipientIntroHtml(safeRecipientName, headerMsg, themeStyles)}
       ${buildLetterMetaHtml(meta, themeStyles)}
       <div style="padding:30px 32px;border:1px solid ${themeStyles.cardBorder};border-radius:16px;background:${themeStyles.cardBg};box-shadow:${themeStyles.cardShadow};color:${themeStyles.cardText};font-size:15px;line-height:2.1;white-space:pre-wrap">${safeContent}</div>
       ${safeImageUrl ? `<div style="margin-top:20px;text-align:center"><img src="${escapeHtml(safeImageUrl)}" style="max-width:100%;border-radius:14px" /></div>` : ""}
@@ -885,7 +895,7 @@ function buildDrawEmail(recipientName, senderName, imageUrl, openDate, isToOther
     subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
     <div style="padding:36px 40px 44px">
-      <div style="font-size:14px;color:${themeStyles.soft};line-height:1.85;margin-bottom:28px">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
+      ${buildRecipientIntroHtml(safeRecipientName, headerMsg, themeStyles)}
       ${buildLetterMetaHtml(meta, themeStyles)}
       <div style="border-radius:16px;overflow:hidden;border:1px solid ${themeStyles.cardBorder};background:${themeStyles.cardBg}">
         ${safeImageUrl ? `<img src="${escapeHtml(safeImageUrl)}" style="width:100%;display:block" />` : `<div style="padding:24px;text-align:center;color:${themeStyles.muted}">그림 URL을 확인할 수 없습니다.</div>`}
@@ -907,7 +917,7 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
     subtitle: meta.emailSubject || undefined,
     body: themeStyles => `
     <div style="padding:36px 40px 44px;text-align:center">
-      <div style="text-align:left;font-size:14px;color:${themeStyles.soft};line-height:1.85;margin-bottom:28px">Dear Me; Dear You에서 보낸 편지 알림입니다.</div>
+      ${buildRecipientIntroHtml(safeRecipientName, headerMsg, themeStyles)}
       <div style="text-align:left">${buildLetterMetaHtml(meta, themeStyles)}</div>
       ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>` : `<p style="color:${themeStyles.muted}">영상 URL을 확인할 수 없습니다.</p>`}
       <div style="margin-top:20px;text-align:right;font-size:12.5px;color:${themeStyles.signature};line-height:1.75">${formatMailDateOnly(meta.createdAt)}의 ${safeSenderName}으로부터</div>
