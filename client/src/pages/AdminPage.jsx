@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import { fetchJson } from '../utils/api.js';
+import { ALLOWED_EMAIL_MESSAGE, isAllowedEmail } from '../utils/email.js';
 import { modalBackdropMotion, modalPanelMotion, motionEase, pageMotion } from '../utils/motion.js';
 
 const ease = motionEase;
@@ -369,6 +370,10 @@ export default function AdminPage() {
 
   async function updateLetterDeliveryEmail(letter) {
     const deliveryEmail = (deliveryEmailDrafts[letter.id] || '').trim();
+    if (deliveryEmail && !isAllowedEmail(deliveryEmail)) {
+      setMessage(ALLOWED_EMAIL_MESSAGE);
+      return;
+    }
 
     setBusyId(`email-letter-${letter.id}`);
     setMessage('');

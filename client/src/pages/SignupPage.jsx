@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
 import { useAuth } from '../auth.jsx';
+import { ALLOWED_EMAIL_MESSAGE, isAllowedEmail } from '../utils/email.js';
 
 const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.055 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.92, ease } } };
 const PASSWORD_MAX_LENGTH = 128;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ export default function SignupPage() {
     const nextEmail = email.trim();
     const missingMessage = getMissingSignupMessage();
     if (missingMessage) return setNotice({ title: '아직 적지 않은 칸이 있습니다', message: missingMessage });
-    if (!EMAIL_PATTERN.test(nextEmail)) return setNotice({ title: '이메일 확인', message: '편지가 닿을 이메일 형식으로 적어 주세요.' });
+    if (!isAllowedEmail(nextEmail)) return setNotice({ title: '이메일 확인', message: ALLOWED_EMAIL_MESSAGE });
     if (!idChecked) return setNotice({ title: '아이디 확인', message: '아이디 중복 확인을 진행해 주세요.' });
     if (password.length < 6) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: '비밀번호는 6자 이상으로 입력해 주세요.' });
     if (password.length > PASSWORD_MAX_LENGTH) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });

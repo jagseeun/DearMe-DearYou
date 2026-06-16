@@ -18,6 +18,8 @@ const isProduction = process.env.NODE_ENV === "production";
 const SESSION_COOKIE_NAME = "dearme.sid";
 const USERID_REGEX = /^[a-zA-Z0-9]+$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ALLOWED_USER_EMAIL_DOMAINS = new Set(["gmail.com", "naver.com", "e-mirim.hs.kr"]);
+const ALLOWED_USER_EMAIL_MESSAGE = "이메일은 gmail.com, naver.com, e-mirim.hs.kr 주소만 사용할 수 있습니다.";
 const PASSWORD_MIN_LENGTH = 6;
 const PASSWORD_MAX_LENGTH = 128;
 const USERID_MAX_LENGTH = 20;
@@ -129,6 +131,14 @@ function escapeHtml(value = "") {
 
 function isValidEmail(value) {
   return typeof value === "string" && value.length <= 254 && EMAIL_REGEX.test(value);
+}
+
+function emailDomain(value = "") {
+  return String(value).trim().toLowerCase().split("@").pop() || "";
+}
+
+function isAllowedUserEmail(value) {
+  return isValidEmail(value) && ALLOWED_USER_EMAIL_DOMAINS.has(emailDomain(value));
 }
 
 function normalizePublicText(value = "") {
@@ -411,7 +421,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
     for (const letter of letters) {
       // 관리자 지정 이메일이 있으면 우선 사용하고, 없으면 받는 사람/작성자 이메일로 발송한다.
       const email = letter.deliveryEmail || letter.recipientEmail || letter.author.email;
-      if (!isValidEmail(email)) {
+      if (!isAllowedUserEmail(email)) {
         stats.skippedNoEmail += 1;
         stats.errors.push({
           letterId: letter.id,
@@ -479,7 +489,7 @@ async function sendDueLetters({ authorId, letterId, force = false } = {}) {
         console.log(`✉ 발송 요청 접수: ${email} (편지 #${letter.id}, messageId: ${mailMessageId(recipientResult) || "n/a"})`);
 
         // 타인에게 보내는 편지라면 발신자에게도 발송 알림. 이 알림 실패는 수신자 발송 성공을 취소하지 않는다.
-        if (isToOther && isValidEmail(letter.author.email)) {
+        if (isToOther && isAllowedUserEmail(letter.author.email)) {
           try {
             const senderHtml = buildSenderNotifyEmail(senderName, recipientName, letter.openDate, emailTheme, emailMeta);
             await sendMail({
@@ -1047,7 +1057,7 @@ async function sendTeacherDelivery(delivery) {
   const teacherLetter = delivery.teacherLetter;
   const personalizedTeacherLetter = personalizeTeacherLetterForMember(teacherLetter, member.name);
 
-  if (!isValidEmail(member.email)) {
+  if (!isAllowedUserEmail(member.email)) {
     await prisma.teacherLetterDelivery.update({
       where: { id: delivery.id },
       data: { lastError: "member has no valid email" },
@@ -1481,6 +1491,7 @@ app.post("/register", authLimiter, async (req, res) => {
   const passwordError = validatePassword(password);
   if (passwordError) return res.status(400).json({ message: passwordError });
   if (!isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+  if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
     if (existingEmail) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
@@ -1622,6 +1633,7 @@ app.put("/update-email", async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
   if (!email) return res.status(400).json({ message: "이메일을 입력해 주세요." });
   if (!isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+  if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
     if (existingEmail && existingEmail.id !== req.session.user.id) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
@@ -1646,6 +1658,7 @@ app.put("/update-profile", async (req, res) => {
   if (!isValidEmail(email)) {
     return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
   }
+  if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
 
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
@@ -1958,6 +1971,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
+  if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (req.body.openDate && !parsedOpenDate) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
@@ -1978,6 +1992,9 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
     const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
     if (!toOther && !accountEmail) {
       return res.status(400).json({ message: "편지를 받을 계정 이메일을 먼저 등록해 주세요." });
+    }
+    if (!toOther && accountEmail && !isAllowedUserEmail(accountEmail)) {
+      return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
     }
     const draftDeliveryEmail = toOther ? null : (accountEmail || null);
 
@@ -2060,6 +2077,7 @@ app.post("/letter-email-preview", writeLimiter, async (req, res) => {
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
+  if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (req.body.openDate && !parseOpenDate(req.body.openDate)) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
@@ -2073,6 +2091,9 @@ app.post("/letter-email-preview", writeLimiter, async (req, res) => {
       select: { email: true },
     });
     const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
+    if (!recipientEmail && accountEmail && !isAllowedUserEmail(accountEmail)) {
+      return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
+    }
     const preview = buildLetterEmailPreview({
       user: { ...req.session.user, email: accountEmail },
       body: req.body,
@@ -2123,6 +2144,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientName && !recipientEmail) return res.status(400).json({ message: "받을 분의 이메일을 입력해 주세요." });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
+  if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
 
   try {
     const member = await prisma.member.findUnique({
@@ -2132,6 +2154,9 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
     const accountEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
     if (!recipientEmail && !accountEmail) {
       return res.status(400).json({ message: "편지를 받을 계정 이메일을 먼저 등록해 주세요." });
+    }
+    if (!recipientEmail && accountEmail && !isAllowedUserEmail(accountEmail)) {
+      return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
     }
 
     const letter = await prisma.letter.create({
@@ -2630,6 +2655,7 @@ app.patch("/admin/letters/:id/delivery-email", adminLimiter, requireAdmin, async
   if (deliveryEmail && !isValidEmail(deliveryEmail)) {
     return res.status(400).json({ message: "발송 이메일 형식이 올바르지 않습니다." });
   }
+  if (deliveryEmail && !isAllowedUserEmail(deliveryEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
 
   try {
     const letter = await prisma.letter.update({

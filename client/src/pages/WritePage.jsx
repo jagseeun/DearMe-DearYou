@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import fixWebmDuration from 'fix-webm-duration';
 import DrawCanvas from '../components/DrawCanvas.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
+import { ALLOWED_EMAIL_MESSAGE, isAllowedEmail } from '../utils/email.js';
 
 const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
@@ -829,10 +830,10 @@ export default function WritePage() {
     if (isImmediateDelivery && !toOther && !cleanEmail) return showNotice('바로 보내려면 받을 이메일을 입력해 주세요.');
     if (text.length > LETTER_CONTENT_MAX_LENGTH) return showNotice(`내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
     if (cleanEmailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return showNotice(`메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.`);
-    if (cleanEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) return showNotice('이메일 형식을 다시 확인해 주세요.');
+    if (cleanEmail && !isAllowedEmail(cleanEmail)) return showNotice(ALLOWED_EMAIL_MESSAGE);
     if (toOther) {
       if (!cleanRecipientEmail) return showNotice('받을 분의 이메일을 입력해 주세요.');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanRecipientEmail)) return showNotice('받을 사람 이메일 형식을 다시 확인해 주세요.');
+      if (!isAllowedEmail(cleanRecipientEmail)) return showNotice(ALLOWED_EMAIL_MESSAGE);
       if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return showNotice(`받을 분의 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
     }
     setSaving(true);

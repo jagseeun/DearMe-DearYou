@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
 import { useAuth } from '../auth.jsx';
+import { ALLOWED_EMAIL_MESSAGE, isAllowedEmail } from '../utils/email.js';
 import { motionEase, pageMotion } from '../utils/motion.js';
 
 const ease = motionEase;
@@ -69,8 +70,8 @@ export default function MyPage() {
       setNotice({ title: '이메일을 확인해 주세요', message: '이메일을 입력해 주세요.' });
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
-      setNotice({ title: '이메일을 확인해 주세요', message: '이메일 형식이 올바르지 않습니다.' });
+    if (!isAllowedEmail(nextEmail)) {
+      setNotice({ title: '이메일을 확인해 주세요', message: ALLOWED_EMAIL_MESSAGE });
       return;
     }
 
