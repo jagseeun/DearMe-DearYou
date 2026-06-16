@@ -925,9 +925,9 @@ function buildTeacherLetterEmail(memberName, teacherLetter) {
         <div style="width:58px;height:1px;margin:26px auto 0;background:linear-gradient(to right,transparent,rgba(255,220,238,0.34),transparent);box-shadow:0 0 6px rgba(230,170,210,0.16);line-height:1px"></div>
       </div>
       <div style="padding:40px 42px 48px">
-        <div style="font-size:16px;font-weight:400;color:rgba(255,232,243,0.86);margin:0 0 22px;line-height:1.7">${title}</div>
-        <div style="padding:32px 34px;border:1px solid rgba(255,230,242,0.2);border-radius:16px;background:rgba(255,245,250,0.1);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);color:rgba(248,228,236,0.97);font-size:15px;line-height:2.15;white-space:pre-wrap">${content}</div>
-        <div style="margin-top:20px;text-align:right;font-size:14px;color:rgba(255,226,240,0.76);line-height:1.75">${teacherName || "선생님"}</div>
+        <div style="font-size:16px;font-weight:400;color:rgba(99,67,92,0.82);margin:0 0 22px;line-height:1.7">${title}</div>
+        <div style="padding:32px 34px;border:1px solid rgba(255,230,242,0.2);border-radius:16px;background:rgba(255,245,250,0.1);box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);color:rgba(80,54,74,0.88);font-size:15px;line-height:2.15;white-space:pre-wrap">${content}</div>
+        <div style="margin-top:20px;text-align:right;font-size:14px;color:rgba(113,78,104,0.72);line-height:1.75">${teacherName || "선생님"}</div>
       </div>
       <div style="padding:0 40px 38px;text-align:center;font-size:11.5px;font-weight:300;letter-spacing:0.12em;color:rgba(190,158,210,0.32)">Dear Me; Dear You</div>
     </div>
