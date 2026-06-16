@@ -17669,10 +17669,11 @@ select:focus,
 
 .letters-main-exit-actions {
   position: fixed !important;
-  left: 24px !important;
-  right: auto !important;
-  bottom: calc(24px + env(safe-area-inset-bottom)) !important;
-  z-index: 20 !important;
+  top: calc(22px + env(safe-area-inset-top)) !important;
+  right: 24px !important;
+  left: auto !important;
+  bottom: auto !important;
+  z-index: 30 !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 8px !important;
@@ -17730,9 +17731,10 @@ select:focus,
 
 @media (max-width: 760px) {
   .letters-main-exit-actions {
-    left: 14px !important;
-    right: auto !important;
-    bottom: calc(14px + env(safe-area-inset-bottom)) !important;
+    top: calc(14px + env(safe-area-inset-top)) !important;
+    right: 14px !important;
+    left: auto !important;
+    bottom: auto !important;
     max-width: none !important;
   }
 

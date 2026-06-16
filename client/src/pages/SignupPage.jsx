@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
 import NoticeModal from '../components/NoticeModal.jsx';
+import { useAuth } from '../auth.jsx';
 
 const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.055 } } };
@@ -11,6 +12,7 @@ const PASSWORD_MAX_LENGTH = 128;
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const { status } = useAuth();
   const [name, setName] = useState('');
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
@@ -20,6 +22,10 @@ export default function SignupPage() {
   const [idChecked, setIdChecked] = useState(false);
   const [notice, setNotice] = useState(null);
   const [confirmingPasswordNote, setConfirmingPasswordNote] = useState(false);
+
+  useEffect(() => {
+    if (status === 'authenticated') navigate('/hello', { replace: true });
+  }, [status, navigate]);
 
   function closeNotice() {
     const afterClose = notice?.afterClose;

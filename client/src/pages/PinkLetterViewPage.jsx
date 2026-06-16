@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
+import NoticeModal from '../components/NoticeModal.jsx';
 import { listItemMotion, motionEase, pageMotion, panelMotion } from '../utils/motion.js';
 import { clearLetterAuth } from '../auth.jsx';
 
@@ -40,6 +41,7 @@ export default function PinkLetterViewPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [sendMsg, setSendMsg] = useState('');
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
 
   async function triggerSend() {
     setSending(true);
@@ -79,10 +81,14 @@ export default function PinkLetterViewPage() {
   }
 
   function goHome() {
-    navigate('/');
+    navigate('/hello');
   }
 
   function logoutLetters() {
+    setLogoutConfirm(true);
+  }
+
+  function confirmLogoutLetters() {
     clearLetterAuth();
     window.location.assign('/logout');
   }
@@ -200,7 +206,7 @@ export default function PinkLetterViewPage() {
             className="letter-back-floating pink-letter-exit"
             onClick={goHome}
           >
-            홈
+            홈으로
           </motion.button>
           <motion.button
             type="button"
@@ -211,6 +217,16 @@ export default function PinkLetterViewPage() {
           </motion.button>
         </motion.div>
       )}
+      <NoticeModal
+        open={logoutConfirm}
+        title="로그아웃할까요?"
+        message="확인을 누르면 현재 계정에서 로그아웃됩니다."
+        cancelLabel="취소"
+        confirmLabel="로그아웃"
+        onClose={() => setLogoutConfirm(false)}
+        onConfirm={confirmLogoutLetters}
+        variant="pink"
+      />
     </motion.div>
   );
 }

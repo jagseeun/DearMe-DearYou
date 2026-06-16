@@ -85,6 +85,7 @@ export default function LettersPage() {
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [activeBox, setActiveBox] = useState('mine');
   const [notice, setNotice] = useState(null);
+  const [logoutConfirm, setLogoutConfirm] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -163,10 +164,14 @@ export default function LettersPage() {
   }
 
   function goHome() {
-    navigate('/');
+    navigate('/hello');
   }
 
   function logoutLetters() {
+    setLogoutConfirm(true);
+  }
+
+  function confirmLogoutLetters() {
     clearLetterAuth();
     window.location.assign('/logout');
   }
@@ -411,7 +416,7 @@ export default function LettersPage() {
           onClick={goHome}
           whileHover={{ boxShadow: '0 6px 24px rgba(150,80,80,0.12)' }}
         >
-          홈
+          홈으로
         </motion.button>
         <motion.button
           type="button"
@@ -451,6 +456,16 @@ export default function LettersPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <NoticeModal
+        open={logoutConfirm}
+        title="로그아웃할까요?"
+        message="확인을 누르면 현재 계정에서 로그아웃됩니다."
+        cancelLabel="취소"
+        confirmLabel="로그아웃"
+        onClose={() => setLogoutConfirm(false)}
+        onConfirm={confirmLogoutLetters}
+        variant="pink"
+      />
       <NoticeModal
         open={Boolean(notice)}
         title={notice?.title}

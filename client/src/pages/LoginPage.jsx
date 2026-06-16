@@ -25,9 +25,12 @@ export default function LoginPage({ letterMode = false }) {
     : isLetterMode ? '/letters' : '/hello';
 
   useEffect(() => {
-    if (status === 'authenticated' && isLetterMode && !forceLogin) {
-      navigate(returnTo, { replace: true });
+    if (status !== 'authenticated') return;
+    if (isLetterMode) {
+      if (!forceLogin) navigate(returnTo, { replace: true });
+      return;
     }
+    navigate('/hello', { replace: true });
   }, [status, isLetterMode, forceLogin, navigate, returnTo]);
 
   useEffect(() => {

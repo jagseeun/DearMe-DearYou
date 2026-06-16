@@ -26,6 +26,14 @@ export default function IndexPage() {
     navigate('/letter-login', { state: { from: '/letters', forceLogin: true } });
   }
 
+  function openLogin() {
+    navigate(status === 'authenticated' ? '/hello' : '/login');
+  }
+
+  function openSignup() {
+    navigate(status === 'authenticated' ? '/hello' : '/signup');
+  }
+
   return (
     <motion.div
       className="page-center home-page"
@@ -48,8 +56,8 @@ export default function IndexPage() {
         variants={item}
         className="home-actions"
       >
-        <button className="glass-btn" onClick={() => navigate('/login')}>로그인</button>
-        <button className="glass-btn" onClick={() => navigate('/signup')}>회원가입</button>
+        <button className="glass-btn" onClick={openLogin}>로그인</button>
+        <button className="glass-btn" onClick={openSignup}>회원가입</button>
         <button
           className="glass-btn"
           onClick={openLetterBox}
