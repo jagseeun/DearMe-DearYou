@@ -13,7 +13,7 @@ const PASSWORD_MAX_LENGTH = 128;
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { status } = useAuth();
+  const { status, refresh } = useAuth();
   const [name, setName] = useState('');
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
@@ -23,6 +23,7 @@ export default function SignupPage() {
   const [idChecked, setIdChecked] = useState(false);
   const [notice, setNotice] = useState(null);
   const [confirmingPasswordNote, setConfirmingPasswordNote] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (status === 'authenticated') navigate('/hello', { replace: true });
@@ -65,6 +66,7 @@ export default function SignupPage() {
   }
 
   async function handleRegister() {
+    if (submitting) return;
     const nextName = name.trim();
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
@@ -79,10 +81,12 @@ export default function SignupPage() {
   }
 
   async function submitRegister() {
+    if (submitting) return;
     setConfirmingPasswordNote(false);
     const nextName = name.trim();
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
+    setSubmitting(true);
     try {
       const res = await fetch('/register', {
         method: 'POST',
@@ -91,16 +95,15 @@ export default function SignupPage() {
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        setNotice({
-          title: '가입이 완료되었습니다',
-          message: '이제 남기고 싶은 마음을 편지로 기록하실 수 있습니다.',
-          afterClose: () => navigate('/login'),
-        });
+        await refresh();
+        navigate('/hello', { replace: true });
       } else {
         setNotice({ title: '가입하지 못했습니다', message: data.message || '가입 정보를 다시 확인해 주세요.' });
       }
     } catch {
       setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -192,8 +195,8 @@ export default function SignupPage() {
           onChange={e => setEmail(e.target.value)}
         />
 
-        <motion.button variants={item} className="submit-btn" type="submit">
-          가입하기
+        <motion.button variants={item} className="submit-btn" type="submit" disabled={submitting}>
+          {submitting ? '가입 중...' : '가입하기'}
         </motion.button>
       </motion.form>
 

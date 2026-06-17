@@ -19,7 +19,7 @@ const SESSION_COOKIE_NAME = "dearme.sid";
 const USERID_REGEX = /^[a-zA-Z0-9]+$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ALLOWED_USER_EMAIL_DOMAINS = new Set(["gmail.com", "naver.com", "e-mirim.hs.kr"]);
-const ALLOWED_USER_EMAIL_MESSAGE = "이메일은 gmail.com, naver.com, e-mirim.hs.kr 주소만 사용할 수 있습니다.";
+const ALLOWED_USER_EMAIL_MESSAGE = "이메일 형식은 gmail.com, naver.com, e-mirim.hs.kr만 가능합니다.";
 const PASSWORD_MIN_LENGTH = 6;
 const PASSWORD_MAX_LENGTH = 128;
 const USERID_MAX_LENGTH = 20;
@@ -1503,12 +1503,26 @@ app.post("/register", authLimiter, async (req, res) => {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
     if (existingEmail) return res.status(400).json({ message: "이미 사용 중인 이메일입니다." });
     const hashedPassword = await bcrypt.hash(password, 10);
-    const member = await prisma.member.create({ data: { name, userid, password: hashedPassword, email } });
+    const member = await prisma.member.create({ data: { name, userid, password: hashedPassword, email, lastLoginAt: new Date() } });
     const teacherLetterResult = await assignRandomTeacherLetterToMember(member.id);
     if (!teacherLetterResult.sent) {
       console.warn("signup teacher letter not sent:", { memberId: member.id, reason: teacherLetterResult.reason });
     }
-    res.status(201).json({ message: "가입이 완료되었습니다." });
+    req.session.regenerate(err => {
+      if (err) {
+        console.error("register session regenerate error:", err);
+        return res.status(500).json({ message: "가입은 완료됐지만 로그인 처리 중 문제가 생겼습니다. 로그인 화면에서 다시 시도해 주세요." });
+      }
+
+      req.session.user = { id: member.id, userid: member.userid, name: member.name, email: member.email || "" };
+      req.session.save(saveErr => {
+        if (saveErr) {
+          console.error("register session save error:", saveErr);
+          return res.status(500).json({ message: "가입은 완료됐지만 로그인 처리 중 문제가 생겼습니다. 로그인 화면에서 다시 시도해 주세요." });
+        }
+        res.status(201).json({ message: "가입이 완료되었습니다.", name: member.name });
+      });
+    });
   } catch (err) {
     if (err.code === "P2002") return res.status(400).json({ message: "이미 사용 중인 아이디 또는 이메일입니다." });
     console.error("register error:", err);
