@@ -8,6 +8,7 @@ import { modalBackdropMotion, modalPanelMotion, motionEase, pageMotion } from '.
 
 const ease = motionEase;
 const PASSWORD_MAX_LENGTH = 128;
+const TEACHER_NAME_MAX_LENGTH = 10;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
 const LETTER_OPEN_DATE_MAX_YEARS = 3;
@@ -588,20 +589,30 @@ export default function AdminPage() {
 
           <form onSubmit={saveTeacherLetter} style={{ display: 'grid', gap: 12 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-              <input
-                style={inputStyle}
-                value={form.teacherName}
-                onChange={e => setForm(prev => ({ ...prev, teacherName: e.target.value }))}
-                placeholder="선생님 이름"
-                maxLength={10}
-              />
-              <input
-                style={inputStyle}
-                value={form.title}
-                onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="제목"
-                maxLength={TEACHER_TITLE_MAX_LENGTH}
-              />
+              <div className="admin-limit-field">
+                <input
+                  style={inputStyle}
+                  value={form.teacherName}
+                  onChange={e => setForm(prev => ({ ...prev, teacherName: e.target.value }))}
+                  placeholder="선생님 이름"
+                  maxLength={TEACHER_NAME_MAX_LENGTH}
+                />
+                <span className={`field-limit-hint ${form.teacherName.length >= TEACHER_NAME_MAX_LENGTH * 0.8 ? 'is-near-limit' : ''} ${form.teacherName.length >= TEACHER_NAME_MAX_LENGTH ? 'is-limit' : ''}`}>
+                  이름 {form.teacherName.length}/{TEACHER_NAME_MAX_LENGTH}
+                </span>
+              </div>
+              <div className="admin-limit-field">
+                <input
+                  style={inputStyle}
+                  value={form.title}
+                  onChange={e => setForm(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="제목"
+                  maxLength={TEACHER_TITLE_MAX_LENGTH}
+                />
+                <span className={`field-limit-hint ${form.title.length >= TEACHER_TITLE_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${form.title.length >= TEACHER_TITLE_MAX_LENGTH ? 'is-limit' : ''}`}>
+                  제목 {form.title.length}/{TEACHER_TITLE_MAX_LENGTH}
+                </span>
+              </div>
             </div>
             <textarea
               style={{ ...inputStyle, minHeight: 170, resize: 'vertical', lineHeight: 1.7 }}
@@ -610,6 +621,9 @@ export default function AdminPage() {
               placeholder="선생님 편지 내용"
               maxLength={TEACHER_CONTENT_MAX_LENGTH}
             />
+            <span className={`field-limit-hint ${form.content.length >= TEACHER_CONTENT_MAX_LENGTH * 0.9 ? 'is-near-limit' : ''} ${form.content.length >= TEACHER_CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}>
+              내용 {form.content.length}/{TEACHER_CONTENT_MAX_LENGTH}
+            </span>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, flexWrap: 'wrap' }}>
               {editingTeacherId && (
                 <button type="button" style={buttonStyle} onClick={cancelTeacherEdit} disabled={saving}>

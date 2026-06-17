@@ -9,6 +9,8 @@ import { ALLOWED_EMAIL_MESSAGE, isAllowedEmail } from '../utils/email.js';
 const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.055 } } };
 const item = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0, transition: { duration: 0.92, ease } } };
+const NAME_MAX_LENGTH = 10;
+const USERID_MAX_LENGTH = 20;
 const PASSWORD_MAX_LENGTH = 128;
 
 export default function SignupPage() {
@@ -151,30 +153,39 @@ export default function SignupPage() {
         noValidate
         onSubmit={e => { e.preventDefault(); handleRegister(); }}
       >
-        <motion.input
-          variants={item}
-          className="input-field"
-          type="text"
-          placeholder="이름을 입력해 주세요 (최대 10자)"
-          maxLength={10}
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-
-        <motion.div variants={item} className="input-group">
+        <motion.div variants={item} className="field-with-hint">
           <input
             className="input-field"
             type="text"
-            placeholder="아이디를 입력해 주세요 (영어, 숫자 / 최대 20자)"
-            maxLength={20}
-            value={userid}
-            onChange={e => {
-              setUserid(e.target.value);
-              setIdChecked(false);
-              setIdMsg({ text: '', ok: false });
-            }}
+            placeholder="이름을 입력해 주세요 (최대 10자)"
+            maxLength={NAME_MAX_LENGTH}
+            value={name}
+            onChange={e => setName(e.target.value)}
           />
-          <button type="button" className="check-btn" onClick={checkUsername}>중복 확인</button>
+          <span className={`field-limit-hint ${name.length >= NAME_MAX_LENGTH * 0.8 ? 'is-near-limit' : ''} ${name.length >= NAME_MAX_LENGTH ? 'is-limit' : ''}`}>
+            이름 {name.length}/{NAME_MAX_LENGTH}
+          </span>
+        </motion.div>
+
+        <motion.div variants={item} className="field-with-hint">
+          <div className="input-group">
+            <input
+              className="input-field"
+              type="text"
+              placeholder="아이디를 입력해 주세요 (영어, 숫자 / 최대 20자)"
+              maxLength={USERID_MAX_LENGTH}
+              value={userid}
+              onChange={e => {
+                setUserid(e.target.value);
+                setIdChecked(false);
+                setIdMsg({ text: '', ok: false });
+              }}
+            />
+            <button type="button" className="check-btn" onClick={checkUsername}>중복 확인</button>
+          </div>
+          <span className={`field-limit-hint ${userid.length >= USERID_MAX_LENGTH * 0.8 ? 'is-near-limit' : ''} ${userid.length >= USERID_MAX_LENGTH ? 'is-limit' : ''}`}>
+            아이디 {userid.length}/{USERID_MAX_LENGTH}
+          </span>
         </motion.div>
 
         {idMsg.text && (

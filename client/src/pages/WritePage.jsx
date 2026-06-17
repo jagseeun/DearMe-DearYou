@@ -150,6 +150,10 @@ function validateScheduledOpenDate(value) {
   return '';
 }
 
+function remainingLabel(current, max) {
+  return `남은 ${Math.max(0, max - current)}자`;
+}
+
 // ── 글자 하나씩 페이드인 글 편지 입력 컴포넌트 ──
 function AnimatedTextarea({ value, onChange, placeholder }) {
   const textareaRef = useRef(null);
@@ -932,6 +936,7 @@ export default function WritePage() {
     if (cleanEmail && !isAllowedEmail(cleanEmail)) return showNotice(ALLOWED_EMAIL_MESSAGE);
     if (toOther) {
       if (!cleanRecipientEmail) return showNotice('받을 분의 이메일을 입력해 주세요.');
+      if (!cleanRecipientName) return showNotice('받을 분의 이름을 입력해 주세요.');
       if (!isAllowedEmail(cleanRecipientEmail)) return showNotice(ALLOWED_EMAIL_MESSAGE);
       if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return showNotice(`받을 분의 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
     }
@@ -1208,10 +1213,11 @@ export default function WritePage() {
 
                 {/* 사진 담기 */}
                 <div
-                  className={`write-char-count ${text.length >= LETTER_CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}
+                  className={`write-char-count ${text.length >= LETTER_CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${text.length >= LETTER_CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}
                   aria-live="polite"
                 >
-                  {text.length}/{LETTER_CONTENT_MAX_LENGTH}
+                  <span>{text.length}/{LETTER_CONTENT_MAX_LENGTH}</span>
+                  <em>{remainingLabel(text.length, LETTER_CONTENT_MAX_LENGTH)}</em>
                 </div>
 
                 <div className="write-tools-row">
@@ -1464,8 +1470,8 @@ export default function WritePage() {
                     maxLength={LETTER_EMAIL_SUBJECT_MAX_LENGTH}
                     style={inputStyle}
                   />
-                  <div className={`write-subject-count ${emailSubject.length >= LETTER_EMAIL_SUBJECT_MAX_LENGTH ? 'is-limit' : ''}`}>
-                    {emailSubject.length}/{LETTER_EMAIL_SUBJECT_MAX_LENGTH}
+                  <div className={`write-subject-count ${emailSubject.length >= LETTER_EMAIL_SUBJECT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${emailSubject.length >= LETTER_EMAIL_SUBJECT_MAX_LENGTH ? 'is-limit' : ''}`}>
+                    {emailSubject.length}/{LETTER_EMAIL_SUBJECT_MAX_LENGTH} · {remainingLabel(emailSubject.length, LETTER_EMAIL_SUBJECT_MAX_LENGTH)}
                   </div>
                 </div>
 
@@ -1487,7 +1493,17 @@ export default function WritePage() {
                   <AnimatePresence>
                     {toOther && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <input type="text" placeholder="받을 사람 이름 (선택)" value={recipientName} onChange={e => setRecipientName(e.target.value)} style={inputStyle} />
+                        <input
+                          type="text"
+                          placeholder="받을 사람 이름 *"
+                          value={recipientName}
+                          onChange={e => setRecipientName(e.target.value.slice(0, RECIPIENT_NAME_MAX_LENGTH))}
+                          maxLength={RECIPIENT_NAME_MAX_LENGTH}
+                          style={inputStyle}
+                        />
+                        <div className={`write-subject-count ${recipientName.length >= RECIPIENT_NAME_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${recipientName.length >= RECIPIENT_NAME_MAX_LENGTH ? 'is-limit' : ''}`}>
+                          이름 {recipientName.length}/{RECIPIENT_NAME_MAX_LENGTH} · {remainingLabel(recipientName.length, RECIPIENT_NAME_MAX_LENGTH)}
+                        </div>
                         <input type="email" placeholder="받을 사람 이메일 *" value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} style={inputStyle} />
                       </motion.div>
                     )}

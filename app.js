@@ -2069,6 +2069,8 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
+  if (toOther && !recipientEmail) return res.status(400).json({ message: "받을 분의 이메일을 입력해 주세요." });
+  if (toOther && !recipientName) return res.status(400).json({ message: "받을 분의 이름을 입력해 주세요." });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (req.body.openDate && !parsedOpenDate) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
@@ -2181,6 +2183,8 @@ app.post("/letter-email-preview", writeLimiter, async (req, res) => {
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
+  if ((req.body.toOther || recipientEmail) && !recipientEmail) return res.status(400).json({ message: "받을 분의 이메일을 입력해 주세요." });
+  if ((req.body.toOther || recipientEmail) && !recipientName) return res.status(400).json({ message: "받을 분의 이름을 입력해 주세요." });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (req.body.openDate && !parsedOpenDate) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
@@ -2248,6 +2252,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   if (openDateError) return res.status(400).json({ message: openDateError });
 
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
+  if (recipientEmail && !recipientName) return res.status(400).json({ message: "받을 분의 이름을 입력해 주세요." });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientName && !recipientEmail) return res.status(400).json({ message: "받을 분의 이메일을 입력해 주세요." });
   if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });

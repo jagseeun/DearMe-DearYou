@@ -6,6 +6,7 @@ import { listItemMotion, modalBackdropMotion, modalPanelMotion, motionEase, page
 
 const ease = motionEase;
 const CONTENT_MAX_LENGTH = 100;
+const NICKNAME_MAX_LENGTH = 12;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const OPEN_DRAW_WIDTH = 960;
 const OPEN_DRAW_HEIGHT = 720;
@@ -603,9 +604,12 @@ export default function OpenMailboxPage() {
                   className="open-compose-input"
                   value={nickname}
                   onChange={event => setNickname(event.target.value)}
-                  maxLength={12}
+                  maxLength={NICKNAME_MAX_LENGTH}
                   placeholder="닉네임을 입력해 주세요"
                 />
+                <span className={`field-limit-hint ${nickname.length >= NICKNAME_MAX_LENGTH * 0.8 ? 'is-near-limit' : ''} ${nickname.length >= NICKNAME_MAX_LENGTH ? 'is-limit' : ''}`}>
+                  닉네임 {nickname.length}/{NICKNAME_MAX_LENGTH}
+                </span>
                 <input
                   className="open-compose-input"
                   type="password"
@@ -680,7 +684,9 @@ export default function OpenMailboxPage() {
                 </AnimatePresence>
 
                 <div className="open-compose-footer">
-                  <span>{mode === 'text' ? `${content.length}/${CONTENT_MAX_LENGTH}` : mode === 'photo' ? '사진 1장' : '그림 1장'}</span>
+                  <span className={mode === 'text' && content.length >= CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''}>
+                    {mode === 'text' ? `${content.length}/${CONTENT_MAX_LENGTH} · 남은 ${Math.max(0, CONTENT_MAX_LENGTH - content.length)}자` : mode === 'photo' ? '사진 1장' : '그림 1장'}
+                  </span>
                   <button type="submit" disabled={saving || photoUploading}>
                     {saving ? '저장 중...' : '남기기'}
                   </button>
@@ -715,17 +721,25 @@ export default function OpenMailboxPage() {
                     className="open-compose-input"
                     value={editNickname}
                     onChange={event => setEditNickname(event.target.value)}
-                    maxLength={12}
+                    maxLength={NICKNAME_MAX_LENGTH}
                     placeholder="닉네임을 입력해 주세요"
                   />
+                  <span className={`field-limit-hint ${editNickname.length >= NICKNAME_MAX_LENGTH * 0.8 ? 'is-near-limit' : ''} ${editNickname.length >= NICKNAME_MAX_LENGTH ? 'is-limit' : ''}`}>
+                    닉네임 {editNickname.length}/{NICKNAME_MAX_LENGTH}
+                  </span>
                   {selected.type === 'text' && (
-                    <textarea
-                      className="open-compose-textarea compact"
-                      value={editContent}
-                      onChange={event => setEditContent(event.target.value.slice(0, CONTENT_MAX_LENGTH))}
-                      maxLength={CONTENT_MAX_LENGTH}
-                      placeholder="내용을 입력해 주세요"
-                    />
+                    <>
+                      <textarea
+                        className="open-compose-textarea compact"
+                        value={editContent}
+                        onChange={event => setEditContent(event.target.value.slice(0, CONTENT_MAX_LENGTH))}
+                        maxLength={CONTENT_MAX_LENGTH}
+                        placeholder="내용을 입력해 주세요"
+                      />
+                      <span className={`field-limit-hint ${editContent.length >= CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${editContent.length >= CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}>
+                        내용 {editContent.length}/{CONTENT_MAX_LENGTH} · 남은 {Math.max(0, CONTENT_MAX_LENGTH - editContent.length)}자
+                      </span>
+                    </>
                   )}
                   {selected.type === 'draw' && (
                     <div className="open-edit-draw">

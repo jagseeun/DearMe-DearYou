@@ -8,6 +8,7 @@ import { ALLOWED_EMAIL_MESSAGE, isAllowedEmail } from '../utils/email.js';
 import { motionEase, pageMotion } from '../utils/motion.js';
 
 const ease = motionEase;
+const NAME_MAX_LENGTH = 10;
 const PASSWORD_MAX_LENGTH = 128;
 
 export default function MyPage() {
@@ -62,8 +63,8 @@ export default function MyPage() {
       setNotice({ title: '이름을 확인해 주세요', message: '이름을 입력해 주세요.' });
       return;
     }
-    if (nextName.length > 10) {
-      setNotice({ title: '이름을 확인해 주세요', message: '이름은 10자를 넘을 수 없습니다.' });
+    if (nextName.length > NAME_MAX_LENGTH) {
+      setNotice({ title: '이름을 확인해 주세요', message: `이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
       return;
     }
     if (!nextEmail) {
@@ -202,11 +203,14 @@ export default function MyPage() {
               <input
                 type="text"
                 value={name}
-                maxLength={10}
+                maxLength={NAME_MAX_LENGTH}
                 onChange={event => setName(event.target.value)}
                 placeholder="이름"
                 disabled={loading || profileSaving}
               />
+              <em className={`field-limit-hint ${name.length >= NAME_MAX_LENGTH * 0.8 ? 'is-near-limit' : ''} ${name.length >= NAME_MAX_LENGTH ? 'is-limit' : ''}`}>
+                이름 {name.length}/{NAME_MAX_LENGTH}
+              </em>
             </label>
             <label>
               <span>이메일</span>
