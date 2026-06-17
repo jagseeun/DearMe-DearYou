@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { clearLetterAuth, useAuth } from '../auth.jsx';
+import OpenMailboxFloatingButton from '../components/OpenMailboxFloatingButton.jsx';
 
 const ease = [0.16, 1, 0.3, 1];
 
@@ -71,18 +72,7 @@ export default function IndexPage() {
         )}
       </motion.div>
 
-      <motion.button
-        type="button"
-        className="open-mailbox-floating-button"
-        aria-label="열린 편지함으로 가기"
-        title="열린 편지함으로 가기"
-        onClick={() => navigate('/open-mailbox')}
-        initial={false}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1, duration: 0.5, ease }}
-      >
-        💌
-      </motion.button>
+      <OpenMailboxFloatingButton delay={1} />
     </motion.div>
   );
 }

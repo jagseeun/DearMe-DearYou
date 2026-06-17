@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
 import NoticeModal from '../components/NoticeModal.jsx';
+import OpenMailboxFloatingButton from '../components/OpenMailboxFloatingButton.jsx';
 import { listItemMotion, motionEase, pageMotion, panelMotion } from '../utils/motion.js';
 import { clearLetterAuth } from '../auth.jsx';
 
@@ -195,18 +196,7 @@ export default function PinkLetterViewPage() {
       </div>
 
       {!loading && !logoutConfirm && (
-        <motion.button
-          type="button"
-          className="open-mailbox-floating-button"
-          aria-label="열린 편지함으로 가기"
-          title="열린 편지함으로 가기"
-          onClick={() => navigate('/open-mailbox')}
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, duration: 0.45, ease }}
-        >
-          💌
-        </motion.button>
+        <OpenMailboxFloatingButton />
       )}
 
       {!loading && (

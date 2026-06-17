@@ -18709,3 +18709,30 @@ input:disabled,
     padding: 22px 16px calc(20px + env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* Floating mailbox shortcut: one fixed position everywhere it appears. */
+:root {
+  --open-mailbox-floating-right: 22px;
+  --open-mailbox-floating-bottom: 20px;
+}
+
+.open-mailbox-floating-button {
+  position: fixed !important;
+  right: calc(var(--open-mailbox-floating-right) + env(safe-area-inset-right)) !important;
+  bottom: calc(var(--open-mailbox-floating-bottom) + env(safe-area-inset-bottom)) !important;
+  left: auto !important;
+  top: auto !important;
+  z-index: 760 !important;
+}
+
+.open-mailbox-floating-button:disabled {
+  pointer-events: none !important;
+  opacity: 0.68 !important;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --open-mailbox-floating-right: 14px;
+    --open-mailbox-floating-bottom: 14px;
+  }
+}

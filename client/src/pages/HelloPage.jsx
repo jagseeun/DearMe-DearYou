@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import NoticeModal from '../components/NoticeModal.jsx';
 import { useAuth } from '../auth.jsx';
+import OpenMailboxFloatingButton from '../components/OpenMailboxFloatingButton.jsx';
 
 const ease = [0.16, 1, 0.3, 1];
 const container = {
@@ -175,18 +176,7 @@ export default function HelloPage() {
       </AnimatePresence>
 
       {!showLogoutModal && (
-        <motion.button
-          type="button"
-          className="open-mailbox-floating-button"
-          aria-label="열린 편지함으로 가기"
-          title="열린 편지함으로 가기"
-          onClick={() => navigate('/open-mailbox')}
-          initial={false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.45, ease }}
-        >
-          💌
-        </motion.button>
+        <OpenMailboxFloatingButton delay={0.7} />
       )}
 
       <NoticeModal
