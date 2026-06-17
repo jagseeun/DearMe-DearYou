@@ -1,4 +1,4 @@
-export const ALLOWED_EMAIL_MESSAGE = '이메일 형식을 확인해 주세요. gmail.com/naver.com/e-mirim.hs.kr 도메인은 오타 없이 입력하고, 미림 이메일은 s24/s25/s26 또는 d24/d25/d26으로 시작해야 해요.';
+export const ALLOWED_EMAIL_MESSAGE = '이메일 형식을 확인해 주세요.';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const KNOWN_EMAIL_DOMAIN_TYPOS = new Set([

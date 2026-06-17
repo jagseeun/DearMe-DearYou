@@ -18,7 +18,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const SESSION_COOKIE_NAME = "dearme.sid";
 const USERID_REGEX = /^[a-zA-Z0-9]+$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_USER_EMAIL_MESSAGE = "이메일 형식을 확인해 주세요. gmail.com/naver.com/e-mirim.hs.kr 도메인은 오타 없이 입력하고, 미림 이메일은 s24/s25/s26 또는 d24/d25/d26으로 시작해야 해요.";
+const ALLOWED_USER_EMAIL_MESSAGE = "이메일 형식을 확인해 주세요.";
 const KNOWN_USER_EMAIL_DOMAIN_TYPOS = new Set([
   "gamil.com",
   "gmial.com",
