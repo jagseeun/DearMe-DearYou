@@ -262,7 +262,7 @@ export default function OpenMailboxPage() {
 
   useEffect(() => {
     if (!pageNotice) return undefined;
-    const timer = window.setTimeout(() => setPageNotice(''), 2200);
+    const timer = window.setTimeout(() => setPageNotice(''), 3200);
     return () => window.clearTimeout(timer);
   }, [pageNotice]);
 
@@ -414,11 +414,11 @@ export default function OpenMailboxPage() {
           pin,
         }),
       });
+      setPageNotice('편지를 남겼습니다.');
       resetForm();
       setShowComposer(false);
       setMessage('');
       await loadLetters(0);
-      setPageNotice('편지를 남겼습니다.');
     } catch (err) {
       setMessage(err.message || '열린 편지를 남기지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
@@ -529,22 +529,6 @@ export default function OpenMailboxPage() {
 
       <OpenMailboxLogo />
 
-      <AnimatePresence>
-        {pageNotice && (
-          <motion.div
-            className="open-page-notice"
-            role="status"
-            aria-live="polite"
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.22, ease }}
-          >
-            {pageNotice}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <main className="open-mailbox-shell">
         <section className="open-board-panel">
           <div className="open-board-header">
@@ -564,6 +548,12 @@ export default function OpenMailboxPage() {
               </div>
             </div>
           </div>
+
+          {pageNotice && (
+            <div className="open-page-notice" role="status" aria-live="polite">
+              {pageNotice}
+            </div>
+          )}
 
           {loading ? (
             <div className="open-empty-letter">불러오는 중...</div>
