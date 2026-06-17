@@ -1202,7 +1202,7 @@ export default function WritePage() {
             >
               {/* 글 편지 입력 */}
               <div
-                className={`write-paper write-paper-tone-${textBorderTone} ${showSig ? 'is-signing' : ''}`}
+                className={`write-paper write-paper-tone-${textBorderTone} ${showSig ? 'is-signing' : ''} ${imageUrl ? 'has-photo' : ''}`}
                 onClick={() => document.getElementById('textInput')?.focus()}
               >
                 <LetterTextarea
@@ -1212,17 +1212,13 @@ export default function WritePage() {
                 />
 
                 {/* 사진 담기 */}
-                <div
-                  className={`write-char-count ${text.length >= LETTER_CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${text.length >= LETTER_CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}
-                  aria-live="polite"
-                >
-                  <span>{text.length}/{LETTER_CONTENT_MAX_LENGTH}</span>
-                  <em>{remainingLabel(text.length, LETTER_CONTENT_MAX_LENGTH)}</em>
-                </div>
-
-                <div className="write-tools-row">
-                  <button onClick={imageUploading ? undefined : openPhotoCamera} disabled={imageUploading} className="write-tool-button-inline"
-                    style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: imageUploading ? 'default' : 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.65)', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6, opacity: imageUploading ? 0.6 : 1 }}>
+                <div className="write-tools-row" onClick={event => event.stopPropagation()}>
+                  <button
+                    type="button"
+                    onClick={imageUploading ? undefined : openPhotoCamera}
+                    disabled={imageUploading}
+                    className={`write-tool-button-inline write-photo-tool-button ${imageUrl ? 'has-photo' : ''}`}
+                  >
                     {imageUploading ? '업로드 중...' : (
                       <>
                         <WriteIcon name="camera" />
@@ -1231,16 +1227,30 @@ export default function WritePage() {
                     )}
                   </button>
                   {imageUrl && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <img src={imageUrl} style={{ height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)' }} />
-                      <button onClick={() => setImageUrl('')} style={{ background: 'none', border: 'none', color: 'rgba(255,100,100,0.7)', cursor: 'pointer', fontSize: 16 }}>×</button>
+                    <div className="write-photo-attachment">
+                      <img src={imageUrl} alt="첨부한 사진 미리보기" />
+                      <span className="write-photo-copy">
+                        <strong>사진 첨부됨</strong>
+                        <em>편지에 함께 담겨요</em>
+                      </span>
+                      <button type="button" className="write-photo-remove" onClick={() => setImageUrl('')} aria-label="첨부 사진 삭제">×</button>
                     </div>
                   )}
-                  <button onClick={() => setShowSig(s => !s)} className="write-tool-button-inline"
-                    style={{ padding: '7px 18px', borderRadius: 50, fontSize: 13, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid', transition: 'all 0.2s', borderColor: showSig ? 'rgba(205,154,99,0.5)' : 'rgba(255,255,255,0.2)', background: showSig ? 'rgba(72,56,41,0.6)' : 'rgba(255,255,255,0.07)', color: showSig ? '#ffeacd' : 'rgba(255,252,223,0.65)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowSig(s => !s)}
+                    className={`write-tool-button-inline write-signature-tool-button ${showSig || signatureData ? 'is-active' : ''}`}
+                  >
                     <WriteIcon name="signature" />
                     <span>{signatureData ? '서명 완료' : '서명 남기기'}</span>
                   </button>
+                  <div
+                    className={`write-char-count ${text.length >= LETTER_CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${text.length >= LETTER_CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}
+                    aria-live="polite"
+                  >
+                    <span>{text.length}/{LETTER_CONTENT_MAX_LENGTH}</span>
+                    <em>{remainingLabel(text.length, LETTER_CONTENT_MAX_LENGTH)}</em>
+                  </div>
                 </div>
 
                 {/* 서명 캔버스 */}
