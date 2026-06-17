@@ -384,9 +384,9 @@ export default function OpenMailboxPage() {
     const cleanNickname = nickname.trim();
     const cleanContent = content.trim();
 
-    if (!cleanNickname) return setMessage('편지에 표시할 닉네임을 입력해 주세요을 입력해 주세요.');
+    if (!cleanNickname) return setMessage('편지에 표시할 닉네임을 입력해 주세요.');
     if (!/^\d{4}$/.test(pin)) return setMessage('나중에 수정하거나 삭제할 때 사용할 4자리 PIN을 입력해 주세요.');
-    if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용을 입력해 주세요은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+    if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
     if (mode === 'text' && !cleanContent) return setMessage('모두에게 남길 마음을 입력해 주세요.');
     if (mode === 'photo' && !photoUrl) return setMessage('먼저 사진을 촬영해 주세요.');
     if (mode === 'draw' && !drawn) return setMessage('그림 편지에 남길 그림을 그려 주세요.');
@@ -447,10 +447,10 @@ export default function OpenMailboxPage() {
     if (!selected) return;
     const cleanNickname = editNickname.trim();
     const cleanContent = editContent.trim();
-    if (!cleanNickname) return setMessage('편지에 표시할 닉네임을 입력해 주세요을 입력해 주세요.');
+    if (!cleanNickname) return setMessage('편지에 표시할 닉네임을 입력해 주세요.');
     if (!/^\d{4}$/.test(editPin)) return setMessage('4자리 PIN을 입력해 주세요.');
     if (selected.type === 'text') {
-      if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용을 입력해 주세요은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
+      if (cleanContent.length > CONTENT_MAX_LENGTH) return setMessage(`내용은 ${CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.`);
       if (!cleanContent) return setMessage('모두에게 남길 마음을 입력해 주세요.');
     }
     if (selected.type === 'draw' && !editDrawn) return setMessage('수정할 그림을 다시 확인해 주세요.');

@@ -1245,7 +1245,6 @@ export default function WritePage() {
                     aria-live="polite"
                   >
                     <span>{text.length}/{LETTER_CONTENT_MAX_LENGTH}</span>
-                    <em>{remainingLabel(text.length, LETTER_CONTENT_MAX_LENGTH)}</em>
                   </div>
                 </div>
 

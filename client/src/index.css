@@ -17649,12 +17649,6 @@ select:focus,
   -webkit-backdrop-filter: blur(6px) !important;
 }
 
-.write-stage.write-stage-text .write-char-count em {
-  color: rgba(92, 63, 67, 0.46) !important;
-  font-style: normal !important;
-  font-weight: 400 !important;
-}
-
 .write-stage.write-stage-text .write-char-count.is-near-limit {
   border-color: rgba(136, 64, 83, 0.2) !important;
   color: rgba(116, 54, 73, 0.76) !important;
@@ -19155,32 +19149,6 @@ input:disabled,
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
-.write-photo-copy {
-  min-width: 0 !important;
-  display: grid !important;
-  gap: 2px !important;
-}
-
-.write-photo-copy strong,
-.write-photo-copy em {
-  overflow: hidden !important;
-  white-space: nowrap !important;
-  text-overflow: ellipsis !important;
-  letter-spacing: 0 !important;
-}
-
-.write-photo-copy strong {
-  color: rgba(255, 242, 224, 0.9) !important;
-  font-size: 12px !important;
-  font-weight: 600 !important;
-}
-
-.write-photo-copy em {
-  color: rgba(255, 242, 224, 0.52) !important;
-  font-size: 11px !important;
-  font-style: normal !important;
-}
-
 .write-photo-remove {
   width: 24px !important;
   height: 24px !important;
@@ -19224,10 +19192,6 @@ input:disabled,
   text-shadow: none !important;
   backdrop-filter: blur(10px) !important;
   -webkit-backdrop-filter: blur(10px) !important;
-}
-
-.write-stage.write-stage-text .write-char-count em {
-  color: rgba(255, 242, 224, 0.46) !important;
 }
 
 .write-stage.write-stage-text .write-char-count.is-near-limit {
@@ -19338,18 +19302,6 @@ input:disabled,
     background: rgba(255, 250, 245, 0.58) !important;
     color: rgba(92, 63, 67, 0.7) !important;
     font-size: 11px !important;
-  }
-
-  .write-stage.write-stage-text .write-tools-row > .write-char-count em {
-    color: rgba(92, 63, 67, 0.5) !important;
-  }
-
-  .write-stage.write-stage-text .write-photo-copy strong {
-    color: rgba(82, 56, 44, 0.78) !important;
-  }
-
-  .write-stage.write-stage-text .write-photo-copy em {
-    color: rgba(92, 63, 67, 0.5) !important;
   }
 
   .write-stage.write-stage-text .write-photo-remove {

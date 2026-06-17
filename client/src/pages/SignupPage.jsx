@@ -41,7 +41,7 @@ export default function SignupPage() {
     if (!name.trim()) return '이름을 입력해 주세요.';
     if (!userid.trim()) return '아이디를 입력해 주세요.';
     if (!password) return '비밀번호를 입력해 주세요.';
-    if (!passwordConfirm) return '비밀번호를 한 번 더 입력해 주세요을 입력해 주세요.';
+    if (!passwordConfirm) return '비밀번호를 한 번 더 입력해 주세요.';
     if (!email.trim()) return '편지를 받을 이메일을 입력해 주세요.';
     return '';
   }
