@@ -220,6 +220,7 @@ export default function OpenMailboxPage() {
   const [content, setContent] = useState('');
   const [pin, setPin] = useState('');
   const [message, setMessage] = useState('');
+  const [pageNotice, setPageNotice] = useState('');
   const [saving, setSaving] = useState(false);
   const [editingSelected, setEditingSelected] = useState(false);
   const [editNickname, setEditNickname] = useState('');
@@ -258,6 +259,12 @@ export default function OpenMailboxPage() {
   useEffect(() => {
     loadLetters(0);
   }, []);
+
+  useEffect(() => {
+    if (!pageNotice) return undefined;
+    const timer = window.setTimeout(() => setPageNotice(''), 2200);
+    return () => window.clearTimeout(timer);
+  }, [pageNotice]);
 
   useEffect(() => {
     return () => {
@@ -362,6 +369,7 @@ export default function OpenMailboxPage() {
     setEditingSelected(false);
     setConfirmingDelete(false);
     setMessage('');
+    setPageNotice('');
     setShowComposer(true);
   }
 
@@ -410,6 +418,7 @@ export default function OpenMailboxPage() {
       setShowComposer(false);
       setMessage('');
       await loadLetters(0);
+      setPageNotice('편지를 남겼습니다.');
     } catch (err) {
       setMessage(err.message || '열린 편지를 남기지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
@@ -519,6 +528,22 @@ export default function OpenMailboxPage() {
       <button type="button" className="open-mailbox-back" onClick={goBack}>← 뒤로가기</button>
 
       <OpenMailboxLogo />
+
+      <AnimatePresence>
+        {pageNotice && (
+          <motion.div
+            className="open-page-notice"
+            role="status"
+            aria-live="polite"
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.22, ease }}
+          >
+            {pageNotice}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main className="open-mailbox-shell">
         <section className="open-board-panel">
