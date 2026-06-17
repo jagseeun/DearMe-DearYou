@@ -444,6 +444,15 @@ export default function WritePage() {
     setNotice({ title, message });
   }
 
+  function showAccountEmailChangeNotice() {
+    showNotice(
+      accountEmail
+        ? `내 편지를 받을 이메일은 ${accountEmail}로 저장되어 있어요. 바꾸려면 마이페이지에서 이메일을 변경해 주세요.`
+        : '내 편지를 받을 이메일은 마이페이지에서 먼저 등록해 주세요.',
+      '이메일 변경은 마이페이지에서'
+    );
+  }
+
   function handleTextChange(nextText) {
     setText(clampLetterText(nextText));
     setTextBorderTone(prev => (prev + 1) % 5);
@@ -1391,6 +1400,8 @@ export default function WritePage() {
                     value={accountEmail || email}
                     readOnly
                     aria-readonly="true"
+                    onClick={showAccountEmailChangeNotice}
+                    onFocus={showAccountEmailChangeNotice}
                     style={{ ...inputStyle, cursor: 'default', opacity: 0.82 }}
                   />
                 </div>

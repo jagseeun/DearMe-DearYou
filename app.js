@@ -1497,7 +1497,7 @@ app.post("/register", authLimiter, async (req, res) => {
   if (!USERID_REGEX.test(userid)) return res.status(400).json({ message: "아이디는 영어와 숫자만 사용할 수 있습니다." });
   const passwordError = validatePassword(password);
   if (passwordError) return res.status(400).json({ message: passwordError });
-  if (!isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+  if (!isValidEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
@@ -1653,7 +1653,7 @@ app.put("/update-email", async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const email = String(req.body.email || "").trim().toLowerCase();
   if (!email) return res.status(400).json({ message: "이메일을 입력해 주세요." });
-  if (!isValidEmail(email)) return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+  if (!isValidEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
@@ -1677,7 +1677,7 @@ app.put("/update-profile", async (req, res) => {
   if (name.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (!email) return res.status(400).json({ message: "이메일을 입력해 주세요." });
   if (!isValidEmail(email)) {
-    return res.status(400).json({ message: "이메일 형식이 올바르지 않습니다." });
+    return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   }
   if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
 
@@ -1991,7 +1991,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
 
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
+  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
@@ -2097,7 +2097,7 @@ app.post("/letter-email-preview", writeLimiter, async (req, res) => {
 
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
+  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
@@ -2164,7 +2164,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (recipientName && !recipientEmail) return res.status(400).json({ message: "받을 분의 이메일을 입력해 주세요." });
-  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: "받을 분의 이메일 형식을 확인해 주세요." });
+  if (recipientEmail && !isValidEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
 
   try {
@@ -2737,9 +2737,7 @@ app.patch("/admin/letters/:id/delivery-email", adminLimiter, requireAdmin, async
   const id = Number(req.params.id);
   const deliveryEmail = String(req.body.deliveryEmail || "").trim().toLowerCase();
   if (!Number.isInteger(id)) return res.status(400).json({ message: "편지 정보를 확인해 주세요." });
-  if (deliveryEmail && !isValidEmail(deliveryEmail)) {
-    return res.status(400).json({ message: "발송 이메일 형식이 올바르지 않습니다." });
-  }
+  if (deliveryEmail && !isValidEmail(deliveryEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (deliveryEmail && !isAllowedUserEmail(deliveryEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
 
   try {
