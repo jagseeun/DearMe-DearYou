@@ -521,6 +521,20 @@ export default function OpenMailboxPage() {
 
       <main className="open-mailbox-shell">
         <section className="open-board-panel">
+          <div className="open-board-hero">
+            <div>
+              <span>OPEN MAILBOX</span>
+              <h1>모두가 읽는 익명 편지함</h1>
+              <p>짧은 응원, 그림, 사진을 남겨 주세요. 누군가의 하루에 조용히 닿을 수 있습니다.</p>
+            </div>
+            <div className="open-board-hero-actions">
+              <button type="button" className="open-compose-open-button" onClick={openComposer}>
+                익명 편지 남기기
+              </button>
+              <em>{total}개의 마음이 쌓였어요</em>
+            </div>
+          </div>
+
           <div className="open-board-header">
             <div className="open-board-title-row">
               <span>{total} letters</span>

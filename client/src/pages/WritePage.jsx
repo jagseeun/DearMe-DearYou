@@ -498,10 +498,12 @@ export default function WritePage() {
   }, []);
 
   useEffect(() => {
-    if (!showEmailPreview) return;
-    setShowEmailPreview(false);
-    setEmailPreviewError('');
-  }, [mode, text, videoUrl, imageUrl, drawHasDrawn, openDate, sendNow, emailSubject, emailTheme, toOther, recipientEmail, recipientName]);
+    if (!showModal || !showEmailPreview) return undefined;
+    const timer = setTimeout(() => {
+      loadEmailPreview();
+    }, 360);
+    return () => clearTimeout(timer);
+  }, [showModal, showEmailPreview, mode, text, videoUrl, imageUrl, drawHasDrawn, openDate, sendNow, emailSubject, emailTheme, toOther, recipientEmail, recipientName]);
 
   useEffect(() => {
     if (!showEmailPreview || emailPreviewLoading || !emailPreview.html) return undefined;
@@ -871,7 +873,6 @@ export default function WritePage() {
     }
 
     setShowEmailPreview(true);
-    loadEmailPreview();
   }
 
   async function handleFromMe() {
@@ -879,7 +880,7 @@ export default function WritePage() {
     if (mode === 'video' && !videoUrl) return showNotice('먼저 영상 편지를 촬영해 주세요.');
     if (mode === 'draw' && !drawHasDrawn) return showNotice('그림 편지에 남길 그림을 그려 주세요.');
     setNotice(null);
-    setShowEmailPreview(false);
+    setShowEmailPreview(true);
     setEmailPreview({ subject: '', html: '' });
     setEmailPreviewError('');
     setShowModal(true);
@@ -1310,6 +1311,7 @@ export default function WritePage() {
       <AnimatePresence>
         {showModal && (
           <motion.div
+            className="write-modal-backdrop"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
           >

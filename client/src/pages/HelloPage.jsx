@@ -155,6 +155,14 @@ export default function HelloPage() {
         >
           편지 남기기
         </motion.button>
+        <motion.button
+          variants={item}
+          type="button"
+          onClick={() => navigate('/open-mailbox')}
+          className="hello-open-mailbox-cta"
+        >
+          익명 열린 편지함 보기
+        </motion.button>
       </div>
 
       <AnimatePresence>

@@ -24,8 +24,8 @@ export default function OpenMailboxFloatingButton({ delay = 0.55 }) {
     <motion.button
       type="button"
       className="open-mailbox-floating-button"
-      aria-label="Open mailbox"
-      title="Open mailbox"
+      aria-label="열린 편지함"
+      title="열린 편지함"
       onClick={openMailbox}
       disabled={locked || location.pathname === '/open-mailbox'}
       data-route-action="open-mailbox"
