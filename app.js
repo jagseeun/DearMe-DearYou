@@ -171,6 +171,13 @@ function validatePublicLetterPin(pin) {
   return PUBLIC_LETTER_PIN_REGEX.test(String(pin || ""));
 }
 
+function normalizeAdminIdList(ids) {
+  const values = Array.isArray(ids) ? ids : [ids];
+  return [...new Set(values
+    .map(value => Number(value))
+    .filter(value => Number.isInteger(value) && value > 0))];
+}
+
 function normalizeEmailTheme(value) {
   return String(value || "").trim().toLowerCase() === "pink" ? "pink" : "dark";
 }
@@ -2521,6 +2528,19 @@ app.patch("/admin/public-letters/:id/visible", adminLimiter, requireAdmin, async
   }
 });
 
+app.delete("/admin/public-letters", adminLimiter, requireAdmin, async (req, res) => {
+  const ids = normalizeAdminIdList(req.body?.ids);
+  if (ids.length === 0) return res.status(400).json({ message: "삭제할 열린 편지를 선택해 주세요." });
+
+  try {
+    const result = await prisma.publicLetter.deleteMany({ where: { id: { in: ids } } });
+    res.json({ message: `열린 편지 ${result.count}개를 삭제했습니다.`, deleted: result.count });
+  } catch (err) {
+    console.error("admin public letter bulk delete error:", err);
+    res.status(500).json({ message: "선택한 열린 편지를 삭제하지 못했습니다." });
+  }
+});
+
 app.delete("/admin/public-letters/:id", adminLimiter, requireAdmin, async (req, res) => {
   const id = Number(req.params.id);
   if (!Number.isInteger(id)) return res.status(400).json({ message: "잘못된 열린 편지입니다." });
@@ -2614,6 +2634,19 @@ app.get("/admin/letters", requireAdmin, async (req, res) => {
   } catch (err) {
     console.error("admin letter list error:", err);
     res.status(500).json({ message: "편지 목록을 불러오지 못했습니다." });
+  }
+});
+
+app.delete("/admin/letters", adminLimiter, requireAdmin, async (req, res) => {
+  const ids = normalizeAdminIdList(req.body?.ids);
+  if (ids.length === 0) return res.status(400).json({ message: "삭제할 편지를 선택해 주세요." });
+
+  try {
+    const result = await prisma.letter.deleteMany({ where: { id: { in: ids } } });
+    res.json({ message: `편지 ${result.count}개를 삭제했습니다.`, deleted: result.count });
+  } catch (err) {
+    console.error("admin letter bulk delete error:", err);
+    res.status(500).json({ message: "선택한 편지를 삭제하지 못했습니다." });
   }
 });
 

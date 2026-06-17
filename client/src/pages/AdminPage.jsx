@@ -97,8 +97,10 @@ export default function AdminPage() {
   const [teacherLetters, setTeacherLetters] = useState([]);
   const [publicLetters, setPublicLetters] = useState([]);
   const [selectedPublicLetter, setSelectedPublicLetter] = useState(null);
+  const [selectedPublicLetterIds, setSelectedPublicLetterIds] = useState([]);
   const [users, setUsers] = useState([]);
   const [letters, setLetters] = useState([]);
+  const [selectedLetterIds, setSelectedLetterIds] = useState([]);
   const [form, setForm] = useState(emptyTeacherForm);
   const [editingTeacherId, setEditingTeacherId] = useState(null);
   const [dateDrafts, setDateDrafts] = useState({});
@@ -152,7 +154,10 @@ export default function AdminPage() {
   }
 
   async function loadPublicLetters() {
-    setPublicLetters(await fetchJson('/admin/public-letters'));
+    const nextLetters = await fetchJson('/admin/public-letters');
+    const nextIds = new Set(nextLetters.map(letter => letter.id));
+    setPublicLetters(nextLetters);
+    setSelectedPublicLetterIds(prev => prev.filter(id => nextIds.has(id)));
   }
 
   async function loadUsers() {
@@ -161,7 +166,9 @@ export default function AdminPage() {
 
   async function loadAdminLetters() {
     const nextLetters = await fetchJson('/admin/letters');
+    const nextIds = new Set(nextLetters.map(letter => letter.id));
     setLetters(nextLetters);
+    setSelectedLetterIds(prev => prev.filter(id => nextIds.has(id)));
     setDateDrafts(Object.fromEntries(nextLetters.map(letter => [letter.id, toDateInputValue(letter.openDate)])));
     setDeliveryEmailDrafts(Object.fromEntries(nextLetters.map(letter => [letter.id, getLetterDeliveryEmail(letter)])));
   }
@@ -286,10 +293,80 @@ export default function AdminPage() {
     try {
       await fetchJson(`/admin/public-letters/${letter.id}`, { method: 'DELETE' });
       setSelectedPublicLetter(prev => (prev?.id === letter.id ? null : prev));
+      setSelectedPublicLetterIds(prev => prev.filter(id => id !== letter.id));
       setMessage('열린 편지를 삭제했습니다.');
       await loadPublicLetters();
     } catch (err) {
       setMessage(err.message || '열린 편지를 삭제하지 못했습니다');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function togglePublicLetterSelection(id) {
+    setSelectedPublicLetterIds(prev => (prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]));
+  }
+
+  function toggleAllPublicLetters() {
+    setSelectedPublicLetterIds(prev => (prev.length === publicLetters.length ? [] : publicLetters.map(letter => letter.id)));
+  }
+
+  async function deleteSelectedPublicLetters() {
+    const ids = selectedPublicLetterIds;
+    if (ids.length === 0) {
+      setMessage('삭제할 열린 편지를 선택해 주세요.');
+      return;
+    }
+    if (!window.confirm(`선택한 열린 편지 ${ids.length}개를 삭제하시겠습니까?`)) return;
+
+    setBusyId('delete-public-letters');
+    setMessage('');
+    try {
+      const data = await fetchJson('/admin/public-letters', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      setSelectedPublicLetter(prev => (prev && ids.includes(prev.id) ? null : prev));
+      setSelectedPublicLetterIds([]);
+      setMessage(data.message || '선택한 열린 편지를 삭제했습니다.');
+      await loadPublicLetters();
+    } catch (err) {
+      setMessage(err.message || '선택한 열린 편지를 삭제하지 못했습니다');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  function toggleLetterSelection(id) {
+    setSelectedLetterIds(prev => (prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]));
+  }
+
+  function toggleAllLetters() {
+    setSelectedLetterIds(prev => (prev.length === letters.length ? [] : letters.map(letter => letter.id)));
+  }
+
+  async function deleteSelectedLetters() {
+    const ids = selectedLetterIds;
+    if (ids.length === 0) {
+      setMessage('삭제할 편지를 선택해 주세요.');
+      return;
+    }
+    if (!window.confirm(`선택한 편지 ${ids.length}개를 삭제하시겠습니까?`)) return;
+
+    setBusyId('delete-letters');
+    setMessage('');
+    try {
+      const data = await fetchJson('/admin/letters', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids }),
+      });
+      setSelectedLetterIds([]);
+      setMessage(data.message || '선택한 편지를 삭제했습니다.');
+      await loadAdminLetters();
+    } catch (err) {
+      setMessage(err.message || '선택한 편지를 삭제하지 못했습니다');
     } finally {
       setBusyId(null);
     }
@@ -525,17 +602,43 @@ export default function AdminPage() {
         <section style={{ ...panelStyle, overflow: 'hidden' }}>
           <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <span>열린 편지함 관리</span>
-            <span style={{ color: 'rgba(255,252,223,0.48)' }}>{publicLetters.length}개</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <span style={{ color: 'rgba(255,252,223,0.48)' }}>{publicLetters.length}개</span>
+              <button
+                type="button"
+                style={{ ...buttonStyle, minHeight: 34, padding: '0 12px', fontSize: 12 }}
+                disabled={publicLetters.length === 0 || busyId === 'delete-public-letters'}
+                onClick={toggleAllPublicLetters}
+              >
+                {selectedPublicLetterIds.length === publicLetters.length && publicLetters.length > 0 ? '선택 해제' : '전체 선택'}
+              </button>
+              <button
+                type="button"
+                style={{ ...dangerButtonStyle, minHeight: 34, padding: '0 12px', fontSize: 12 }}
+                disabled={selectedPublicLetterIds.length === 0 || busyId === 'delete-public-letters'}
+                onClick={deleteSelectedPublicLetters}
+              >
+                {busyId === 'delete-public-letters' ? '삭제 중...' : `선택 삭제${selectedPublicLetterIds.length ? ` (${selectedPublicLetterIds.length})` : ''}`}
+              </button>
+            </div>
           </div>
           {publicLetters.length === 0 ? (
             <div style={{ padding: 28, color: 'rgba(255,252,223,0.45)' }}>아직 열린 편지가 없습니다.</div>
           ) : (
             <div style={{ display: 'grid' }}>
               {publicLetters.map(letter => (
-                <div key={letter.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 10, alignItems: 'center' }}>
+                <div key={letter.id} style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) auto', gap: 10, alignItems: 'center' }}>
+                  <input
+                    type="checkbox"
+                    aria-label={`열린 편지 ${letter.id} 선택`}
+                    checked={selectedPublicLetterIds.includes(letter.id)}
+                    onChange={() => togglePublicLetterSelection(letter.id)}
+                    style={{ width: 18, height: 18, accentColor: '#e8c28a' }}
+                  />
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 7 }}>
                       <strong style={{ fontWeight: 500 }}>{letter.nickname}</strong>
+                      <span style={{ color: '#ffe8c4', fontSize: 12 }}>열린 편지 ID {letter.id}</span>
                       <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>{letter.type === 'draw' ? '그림' : letter.type === 'photo' ? '사진' : '텍스트'}</span>
                       <span style={{ color: letter.visible ? '#8fd19e' : '#ff9b9b', fontSize: 12 }}>{letter.visible ? '공개' : '숨기기'}</span>
                       <span style={{ color: 'rgba(255,252,223,0.38)', fontSize: 12 }}>{formatDate(letter.createdAt)}</span>
@@ -579,7 +682,10 @@ export default function AdminPage() {
         <section style={{ ...panelStyle, overflow: 'hidden' }}>
           <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <span>등록된 선생님 편지</span>
-            <span style={{ color: 'rgba(255,252,223,0.48)' }}>{teacherLetters.length}개</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <span style={{ color: 'rgba(255,252,223,0.48)' }}>{teacherLetters.length}개</span>
+              <span style={{ color: 'rgba(255,252,223,0.58)', fontSize: 12 }}>수정만 가능</span>
+            </div>
           </div>
           {teacherLetters.length === 0 ? (
             <div style={{ padding: 28, color: 'rgba(255,252,223,0.45)' }}>아직 등록된 편지가 없습니다.</div>
@@ -662,11 +768,29 @@ export default function AdminPage() {
         </section>
 
         <section style={{ ...panelStyle, overflow: 'hidden' }}>
-          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+          <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
             <span>편지 날짜/발송 관리</span>
             <span style={{ color: 'rgba(255,252,223,0.48)' }}>{letters.length}개</span>
           </div>
-          <div style={{ padding: '12px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ padding: '12px 22px', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                style={{ ...buttonStyle, minHeight: 34, padding: '0 12px', fontSize: 12 }}
+                disabled={letters.length === 0 || busyId === 'delete-letters'}
+                onClick={toggleAllLetters}
+              >
+                {selectedLetterIds.length === letters.length && letters.length > 0 ? '선택 해제' : '전체 선택'}
+              </button>
+              <button
+                type="button"
+                style={{ ...dangerButtonStyle, minHeight: 34, padding: '0 12px', fontSize: 12 }}
+                disabled={selectedLetterIds.length === 0 || busyId === 'delete-letters'}
+                onClick={deleteSelectedLetters}
+              >
+                {busyId === 'delete-letters' ? '삭제 중...' : `선택 삭제${selectedLetterIds.length ? ` (${selectedLetterIds.length})` : ''}`}
+              </button>
+            </div>
             <button type="button" style={buttonStyle} onClick={sendDueAdminLetters} disabled={letterSending}>
               {letterSending ? '발송 중...' : '열람일 지난 편지 발송'}
             </button>
@@ -681,11 +805,20 @@ export default function AdminPage() {
               const savingThisEmail = busyId === `email-letter-${letter.id}`;
               const deliveryEmail = getLetterDeliveryEmail(letter);
               return (
-              <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(220px, 280px) auto auto', gap: 12, alignItems: 'center' }}>
+              <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) minmax(220px, 280px) auto auto', gap: 12, alignItems: 'center' }}>
+                <input
+                  type="checkbox"
+                  aria-label={`편지 ${letter.id} 선택`}
+                  checked={selectedLetterIds.includes(letter.id)}
+                  onChange={() => toggleLetterSelection(letter.id)}
+                  style={{ width: 18, height: 18, accentColor: '#e8c28a' }}
+                />
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'baseline' }}>
                     <strong style={{ fontWeight: 500 }}>{letter.author?.name || '알 수 없음'}</strong>
                     <span style={{ color: 'rgba(255,252,223,0.56)' }}>@{letter.author?.userid}</span>
+                    <span style={{ color: '#ffe8c4', fontSize: 12 }}>편지 ID {letter.id}</span>
+                    <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>작성자 ID {letter.author?.id || '-'}</span>
                     <span style={{ color: '#ffe8c4', fontSize: 12 }}>{letter.type}</span>
                     <span style={{ color: status.color, fontSize: 12 }}>{status.label}</span>
                   </div>
@@ -772,6 +905,7 @@ export default function AdminPage() {
                     <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>
                       {selectedPublicLetter.type === 'draw' ? '그림' : selectedPublicLetter.type === 'photo' ? '사진' : '텍스트'}
                     </span>
+                    <span style={{ color: '#ffe8c4', fontSize: 12 }}>열린 편지 ID {selectedPublicLetter.id}</span>
                   </div>
                   <div style={{ color: 'rgba(255,252,223,0.46)', fontSize: 13 }}>
                     {formatDate(selectedPublicLetter.createdAt)}
