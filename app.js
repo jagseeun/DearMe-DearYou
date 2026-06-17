@@ -18,7 +18,27 @@ const isProduction = process.env.NODE_ENV === "production";
 const SESSION_COOKIE_NAME = "dearme.sid";
 const USERID_REGEX = /^[a-zA-Z0-9]+$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_USER_EMAIL_MESSAGE = "이메일 형식을 확인해 주세요. 예: name@example.com";
+const ALLOWED_USER_EMAIL_MESSAGE = "이메일 형식을 확인해 주세요. gmail.com/naver.com/e-mirim.hs.kr 도메인은 오타 없이 입력하고, 미림 이메일은 s24/s25/s26 또는 d24/d25/d26으로 시작해야 해요.";
+const KNOWN_USER_EMAIL_DOMAIN_TYPOS = new Set([
+  "gamil.com",
+  "gmial.com",
+  "gmai.com",
+  "gnail.com",
+  "gmail.co",
+  "gmail.con",
+  "gmail.cm",
+  "navre.com",
+  "nvaer.com",
+  "naver.co",
+  "naver.con",
+  "naver.cpm",
+  "naver.comm",
+  "emirim.hs.kr",
+  "e-mrim.hs.kr",
+  "e-mirim.hskr",
+  "e-mirim.hs.com",
+  "e-mirim.kr",
+]);
 const PASSWORD_MIN_LENGTH = 6;
 const PASSWORD_MAX_LENGTH = 128;
 const USERID_MAX_LENGTH = 20;
@@ -138,7 +158,14 @@ function isValidEmail(value) {
 }
 
 function isAllowedUserEmail(value) {
-  return isValidEmail(value);
+  if (!isValidEmail(value)) return false;
+  const email = String(value).trim().toLowerCase();
+  const atIndex = email.lastIndexOf("@");
+  const local = email.slice(0, atIndex);
+  const domain = email.slice(atIndex + 1);
+  if (KNOWN_USER_EMAIL_DOMAIN_TYPOS.has(domain)) return false;
+  if (domain === "e-mirim.hs.kr") return /^[sd](24|25|26)/.test(local);
+  return true;
 }
 
 function normalizePublicText(value = "") {
