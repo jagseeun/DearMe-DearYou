@@ -18,8 +18,7 @@ const isProduction = process.env.NODE_ENV === "production";
 const SESSION_COOKIE_NAME = "dearme.sid";
 const USERID_REGEX = /^[a-zA-Z0-9]+$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_USER_EMAIL_DOMAINS = new Set(["gmail.com", "naver.com", "e-mirim.hs.kr"]);
-const ALLOWED_USER_EMAIL_MESSAGE = "이메일 형식은 gmail.com, naver.com, e-mirim.hs.kr만 가능합니다.";
+const ALLOWED_USER_EMAIL_MESSAGE = "이메일 형식을 확인해 주세요. 예: name@example.com";
 const PASSWORD_MIN_LENGTH = 6;
 const PASSWORD_MAX_LENGTH = 128;
 const USERID_MAX_LENGTH = 20;
@@ -138,12 +137,8 @@ function isValidEmail(value) {
   return typeof value === "string" && value.length <= 254 && EMAIL_REGEX.test(value);
 }
 
-function emailDomain(value = "") {
-  return String(value).trim().toLowerCase().split("@").pop() || "";
-}
-
 function isAllowedUserEmail(value) {
-  return isValidEmail(value) && ALLOWED_USER_EMAIL_DOMAINS.has(emailDomain(value));
+  return isValidEmail(value);
 }
 
 function normalizePublicText(value = "") {
