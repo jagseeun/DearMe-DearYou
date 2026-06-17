@@ -19127,13 +19127,16 @@ input:disabled,
 
 .write-photo-attachment {
   display: grid !important;
-  grid-template-columns: 42px minmax(0, 1fr) 30px !important;
+  grid-template-columns: 30px 24px !important;
   align-items: center !important;
-  gap: 9px !important;
-  min-height: 48px !important;
-  max-width: min(100%, 258px) !important;
-  padding: 5px 6px !important;
-  border-radius: 14px !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  width: 72px !important;
+  min-width: 72px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 3px 5px !important;
+  border-radius: 999px !important;
   border: 1px solid rgba(255, 238, 205, 0.18) !important;
   background:
     linear-gradient(135deg, rgba(255, 238, 202, 0.12), rgba(168, 200, 181, 0.08)),
@@ -19144,11 +19147,11 @@ input:disabled,
 }
 
 .write-photo-attachment img {
-  width: 42px !important;
-  height: 42px !important;
+  width: 30px !important;
+  height: 30px !important;
   display: block !important;
   object-fit: cover !important;
-  border-radius: 10px !important;
+  border-radius: 999px !important;
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
@@ -19179,8 +19182,8 @@ input:disabled,
 }
 
 .write-photo-remove {
-  width: 28px !important;
-  height: 28px !important;
+  width: 24px !important;
+  height: 24px !important;
   display: inline-grid !important;
   place-items: center !important;
   border: 1px solid rgba(255, 199, 190, 0.18) !important;
@@ -19188,7 +19191,7 @@ input:disabled,
   background: rgba(255, 255, 255, 0.06) !important;
   color: rgba(255, 190, 180, 0.82) !important;
   font-family: inherit !important;
-  font-size: 17px !important;
+  font-size: 15px !important;
   line-height: 1 !important;
   cursor: pointer !important;
 }
@@ -19245,9 +19248,57 @@ input:disabled,
   font-size: 25px !important;
 }
 
+.open-compose-modal .open-textarea-wrap,
+.open-letter-edit-form .open-textarea-wrap {
+  position: relative !important;
+  grid-column: 1 / -1 !important;
+  min-width: 0 !important;
+}
+
+.open-compose-modal .open-textarea-wrap .open-compose-textarea,
+.open-letter-edit-form .open-textarea-wrap .open-compose-textarea {
+  width: 100% !important;
+  padding-bottom: 40px !important;
+}
+
+.open-text-count {
+  position: absolute !important;
+  right: 12px !important;
+  bottom: 10px !important;
+  z-index: 2 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 24px !important;
+  padding: 0 8px !important;
+  border: 1px solid rgba(246, 214, 174, 0.12) !important;
+  border-radius: 999px !important;
+  background: rgba(8, 10, 15, 0.38) !important;
+  color: rgba(255, 229, 196, 0.54) !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  pointer-events: none !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+}
+
+.open-text-count.is-near-limit {
+  color: rgba(255, 232, 190, 0.74) !important;
+  border-color: rgba(255, 232, 190, 0.2) !important;
+}
+
+.open-text-count.is-limit {
+  color: rgba(255, 218, 172, 0.9) !important;
+  border-color: rgba(255, 218, 172, 0.3) !important;
+}
+
+.open-compose-modal .open-compose-footer {
+  justify-content: flex-end !important;
+}
+
 @media (max-width: 760px) {
   .write-stage.write-stage-text .write-paper.has-photo .write-textarea {
-    padding-bottom: 166px !important;
+    padding-bottom: 128px !important;
   }
 
   .write-stage.write-stage-text .write-tools-row {
@@ -19263,10 +19314,12 @@ input:disabled,
   }
 
   .write-stage.write-stage-text .write-tools-row > .write-photo-attachment {
-    flex: 1 1 100% !important;
-    order: 3 !important;
-    max-width: 100% !important;
-    min-height: 46px !important;
+    flex: 0 0 72px !important;
+    order: 0 !important;
+    width: 72px !important;
+    min-width: 72px !important;
+    height: 36px !important;
+    min-height: 36px !important;
     border-color: rgba(141, 96, 58, 0.16) !important;
     background:
       linear-gradient(135deg, rgba(255, 250, 244, 0.58), rgba(245, 229, 211, 0.4)),
@@ -19311,5 +19364,16 @@ input:disabled,
     min-width: 58px !important;
     min-height: 58px !important;
     font-size: 27px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .open-compose-modal .open-textarea-wrap,
+  .open-letter-edit-form .open-textarea-wrap {
+    grid-column: 1 / -1 !important;
+  }
+
+  .open-compose-modal .open-compose-footer {
+    align-items: stretch !important;
   }
 }

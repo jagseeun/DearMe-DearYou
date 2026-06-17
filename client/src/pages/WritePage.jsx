@@ -1229,10 +1229,6 @@ export default function WritePage() {
                   {imageUrl && (
                     <div className="write-photo-attachment">
                       <img src={imageUrl} alt="첨부한 사진 미리보기" />
-                      <span className="write-photo-copy">
-                        <strong>사진 첨부됨</strong>
-                        <em>편지에 함께 담겨요</em>
-                      </span>
                       <button type="button" className="write-photo-remove" onClick={() => setImageUrl('')} aria-label="첨부 사진 삭제">×</button>
                     </div>
                   )}

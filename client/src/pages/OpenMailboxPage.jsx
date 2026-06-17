@@ -607,9 +607,6 @@ export default function OpenMailboxPage() {
                   maxLength={NICKNAME_MAX_LENGTH}
                   placeholder="닉네임을 입력해 주세요"
                 />
-                <span className={`field-limit-hint ${nickname.length >= NICKNAME_MAX_LENGTH * 0.8 ? 'is-near-limit' : ''} ${nickname.length >= NICKNAME_MAX_LENGTH ? 'is-limit' : ''}`}>
-                  닉네임 {nickname.length}/{NICKNAME_MAX_LENGTH}
-                </span>
                 <input
                   className="open-compose-input"
                   type="password"
@@ -636,17 +633,24 @@ export default function OpenMailboxPage() {
 
                 <AnimatePresence mode="wait">
                   {mode === 'text' && (
-                    <motion.textarea
+                    <motion.div
                       key="text"
-                      className="open-compose-textarea"
-                      value={content}
-                      onChange={event => changeContent(event.target.value)}
-                      maxLength={CONTENT_MAX_LENGTH}
-                      placeholder="모두에게 남길 마음을 적어 주세요"
+                      className="open-textarea-wrap"
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -6 }}
-                    />
+                    >
+                      <textarea
+                        className="open-compose-textarea"
+                        value={content}
+                        onChange={event => changeContent(event.target.value)}
+                        maxLength={CONTENT_MAX_LENGTH}
+                        placeholder="모두에게 남길 마음을 적어 주세요"
+                      />
+                      <span className={`open-text-count ${content.length >= CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${content.length >= CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}>
+                        {content.length}/{CONTENT_MAX_LENGTH}
+                      </span>
+                    </motion.div>
                   )}
 
                   {mode === 'draw' && (
@@ -684,9 +688,9 @@ export default function OpenMailboxPage() {
                 </AnimatePresence>
 
                 <div className="open-compose-footer">
-                  <span className={mode === 'text' && content.length >= CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''}>
-                    {mode === 'text' ? `${content.length}/${CONTENT_MAX_LENGTH} · 남은 ${Math.max(0, CONTENT_MAX_LENGTH - content.length)}자` : mode === 'photo' ? '사진 1장' : '그림 1장'}
-                  </span>
+                  {mode !== 'text' && (
+                    <span>{mode === 'photo' ? '사진 1장' : '그림 1장'}</span>
+                  )}
                   <button type="submit" disabled={saving || photoUploading}>
                     {saving ? '저장 중...' : '남기기'}
                   </button>
@@ -724,11 +728,8 @@ export default function OpenMailboxPage() {
                     maxLength={NICKNAME_MAX_LENGTH}
                     placeholder="닉네임을 입력해 주세요"
                   />
-                  <span className={`field-limit-hint ${editNickname.length >= NICKNAME_MAX_LENGTH * 0.8 ? 'is-near-limit' : ''} ${editNickname.length >= NICKNAME_MAX_LENGTH ? 'is-limit' : ''}`}>
-                    닉네임 {editNickname.length}/{NICKNAME_MAX_LENGTH}
-                  </span>
                   {selected.type === 'text' && (
-                    <>
+                    <div className="open-textarea-wrap">
                       <textarea
                         className="open-compose-textarea compact"
                         value={editContent}
@@ -736,10 +737,10 @@ export default function OpenMailboxPage() {
                         maxLength={CONTENT_MAX_LENGTH}
                         placeholder="내용을 입력해 주세요"
                       />
-                      <span className={`field-limit-hint ${editContent.length >= CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${editContent.length >= CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}>
-                        내용 {editContent.length}/{CONTENT_MAX_LENGTH} · 남은 {Math.max(0, CONTENT_MAX_LENGTH - editContent.length)}자
+                      <span className={`open-text-count ${editContent.length >= CONTENT_MAX_LENGTH * 0.85 ? 'is-near-limit' : ''} ${editContent.length >= CONTENT_MAX_LENGTH ? 'is-limit' : ''}`}>
+                        {editContent.length}/{CONTENT_MAX_LENGTH}
                       </span>
-                    </>
+                    </div>
                   )}
                   {selected.type === 'draw' && (
                     <div className="open-edit-draw">
