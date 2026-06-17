@@ -27,6 +27,7 @@ const NAME_MAX_LENGTH = 10;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const LETTER_CONTENT_MAX_LENGTH = 1500;
 const LETTER_EMAIL_SUBJECT_MAX_LENGTH = 40;
+const LETTER_OPEN_DATE_MAX_YEARS = 3;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
 const PUBLIC_LETTER_CONTENT_MAX_LENGTH = 100;
@@ -331,6 +332,29 @@ function parseOpenDate(value) {
   const date = new Date(value);
   if (!value || Number.isNaN(date.getTime())) return null;
   return date;
+}
+
+function validateLetterOpenDate(date, { allowImmediate = false } = {}) {
+  const now = new Date();
+  const maxOpenDate = new Date(now);
+  maxOpenDate.setFullYear(maxOpenDate.getFullYear() + LETTER_OPEN_DATE_MAX_YEARS);
+
+  if (date > maxOpenDate) {
+    return `열람일은 최대 ${LETTER_OPEN_DATE_MAX_YEARS}년 뒤까지만 선택할 수 있어요.`;
+  }
+
+  if (allowImmediate) {
+    const immediateFloor = new Date(now.getTime() - 10 * 60 * 1000);
+    if (date < immediateFloor) return "과거 날짜로는 편지를 보낼 수 없어요.";
+    return null;
+  }
+
+  const minimumOpenDate = new Date(now);
+  minimumOpenDate.setHours(0, 0, 0, 0);
+  minimumOpenDate.setDate(minimumOpenDate.getDate() + 1);
+  if (date < minimumOpenDate) return "과거 날짜로는 편지를 보낼 수 없어요. 내일부터 선택해 주세요.";
+
+  return null;
 }
 
 function safeHttpUrl(value) {
@@ -2026,6 +2050,10 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (req.body.openDate && !parsedOpenDate) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
+  if (parsedOpenDate) {
+    const openDateError = validateLetterOpenDate(parsedOpenDate);
+    if (openDateError) return res.status(400).json({ message: openDateError });
+  }
 
   const videoUrl = req.body.videoUrl ? normalizePublicAssetUrl(req.body.videoUrl) : null;
   const imageUrl = req.body.imageUrl ? normalizePublicAssetUrl(req.body.imageUrl) : null;
@@ -2124,6 +2152,8 @@ app.post("/letter-email-preview", writeLimiter, async (req, res) => {
   const recipientEmail = String(req.body.recipientEmail || "").trim().toLowerCase();
   const recipientName = String(req.body.recipientName || "").trim();
   const emailSubject = normalizeEmailSubject(req.body.emailSubject);
+  const parsedOpenDate = req.body.openDate ? parseOpenDate(req.body.openDate) : null;
+  const sendNow = Boolean(req.body.sendNow);
 
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
   if (content.length > LETTER_CONTENT_MAX_LENGTH) return res.status(400).json({ message: `내용은 ${LETTER_CONTENT_MAX_LENGTH}자를 넘을 수 없습니다.` });
@@ -2131,7 +2161,11 @@ app.post("/letter-email-preview", writeLimiter, async (req, res) => {
   if (recipientEmail && !isAllowedUserEmail(recipientEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
-  if (req.body.openDate && !parseOpenDate(req.body.openDate)) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
+  if (req.body.openDate && !parsedOpenDate) return res.status(400).json({ message: "열람일 형식을 확인해 주세요." });
+  if (parsedOpenDate) {
+    const openDateError = validateLetterOpenDate(parsedOpenDate, { allowImmediate: sendNow });
+    if (openDateError) return res.status(400).json({ message: openDateError });
+  }
   if (req.body.videoUrl && !normalizePublicAssetUrl(req.body.videoUrl)) return res.status(400).json({ message: "영상 URL을 확인할 수 없습니다." });
   if (req.body.imageUrl && !normalizePublicAssetUrl(req.body.imageUrl)) return res.status(400).json({ message: "이미지 URL을 확인할 수 없습니다." });
   if (req.body.signatureData && !normalizePublicAssetUrl(req.body.signatureData)) return res.status(400).json({ message: "서명 이미지 URL을 확인할 수 없습니다." });
@@ -2167,6 +2201,7 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
   const recipientName = String(req.body.recipientName || "").trim();
   const emailSubject = normalizeEmailSubject(req.body.emailSubject);
   const emailTheme = normalizeEmailTheme(req.body.emailTheme);
+  const sendNow = Boolean(req.body.sendNow);
   const authorId = req.session.user.id;
   if (!ALLOWED_LETTER_TYPES.has(type)) return res.status(400).json({ message: "지원하지 않는 편지 형식입니다." });
   if (type === "text" && !content.trim()) return res.status(400).json({ message: "편지에 남길 내용을 입력해 주세요." });
@@ -2187,9 +2222,8 @@ app.post("/write-letter", writeLimiter, async (req, res) => {
 
   const parsedOpenDate = parseOpenDate(openDate);
   if (!parsedOpenDate) return res.status(400).json({ message: "편지를 열어 볼 날짜를 선택해 주세요." });
-  const maxOpenDate = new Date();
-  maxOpenDate.setFullYear(maxOpenDate.getFullYear() + 100);
-  if (parsedOpenDate > maxOpenDate) return res.status(400).json({ message: "편지를 열어 볼 날짜는 100년 이내로 선택해 주세요." });
+  const openDateError = validateLetterOpenDate(parsedOpenDate, { allowImmediate: sendNow });
+  if (openDateError) return res.status(400).json({ message: openDateError });
 
   if (recipientName.length > RECIPIENT_NAME_MAX_LENGTH) return res.status(400).json({ message: `받는 사람 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (emailSubject.length > LETTER_EMAIL_SUBJECT_MAX_LENGTH) return res.status(400).json({ message: `메일 제목은 ${LETTER_EMAIL_SUBJECT_MAX_LENGTH}자를 넘을 수 없습니다.` });
@@ -2740,6 +2774,8 @@ app.patch("/admin/letters/:id/open-date", adminLimiter, requireAdmin, async (req
 
   const nextDate = new Date(openDate);
   if (Number.isNaN(nextDate.getTime())) return res.status(400).json({ message: "날짜 형식을 확인해 주세요." });
+  const openDateError = validateLetterOpenDate(nextDate);
+  if (openDateError) return res.status(400).json({ message: openDateError });
 
   try {
     const letter = await prisma.letter.update({

@@ -12,6 +12,7 @@ const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transiti
 const LETTER_CONTENT_MAX_LENGTH = 1500;
 const LETTER_EMAIL_SUBJECT_MAX_LENGTH = 40;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
+const LETTER_OPEN_DATE_MAX_YEARS = 3;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 const VIDEO_RECORDER_OPTIONS = [
@@ -25,7 +26,14 @@ const VIDEO_RECORDER_OPTIONS = [
 function defaultOpenDate() {
   const d = new Date();
   d.setFullYear(d.getFullYear() + 1);
-  return d.toISOString().split('T')[0];
+  return formatDateInput(d);
+}
+
+function formatDateInput(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function dataUrlToBlob(dataUrl) {
@@ -123,8 +131,23 @@ function LetterTextarea({ value, onChange, placeholder }) {
 }
 function tomorrow() {
   const d = new Date();
+  d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() + 1);
-  return d.toISOString().split('T')[0];
+  return formatDateInput(d);
+}
+
+function maxOpenDate() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setFullYear(d.getFullYear() + LETTER_OPEN_DATE_MAX_YEARS);
+  return formatDateInput(d);
+}
+
+function validateScheduledOpenDate(value) {
+  if (!value) return '편지를 열어 볼 날짜를 선택해 주세요.';
+  if (value < tomorrow()) return '과거 날짜로는 편지를 보낼 수 없어요. 내일부터 선택해 주세요.';
+  if (value > maxOpenDate()) return `열람일은 최대 ${LETTER_OPEN_DATE_MAX_YEARS}년 뒤까지만 선택할 수 있어요.`;
+  return '';
 }
 
 // ── 글자 하나씩 페이드인 글 편지 입력 컴포넌트 ──
@@ -514,9 +537,10 @@ export default function WritePage() {
       if (!frame || !documentEl) return;
 
       const frameWidth = frame.clientWidth || 1;
-      const contentWidth = documentEl.scrollWidth || 700;
+      const contentWidth = documentEl.scrollWidth || 620;
       const contentHeight = documentEl.scrollHeight || 1;
-      const nextScale = Math.min(1, frameWidth / contentWidth);
+      const maxScale = window.innerWidth <= 520 ? 0.82 : 0.9;
+      const nextScale = Math.min(maxScale, frameWidth / contentWidth);
       const safeScale = Number(nextScale.toFixed(3));
       const scaledHeight = Math.ceil(contentHeight * safeScale);
       const frameLimit = window.innerWidth <= 520
@@ -759,6 +783,9 @@ export default function WritePage() {
   }
 
   async function saveDraft() {
+    const dateError = validateScheduledOpenDate(openDate);
+    if (dateError) return showNotice(dateError);
+
     setDraftSaving(true);
     try {
       let draftImageUrl = mode === 'draw' ? (drawPreviewImageUrl || drawDraftImageUrl || undefined) : (imageUrl || undefined);
@@ -818,6 +845,16 @@ export default function WritePage() {
   }
 
   async function loadEmailPreview() {
+    if (!sendNow) {
+      const dateError = validateScheduledOpenDate(openDate);
+      if (dateError) {
+        setEmailPreview({ subject: '', html: '' });
+        setEmailPreviewError(dateError);
+        setEmailPreviewLoading(false);
+        return;
+      }
+    }
+
     setEmailPreviewLoading(true);
     setEmailPreviewError('');
     setEmailPreviewHeight(0);
@@ -848,6 +885,7 @@ export default function WritePage() {
           imageUrl: mode === 'text' ? (previewImageUrl || undefined) : mode === 'draw' ? (previewImageUrl || undefined) : undefined,
           signatureData: mode === 'text' ? (previewSignatureData || undefined) : undefined,
           openDate: effectiveOpenDate,
+          sendNow,
           emailSubject: emailSubject.trim(),
           emailTheme,
           toOther,
@@ -882,6 +920,10 @@ export default function WritePage() {
     const cleanEmailSubject = emailSubject.trim();
     const cleanRecipientEmail = recipientEmail.trim().toLowerCase();
     const cleanRecipientName = recipientName.trim();
+    if (!sendNow) {
+      const dateError = validateScheduledOpenDate(openDate);
+      if (dateError) return showNotice(dateError);
+    }
     const effectiveOpenDate = sendNow ? new Date().toISOString() : openDate;
     const isImmediateDelivery = sendNow || new Date(effectiveOpenDate) <= new Date();
     if (isImmediateDelivery && !toOther && !cleanEmail) return showNotice('바로 보내려면 받을 이메일을 입력해 주세요.');
@@ -914,6 +956,7 @@ export default function WritePage() {
         imageUrl: mode === 'text' ? (imageUrl || undefined) : mode === 'draw' ? drawImageUrl : undefined,
         signatureData: mode === 'text' ? (finalSignature || undefined) : undefined,
         openDate: effectiveOpenDate,
+        sendNow,
         emailSubject: cleanEmailSubject || undefined,
         emailTheme,
         email: toOther ? undefined : cleanEmail,
@@ -1370,7 +1413,7 @@ export default function WritePage() {
                       이메일을 바로 보냅니다
                     </div>
                   ) : (
-                    <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
+                    <input type="date" min={tomorrow()} max={maxOpenDate()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
                   )}
                 </div>
 

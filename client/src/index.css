@@ -18386,8 +18386,8 @@ input:disabled,
   position: absolute;
   top: 0;
   left: 50%;
-  width: 700px;
-  min-width: 700px;
+  width: 620px;
+  min-width: 620px;
   transform: translateX(-50%) scale(var(--email-preview-scale, 0.6));
   transform-origin: top center;
   pointer-events: none;
@@ -18740,9 +18740,9 @@ input:disabled,
 
 /* Send letter modal: compact split preview layout and themed date input. */
 .write-modal-backdrop {
-  background: #06070c !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
+  background: rgba(5, 6, 10, 0.58) !important;
+  backdrop-filter: blur(14px) saturate(0.9) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(0.9) !important;
   padding: 18px !important;
   box-sizing: border-box !important;
 }
@@ -18764,14 +18764,14 @@ input:disabled,
 }
 
 .write-modal-panel.has-email-preview {
-  width: min(1040px, calc(100vw - 36px)) !important;
-  max-width: min(1040px, calc(100vw - 36px)) !important;
+  width: min(940px, calc(100vw - 36px)) !important;
+  max-width: min(940px, calc(100vw - 36px)) !important;
   max-height: min(760px, calc(100dvh - 36px)) !important;
   display: grid !important;
-  grid-template-columns: minmax(360px, 1fr) minmax(320px, 390px) !important;
+  grid-template-columns: minmax(300px, 500px) minmax(320px, 370px) !important;
   align-content: center !important;
   align-items: center !important;
-  gap: 18px 24px !important;
+  gap: 18px 22px !important;
 }
 
 .write-modal-panel.has-email-preview > .write-email-preview {
@@ -18829,8 +18829,8 @@ input:disabled,
 }
 
 .write-modal-panel.has-email-preview .write-email-preview-frame {
-  height: min(520px, calc(100dvh - 210px)) !important;
-  max-height: min(520px, calc(100dvh - 210px)) !important;
+  height: min(480px, calc(100dvh - 210px)) !important;
+  max-height: min(480px, calc(100dvh - 210px)) !important;
   overflow: auto !important;
   border-radius: 14px !important;
 }

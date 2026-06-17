@@ -10,6 +10,7 @@ const ease = motionEase;
 const PASSWORD_MAX_LENGTH = 128;
 const TEACHER_TITLE_MAX_LENGTH = 120;
 const TEACHER_CONTENT_MAX_LENGTH = 10000;
+const LETTER_OPEN_DATE_MAX_YEARS = 3;
 const emptyTeacherForm = { teacherName: '', title: '', content: '' };
 
 const panelStyle = {
@@ -64,6 +65,25 @@ function toDateInputValue(value) {
   const offset = date.getTimezoneOffset();
   const local = new Date(date.getTime() - offset * 60000);
   return local.toISOString().slice(0, 16);
+}
+
+function dateTimeInputValue(date) {
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
+function minLetterOpenDateTime() {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + 1);
+  return dateTimeInputValue(date);
+}
+
+function maxLetterOpenDateTime() {
+  const date = new Date();
+  date.setFullYear(date.getFullYear() + LETTER_OPEN_DATE_MAX_YEARS);
+  return dateTimeInputValue(date);
 }
 
 function getLetterSendStatus(letter) {
@@ -872,6 +892,8 @@ export default function AdminPage() {
                 <input
                   style={inputStyle}
                   type="datetime-local"
+                  min={minLetterOpenDateTime()}
+                  max={maxLetterOpenDateTime()}
                   value={dateDrafts[letter.id] || ''}
                   onChange={e => setDateDrafts(prev => ({ ...prev, [letter.id]: e.target.value }))}
                 />
