@@ -67,9 +67,13 @@ function toDateInputValue(value) {
 }
 
 function getLetterSendStatus(letter) {
-  if (letter.sentAt) return { key: 'sent', label: `\uC644\uB8CC ${formatDate(letter.sentAt)}`, color: '#8fd19e' };
+  if (letter.sentAt) return { key: 'sent', label: '메일 발송 완료', detail: formatDate(letter.sentAt), color: '#8fd19e' };
   if (new Date(letter.openDate) <= new Date()) return { key: 'due', label: '\uBC1C\uC1A1 \uB300\uAE30', color: '#ffd38a' };
   return { key: 'scheduled', label: '\uC608\uC57D', color: 'rgba(255,252,223,0.48)' };
+}
+
+function formatLetterStatus(status) {
+  return status.detail ? `${status.label} ${status.detail}` : status.label;
 }
 
 function getLetterDeliveryEmail(letter) {
@@ -100,6 +104,7 @@ export default function AdminPage() {
   const [selectedPublicLetterIds, setSelectedPublicLetterIds] = useState([]);
   const [users, setUsers] = useState([]);
   const [letters, setLetters] = useState([]);
+  const [selectedLetter, setSelectedLetter] = useState(null);
   const [selectedLetterIds, setSelectedLetterIds] = useState([]);
   const [form, setForm] = useState(emptyTeacherForm);
   const [editingTeacherId, setEditingTeacherId] = useState(null);
@@ -112,6 +117,7 @@ export default function AdminPage() {
   const [resending, setResending] = useState(false);
   const [teacherTestSendingId, setTeacherTestSendingId] = useState(null);
   const [letterSending, setLetterSending] = useState(false);
+  const [letterDetailLoadingId, setLetterDetailLoadingId] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [sendResult, setSendResult] = useState(null);
 
@@ -504,6 +510,22 @@ export default function AdminPage() {
     }
   }
 
+  async function openLetterDetail(letter) {
+    setLetterDetailLoadingId(letter.id);
+    setMessage('');
+    try {
+      const detail = await fetchJson(`/admin/letters/${letter.id}`);
+      setSelectedLetter(detail);
+    } catch (err) {
+      setMessage(err.message || '편지 내용을 불러오지 못했습니다');
+    } finally {
+      setLetterDetailLoadingId(null);
+    }
+  }
+
+  const selectedLetterStatus = selectedLetter ? getLetterSendStatus(selectedLetter) : null;
+  const selectedLetterDeliveryEmail = selectedLetter ? getLetterDeliveryEmail(selectedLetter) : '';
+
   if (checking || redirecting) {
     return <div style={{ position: 'relative', zIndex: 1, padding: 48, color: '#fffcdf' }}>권한을 확인하고 있습니다...</div>;
   }
@@ -805,7 +827,7 @@ export default function AdminPage() {
               const savingThisEmail = busyId === `email-letter-${letter.id}`;
               const deliveryEmail = getLetterDeliveryEmail(letter);
               return (
-              <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) minmax(220px, 280px) auto auto', gap: 12, alignItems: 'center' }}>
+              <div key={letter.id} style={{ padding: 18, borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'grid', gridTemplateColumns: 'auto minmax(0, 1fr) minmax(220px, 280px) auto', gap: 12, alignItems: 'center' }}>
                 <input
                   type="checkbox"
                   aria-label={`편지 ${letter.id} 선택`}
@@ -820,10 +842,10 @@ export default function AdminPage() {
                     <span style={{ color: '#ffe8c4', fontSize: 12 }}>편지 ID {letter.id}</span>
                     <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>작성자 ID {letter.author?.id || '-'}</span>
                     <span style={{ color: '#ffe8c4', fontSize: 12 }}>{letter.type}</span>
-                    <span style={{ color: status.color, fontSize: 12 }}>{status.label}</span>
+                    <span style={{ color: status.color, fontSize: 12 }}>{formatLetterStatus(status)}</span>
                   </div>
                   <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13 }}>
-                    받을 사람 {letter.recipientName || letter.recipientEmail || '미지정'} · 열람일 {formatDate(letter.openDate)} · <span style={{ color: status.color }}>발송 {status.label}</span>
+                    받을 사람 {letter.recipientName || letter.recipientEmail || '미지정'} · 열람일 {formatDate(letter.openDate)} · <span style={{ color: status.color }}>{formatLetterStatus(status)}</span>
                   </div>
                   <div style={{ marginTop: 7, color: 'rgba(255,252,223,0.48)', fontSize: 13, overflowWrap: 'anywhere' }}>
                     발송 이메일 {deliveryEmail || '-'} · 실제 발송 {letter.sentToEmail || '-'} · 테마 {letter.emailTheme === 'pink' ? '핑크' : '다크'}
@@ -853,20 +875,30 @@ export default function AdminPage() {
                   value={dateDrafts[letter.id] || ''}
                   onChange={e => setDateDrafts(prev => ({ ...prev, [letter.id]: e.target.value }))}
                 />
-                <button
-                  style={buttonStyle}
-                  disabled={busyId === `letter-${letter.id}` || sendingThisLetter || savingThisEmail}
-                  onClick={() => updateLetterDate(letter)}
-                >
-                  {busyId === `letter-${letter.id}` ? '수정 중...' : '날짜 저장'}
-                </button>
-                <button
-                  style={{ ...buttonStyle, opacity: canSend ? 1 : 0.45 }}
-                  disabled={!canSend || sendingThisLetter || busyId === `letter-${letter.id}` || savingThisEmail}
-                  onClick={() => sendAdminLetter(letter)}
-                >
-                  {sendingThisLetter ? '발송 중...' : (status.key === 'scheduled' ? '바로 발송' : status.label)}
-                </button>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, flexWrap: 'wrap' }}>
+                  <button
+                    style={buttonStyle}
+                    disabled={busyId === `letter-${letter.id}` || sendingThisLetter || savingThisEmail}
+                    onClick={() => updateLetterDate(letter)}
+                  >
+                    {busyId === `letter-${letter.id}` ? '수정 중...' : '날짜 저장'}
+                  </button>
+                  <button
+                    type="button"
+                    style={buttonStyle}
+                    disabled={letterDetailLoadingId === letter.id}
+                    onClick={() => openLetterDetail(letter)}
+                  >
+                    {letterDetailLoadingId === letter.id ? '불러오는 중...' : '내용 보기'}
+                  </button>
+                  <button
+                    style={{ ...buttonStyle, opacity: canSend ? 1 : 0.45 }}
+                    disabled={!canSend || sendingThisLetter || busyId === `letter-${letter.id}` || savingThisEmail}
+                    onClick={() => sendAdminLetter(letter)}
+                  >
+                    {sendingThisLetter ? '발송 중...' : (status.key === 'scheduled' ? '바로 발송' : status.label)}
+                  </button>
+                </div>
               </div>
               );
             })
@@ -963,6 +995,128 @@ export default function AdminPage() {
                 >
                   삭제
                 </button>
+              </div>
+            </motion.section>
+          </motion.div>
+        )}
+        {selectedLetter && selectedLetterStatus && (
+          <motion.div
+            className="modal-backdrop"
+            style={{ zIndex: 125, padding: 18 }}
+            onClick={() => setSelectedLetter(null)}
+            {...modalBackdropMotion}
+          >
+            <motion.section
+              className="modal-panel"
+              style={{
+                width: 'min(760px, calc(100vw - 36px))',
+                maxHeight: 'calc(100dvh - 36px)',
+                overflow: 'auto',
+                padding: 24,
+                background: 'rgba(22,22,27,0.96)',
+                color: '#fff3df',
+              }}
+              onClick={event => event.stopPropagation()}
+              {...modalPanelMotion}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 14, alignItems: 'flex-start', marginBottom: 18 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8 }}>
+                    <strong style={{ fontWeight: 500, fontSize: 18 }}>{selectedLetter.author?.name || '알 수 없음'}</strong>
+                    <span style={{ color: 'rgba(255,252,223,0.56)' }}>@{selectedLetter.author?.userid}</span>
+                    <span style={{ color: '#ffe8c4', fontSize: 12 }}>편지 ID {selectedLetter.id}</span>
+                    <span style={{ color: 'rgba(255,252,223,0.45)', fontSize: 12 }}>작성자 ID {selectedLetter.author?.id || '-'}</span>
+                    <span style={{ color: '#ffe8c4', fontSize: 12 }}>{selectedLetter.type}</span>
+                    <span style={{ color: selectedLetterStatus.color, fontSize: 12 }}>{formatLetterStatus(selectedLetterStatus)}</span>
+                  </div>
+                  <div style={{ color: 'rgba(255,252,223,0.48)', fontSize: 13, lineHeight: 1.7, overflowWrap: 'anywhere' }}>
+                    작성 {formatDate(selectedLetter.createdAt)} · 열람일 {formatDate(selectedLetter.openDate)}
+                    <br />
+                    받을 사람 {selectedLetter.recipientName || selectedLetter.recipientEmail || '미지정'} · 발송 이메일 {selectedLetterDeliveryEmail || '-'} · 실제 발송 {selectedLetter.sentToEmail || '-'}
+                  </div>
+                </div>
+                <button type="button" style={buttonStyle} onClick={() => setSelectedLetter(null)}>
+                  닫기
+                </button>
+              </div>
+
+              {selectedLetter.emailSubject && (
+                <div style={{ marginBottom: 12, color: 'rgba(255,252,223,0.68)', fontSize: 13, overflowWrap: 'anywhere' }}>
+                  제목 {selectedLetter.emailSubject}
+                </div>
+              )}
+
+              {selectedLetter.imageUrl && (
+                <img
+                  src={selectedLetter.imageUrl}
+                  alt=""
+                  style={{
+                    width: '100%',
+                    maxHeight: 420,
+                    objectFit: 'contain',
+                    borderRadius: 8,
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    background: 'rgba(255,255,255,0.04)',
+                    marginBottom: 14,
+                  }}
+                />
+              )}
+
+              {selectedLetter.videoUrl && (
+                <video
+                  src={selectedLetter.videoUrl}
+                  controls
+                  style={{
+                    width: '100%',
+                    maxHeight: 420,
+                    borderRadius: 8,
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    background: 'rgba(0,0,0,0.28)',
+                    marginBottom: 14,
+                  }}
+                />
+              )}
+
+              {(selectedLetter.callReplyVideoUrl || selectedLetter.callCompositeVideoUrl) && (
+                <div style={{ display: 'grid', gap: 12, marginBottom: 14 }}>
+                  {selectedLetter.callReplyVideoUrl && (
+                    <video src={selectedLetter.callReplyVideoUrl} controls style={{ width: '100%', maxHeight: 360, borderRadius: 8, background: 'rgba(0,0,0,0.28)' }} />
+                  )}
+                  {selectedLetter.callCompositeVideoUrl && (
+                    <video src={selectedLetter.callCompositeVideoUrl} controls style={{ width: '100%', maxHeight: 360, borderRadius: 8, background: 'rgba(0,0,0,0.28)' }} />
+                  )}
+                </div>
+              )}
+
+              {selectedLetter.signatureData && (
+                <img
+                  src={selectedLetter.signatureData}
+                  alt=""
+                  style={{
+                    display: 'block',
+                    width: 'min(260px, 100%)',
+                    maxHeight: 160,
+                    objectFit: 'contain',
+                    borderRadius: 8,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.05)',
+                    marginBottom: 14,
+                  }}
+                />
+              )}
+
+              <div style={{
+                minHeight: 120,
+                padding: 16,
+                borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'rgba(255,255,255,0.045)',
+                color: 'rgba(255,252,223,0.86)',
+                whiteSpace: 'pre-wrap',
+                lineHeight: 1.7,
+                overflowWrap: 'anywhere',
+              }}>
+                {selectedLetter.content || '텍스트 내용 없음'}
               </div>
             </motion.section>
           </motion.div>

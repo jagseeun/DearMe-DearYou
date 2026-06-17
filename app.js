@@ -2637,6 +2637,44 @@ app.get("/admin/letters", requireAdmin, async (req, res) => {
   }
 });
 
+app.get("/admin/letters/:id", adminLimiter, requireAdmin, async (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "편지 정보를 확인해 주세요." });
+
+  try {
+    const letter = await prisma.letter.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        type: true,
+        content: true,
+        videoUrl: true,
+        imageUrl: true,
+        signatureData: true,
+        recipientName: true,
+        recipientEmail: true,
+        deliveryEmail: true,
+        sentToEmail: true,
+        emailSubject: true,
+        emailTheme: true,
+        callReplyVideoUrl: true,
+        callCompositeVideoUrl: true,
+        callReplyEmail: true,
+        callReplySentAt: true,
+        openDate: true,
+        createdAt: true,
+        sentAt: true,
+        author: { select: { id: true, userid: true, name: true, email: true } },
+      },
+    });
+    if (!letter) return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
+    res.json(letter);
+  } catch (err) {
+    console.error("admin letter detail error:", err);
+    res.status(500).json({ message: "편지 내용을 불러오지 못했습니다." });
+  }
+});
+
 app.delete("/admin/letters", adminLimiter, requireAdmin, async (req, res) => {
   const ids = normalizeAdminIdList(req.body?.ids);
   if (ids.length === 0) return res.status(400).json({ message: "삭제할 편지를 선택해 주세요." });
