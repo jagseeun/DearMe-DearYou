@@ -115,27 +115,16 @@ export default function DonePage() {
               </div>
             </motion.div>
 
-            <motion.div
-              className="done-actions"
+            <motion.button
+              className="done-button"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.35, ease }}
+              onClick={() => setPhase('envelope')}
+              whileHover={{ scale: 1.018 }}
             >
-              <button
-                type="button"
-                className="done-button"
-                onClick={() => setPhase('envelope')}
-              >
-                확인
-              </button>
-              <button
-                type="button"
-                className="done-open-mailbox-button"
-                onClick={() => navigate('/open-mailbox')}
-              >
-                열린 편지함 보기
-              </button>
-            </motion.div>
+              확인
+            </motion.button>
           </motion.div>
         ) : (
           <motion.div

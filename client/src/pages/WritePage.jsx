@@ -9,7 +9,7 @@ import { ALLOWED_EMAIL_MESSAGE, isAllowedEmail } from '../utils/email.js';
 const ease = [0.16, 1, 0.3, 1];
 const container = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
 const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.96, ease } } };
-const LETTER_CONTENT_MAX_LENGTH = 500;
+const LETTER_CONTENT_MAX_LENGTH = 1500;
 const LETTER_EMAIL_SUBJECT_MAX_LENGTH = 40;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -435,7 +435,6 @@ export default function WritePage() {
   const [draft, setDraft] = useState(null);
   const [draftSaving, setDraftSaving] = useState(false);
   const [notice, setNotice] = useState(null);
-  const [showEmailPreview, setShowEmailPreview] = useState(false);
   const [emailPreview, setEmailPreview] = useState({ subject: '', html: '' });
   const [emailPreviewLoading, setEmailPreviewLoading] = useState(false);
   const [emailPreviewError, setEmailPreviewError] = useState('');
@@ -498,15 +497,15 @@ export default function WritePage() {
   }, []);
 
   useEffect(() => {
-    if (!showModal || !showEmailPreview) return undefined;
+    if (!showModal) return undefined;
     const timer = setTimeout(() => {
       loadEmailPreview();
     }, 360);
     return () => clearTimeout(timer);
-  }, [showModal, showEmailPreview, mode, text, videoUrl, imageUrl, drawHasDrawn, openDate, sendNow, emailSubject, emailTheme, toOther, recipientEmail, recipientName]);
+  }, [showModal, mode, text, videoUrl, imageUrl, drawHasDrawn, openDate, sendNow, emailSubject, emailTheme, toOther, recipientEmail, recipientName]);
 
   useEffect(() => {
-    if (!showEmailPreview || emailPreviewLoading || !emailPreview.html) return undefined;
+    if (!showModal || emailPreviewLoading || !emailPreview.html) return undefined;
 
     let frameId = 0;
     function fitPreview() {
@@ -556,7 +555,7 @@ export default function WritePage() {
       });
       window.removeEventListener('resize', fitPreview);
     };
-  }, [showEmailPreview, emailPreviewLoading, emailPreview.html]);
+  }, [showModal, emailPreviewLoading, emailPreview.html]);
 
   useEffect(() => { return () => { streamRef.current?.getTracks().forEach(t => t.stop()); }; }, []);
 
@@ -866,21 +865,11 @@ export default function WritePage() {
     }
   }
 
-  function toggleEmailPreview() {
-    if (showEmailPreview) {
-      setShowEmailPreview(false);
-      return;
-    }
-
-    setShowEmailPreview(true);
-  }
-
   async function handleFromMe() {
     if (mode === 'text' && !text.trim()) return showNotice('편지에 남길 내용을 입력해 주세요.');
     if (mode === 'video' && !videoUrl) return showNotice('먼저 영상 편지를 촬영해 주세요.');
     if (mode === 'draw' && !drawHasDrawn) return showNotice('그림 편지에 남길 그림을 그려 주세요.');
     setNotice(null);
-    setShowEmailPreview(true);
     setEmailPreview({ subject: '', html: '' });
     setEmailPreviewError('');
     setShowModal(true);
@@ -1316,7 +1305,7 @@ export default function WritePage() {
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}
           >
             <motion.div
-              className={`write-modal-panel ${showEmailPreview ? 'has-email-preview' : ''}`}
+              className="write-modal-panel has-email-preview"
               role="dialog"
               aria-label="편지 전송 설정"
               aria-modal="true"
@@ -1324,185 +1313,165 @@ export default function WritePage() {
               transition={{ duration: 0.4, ease }}
               style={{ background: 'rgba(30,40,55,0.95)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 28, padding: '44px 52px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 22, minWidth: 480, maxHeight: '90vh', overflowY: 'auto' }}
             >
-              {/* 열람일 */}
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <button type="button" onClick={() => setSendNow(false)}
-                    style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: !sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: !sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: !sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
-                    예약 보내기
-                  </button>
-                  <button type="button" onClick={() => setSendNow(true)}
-                    style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
-                    바로 보내기
-                  </button>
-                </div>
-                {sendNow ? (
-                  <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', color: 'rgba(255,252,223,0.72)' }}>
-                    이메일을 바로 보냅니다
-                  </div>
-                ) : (
-                  <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
-                )}
-              </div>
-
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={labelStyle}>편지 분위기</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  {[
-                    { value: 'dark', label: '다크' },
-                    { value: 'pink', label: '핑크' },
-                  ].map(option => {
-                    const selected = emailTheme === option.value;
-                    return (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setEmailTheme(option.value)}
-                        style={{
-                          padding: '10px 0',
-                          borderRadius: 12,
-                          border: '1px solid',
-                          borderColor: selected ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)',
-                          background: selected
-                            ? option.value === 'pink'
-                              ? 'linear-gradient(135deg, rgba(192,99,135,0.78), rgba(90,54,92,0.78))'
-                              : 'rgba(72,56,41,0.75)'
-                            : 'rgba(255,255,255,0.06)',
-                          color: selected ? '#ffeacd' : 'rgba(255,252,223,0.55)',
-                          fontFamily: 'inherit',
-                          cursor: 'pointer',
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={labelStyle}>
-                  메일 제목 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(선택)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="비워 두시면 편지에 어울리는 제목으로 보내드립니다"
-                  value={emailSubject}
-                  onChange={e => setEmailSubject(e.target.value.slice(0, LETTER_EMAIL_SUBJECT_MAX_LENGTH))}
-                  maxLength={LETTER_EMAIL_SUBJECT_MAX_LENGTH}
-                  style={inputStyle}
-                />
-                <div className={`write-subject-count ${emailSubject.length >= LETTER_EMAIL_SUBJECT_MAX_LENGTH ? 'is-limit' : ''}`}>
-                  {emailSubject.length}/{LETTER_EMAIL_SUBJECT_MAX_LENGTH}
-                </div>
-              </div>
-
-              {/* 수신인 토글 */}
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[{ val: false, label: '나에게' }, { val: true, label: '다른 분에게' }].map(({ val, label }) => (
-                    <button key={String(val)} onClick={() => setToOther(val)}
-                      style={{ flex: 1, padding: '9px 0', borderRadius: 50, fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid', transition: 'all 0.2s',
-                        borderColor: toOther === val ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)',
-                        background: toOther === val ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)',
-                        color: toOther === val ? '#ffeacd' : 'rgba(255,252,223,0.5)',
-                      }}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                <AnimatePresence>
-                  {toOther && (
-                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <input type="text" placeholder="받을 사람 이름 (선택)" value={recipientName} onChange={e => setRecipientName(e.target.value)} style={inputStyle} />
-                      <input type="email" placeholder="받을 사람 이메일 *" value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} style={inputStyle} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {!toOther && (
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <label style={labelStyle}>✉ 받을 이메일 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(열람일에 자동 발송)</span></label>
-                  <input
-                    type="email"
-                    placeholder="이메일 주소를 입력해 주세요"
-                    value={accountEmail || email}
-                    readOnly
-                    aria-readonly="true"
-                    onClick={showAccountEmailChangeNotice}
-                    onFocus={showAccountEmailChangeNotice}
-                    style={{ ...inputStyle, cursor: 'default', opacity: 0.82 }}
-                  />
-                </div>
-              )}
-
               <section className={`write-email-preview ${emailTheme}`}>
-                <label className={`write-email-preview-switch ${showEmailPreview ? 'is-open' : ''} ${emailPreviewLoading || drawUploading ? 'is-loading' : ''}`}>
-                  <input
-                    type="checkbox"
-                    checked={showEmailPreview}
-                    onChange={toggleEmailPreview}
-                    disabled={emailPreviewLoading || drawUploading}
-                    aria-label="이메일 미리보기"
-                  />
-                  <span className="write-email-preview-switch-copy">
-                    <strong>이메일 미리보기</strong>
-                    <em>{emailPreviewLoading || drawUploading ? '만드는 중' : '실제 발송 화면'}</em>
-                  </span>
-                  <span className="write-email-preview-switch-track" aria-hidden="true">
-                    <span className="write-email-preview-switch-thumb" />
-                  </span>
-                </label>
+                <div className="write-email-preview-frame-wrap">
+                  <div className="write-email-preview-toolbar">
+                    <span>메일 제목</span>
+                    <strong>{emailPreview.subject || '미리보기를 준비하고 있습니다'}</strong>
+                  </div>
 
-                <AnimatePresence initial={false}>
-                  {showEmailPreview && (
-                    <motion.div
-                      className="write-email-preview-frame-wrap"
-                      initial={{ opacity: 0, height: 0, y: -6 }}
-                      animate={{ opacity: 1, height: 'auto', y: 0 }}
-                      exit={{ opacity: 0, height: 0, y: -6 }}
-                      transition={{ duration: 0.24, ease }}
+                  {emailPreviewError ? (
+                    <div className="write-email-preview-message">{emailPreviewError}</div>
+                  ) : (
+                    <div
+                      ref={emailPreviewFrameRef}
+                      className="write-email-preview-frame"
+                      style={{
+                        '--email-preview-scale': emailPreviewScale,
+                        height: emailPreviewLoading || drawUploading ? undefined : (emailPreviewFrameHeight || undefined),
+                      }}
                     >
-                      <div className="write-email-preview-toolbar">
-                        <span>메일 제목</span>
-                        <strong>{emailPreview.subject || '미리보기를 준비하고 있습니다'}</strong>
-                      </div>
-
-                      {emailPreviewError ? (
-                        <div className="write-email-preview-message">{emailPreviewError}</div>
+                      {emailPreviewLoading || drawUploading ? (
+                        <div className="write-email-preview-message">이메일 화면을 만들고 있습니다...</div>
                       ) : (
-                        <div
-                          ref={emailPreviewFrameRef}
-                          className="write-email-preview-frame"
-                          style={{
-                            '--email-preview-scale': emailPreviewScale,
-                            height: emailPreviewLoading || drawUploading ? undefined : (emailPreviewFrameHeight || undefined),
-                          }}
-                        >
-                          {emailPreviewLoading || drawUploading ? (
-                            <div className="write-email-preview-message">이메일 화면을 만들고 있습니다...</div>
-                          ) : (
-                            <div className="write-email-preview-scale-box" style={{ height: emailPreviewHeight || undefined }}>
-                              <div
-                                ref={emailPreviewDocumentRef}
-                                className="write-email-preview-document"
-                                dangerouslySetInnerHTML={{ __html: emailPreview.html }}
-                              />
-                            </div>
-                          )}
+                        <div className="write-email-preview-scale-box" style={{ height: emailPreviewHeight || undefined }}>
+                          <div
+                            ref={emailPreviewDocumentRef}
+                            className="write-email-preview-document"
+                            dangerouslySetInnerHTML={{ __html: emailPreview.html }}
+                          />
                         </div>
                       )}
-                    </motion.div>
+                    </div>
                   )}
-                </AnimatePresence>
+                </div>
               </section>
+
+              <div className="write-modal-settings-column">
+                <div className="write-modal-settings-intro">
+                  <strong>발송 설정</strong>
+                  <span>열람일과 받을 사람을 정하면 왼쪽에서 실제 메일 화면을 바로 확인할 수 있어요.</span>
+                </div>
+
+                {/* 열람일 */}
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <button type="button" onClick={() => setSendNow(false)}
+                      style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: !sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: !sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: !sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
+                      예약 보내기
+                    </button>
+                    <button type="button" onClick={() => setSendNow(true)}
+                      style={{ padding: '10px 0', borderRadius: 12, border: '1px solid', borderColor: sendNow ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)', background: sendNow ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)', color: sendNow ? '#ffeacd' : 'rgba(255,252,223,0.55)', fontFamily: 'inherit', cursor: 'pointer' }}>
+                      바로 보내기
+                    </button>
+                  </div>
+                  {sendNow ? (
+                    <div style={{ ...inputStyle, display: 'flex', alignItems: 'center', color: 'rgba(255,252,223,0.72)' }}>
+                      이메일을 바로 보냅니다
+                    </div>
+                  ) : (
+                    <input type="date" min={tomorrow()} value={openDate} onChange={e => setOpenDate(e.target.value)} style={inputStyle} />
+                  )}
+                </div>
+
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <label style={labelStyle}>편지 분위기</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    {[
+                      { value: 'dark', label: '다크' },
+                      { value: 'pink', label: '핑크' },
+                    ].map(option => {
+                      const selected = emailTheme === option.value;
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => setEmailTheme(option.value)}
+                          style={{
+                            padding: '10px 0',
+                            borderRadius: 12,
+                            border: '1px solid',
+                            borderColor: selected ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)',
+                            background: selected
+                              ? option.value === 'pink'
+                                ? 'linear-gradient(135deg, rgba(192,99,135,0.78), rgba(90,54,92,0.78))'
+                                : 'rgba(72,56,41,0.75)'
+                              : 'rgba(255,255,255,0.06)',
+                            color: selected ? '#ffeacd' : 'rgba(255,252,223,0.55)',
+                            fontFamily: 'inherit',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <label style={labelStyle}>
+                    메일 제목 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(선택)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="비워 두시면 편지에 어울리는 제목으로 보내드립니다"
+                    value={emailSubject}
+                    onChange={e => setEmailSubject(e.target.value.slice(0, LETTER_EMAIL_SUBJECT_MAX_LENGTH))}
+                    maxLength={LETTER_EMAIL_SUBJECT_MAX_LENGTH}
+                    style={inputStyle}
+                  />
+                  <div className={`write-subject-count ${emailSubject.length >= LETTER_EMAIL_SUBJECT_MAX_LENGTH ? 'is-limit' : ''}`}>
+                    {emailSubject.length}/{LETTER_EMAIL_SUBJECT_MAX_LENGTH}
+                  </div>
+                </div>
+
+                {/* 수신인 토글 */}
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[{ val: false, label: '나에게' }, { val: true, label: '다른 분에게' }].map(({ val, label }) => (
+                      <button key={String(val)} onClick={() => setToOther(val)}
+                        style={{ flex: 1, padding: '9px 0', borderRadius: 50, fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid', transition: 'all 0.2s',
+                          borderColor: toOther === val ? 'rgba(255,220,160,0.5)' : 'rgba(255,255,255,0.2)',
+                          background: toOther === val ? 'rgba(72,56,41,0.75)' : 'rgba(255,255,255,0.06)',
+                          color: toOther === val ? '#ffeacd' : 'rgba(255,252,223,0.5)',
+                        }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <AnimatePresence>
+                    {toOther && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        <input type="text" placeholder="받을 사람 이름 (선택)" value={recipientName} onChange={e => setRecipientName(e.target.value)} style={inputStyle} />
+                        <input type="email" placeholder="받을 사람 이메일 *" value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} style={inputStyle} />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {!toOther && (
+                  <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <label style={labelStyle}>✉ 받을 이메일 <span style={{ color: 'rgba(255,252,223,0.3)' }}>(열람일에 자동 발송)</span></label>
+                    <input
+                      type="email"
+                      placeholder="이메일 주소를 입력해 주세요"
+                      value={accountEmail || email}
+                      readOnly
+                      aria-readonly="true"
+                      onClick={showAccountEmailChangeNotice}
+                      onFocus={showAccountEmailChangeNotice}
+                      style={{ ...inputStyle, cursor: 'default', opacity: 0.82 }}
+                    />
+                  </div>
+                )}
+              </div>
 
               {/* 버튼 */}
               <div className="write-modal-actions">
                 <motion.button whileHover={{ background: 'rgba(255,255,255,0.14)' }}
-                  onClick={() => { setShowModal(false); setShowEmailPreview(false); }}
+                  onClick={() => setShowModal(false)}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', backdropFilter: 'blur(6px)', transition: 'all 0.3s' }}>
                   취소
                 </motion.button>
