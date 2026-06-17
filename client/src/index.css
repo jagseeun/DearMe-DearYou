@@ -18638,6 +18638,7 @@ input:disabled,
 
 .signup-page .input-group > .check-btn {
   margin-right: 6px !important;
+  border-radius: 999px !important;
 }
 
 .password-field > .password-toggle:hover,

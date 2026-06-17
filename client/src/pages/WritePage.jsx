@@ -14,6 +14,13 @@ const LETTER_EMAIL_SUBJECT_MAX_LENGTH = 40;
 const RECIPIENT_NAME_MAX_LENGTH = 50;
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+const VIDEO_RECORDER_OPTIONS = [
+  { mimeType: 'video/mp4;codecs=avc1.42E01E,mp4a.40.2', uploadType: 'video/mp4' },
+  { mimeType: 'video/mp4;codecs=h264,aac', uploadType: 'video/mp4' },
+  { mimeType: 'video/mp4', uploadType: 'video/mp4' },
+  { mimeType: 'video/webm;codecs=vp8,opus', uploadType: 'video/webm' },
+  { mimeType: 'video/webm', uploadType: 'video/webm' },
+];
 
 function defaultOpenDate() {
   const d = new Date();
@@ -32,6 +39,12 @@ function dataUrlToBlob(dataUrl) {
     bytes[i] = binary.charCodeAt(i);
   }
   return new Blob([bytes], { type: mime });
+}
+
+function pickVideoRecorderOption() {
+  if (!window.MediaRecorder?.isTypeSupported) return { mimeType: '', uploadType: 'video/webm' };
+  return VIDEO_RECORDER_OPTIONS.find(option => window.MediaRecorder.isTypeSupported(option.mimeType))
+    || { mimeType: '', uploadType: 'video/webm' };
 }
 
 function clampLetterText(value) {
@@ -433,6 +446,7 @@ export default function WritePage() {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const recorderRef = useRef(null);
+  const videoRecorderOptionRef = useRef(null);
   const recordingStartedAtRef = useRef(0);
   const chunksRef = useRef([]);
   const emailPreviewFrameRef = useRef(null);
@@ -570,15 +584,26 @@ export default function WritePage() {
   }
 
   function startRecording() {
-    chunksRef.current = [];
-    const mr = new MediaRecorder(streamRef.current, { mimeType: 'video/webm;codecs=vp8,opus' });
-    mr.ondataavailable = e => { if (e.data?.size > 0) chunksRef.current.push(e.data); };
-    mr.onstop = handleUpload;
-    recordingStartedAtRef.current = Date.now();
-    mr.start(1000);
-    recorderRef.current = mr;
-    setStage('recording');
-    setTimeLeft(30);
+    try {
+      chunksRef.current = [];
+      const recorderOption = pickVideoRecorderOption();
+      videoRecorderOptionRef.current = recorderOption;
+      const mr = recorderOption.mimeType
+        ? new MediaRecorder(streamRef.current, { mimeType: recorderOption.mimeType })
+        : new MediaRecorder(streamRef.current);
+      mr.ondataavailable = e => { if (e.data?.size > 0) chunksRef.current.push(e.data); };
+      mr.onstop = handleUpload;
+      recordingStartedAtRef.current = Date.now();
+      mr.start(1000);
+      recorderRef.current = mr;
+      setStage('recording');
+      setTimeLeft(30);
+    } catch {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+      setStage('idle');
+      showNotice('이 브라우저에서는 영상 녹화를 시작하지 못했습니다. 다른 브라우저에서 다시 시도해 주세요.', '영상 녹화를 시작하지 못했습니다');
+    }
   }
 
   function stopRecording() {
@@ -590,14 +615,18 @@ export default function WritePage() {
 
   async function handleUpload() {
     try {
-      const rawBlob = new Blob(chunksRef.current, { type: 'video/webm' });
+      const uploadType = videoRecorderOptionRef.current?.uploadType || 'video/webm';
+      const rawBlob = new Blob(chunksRef.current, { type: uploadType });
       const durationMs = Math.max(1, Date.now() - recordingStartedAtRef.current);
-      const blob = await fixWebmDuration(rawBlob, durationMs, { logger: false }).catch(() => rawBlob);
+      const blob = uploadType === 'video/webm'
+        ? await fixWebmDuration(rawBlob, durationMs, { logger: false }).catch(() => rawBlob)
+        : rawBlob;
       if (blob.size > MAX_VIDEO_BYTES) throw new Error('영상 편지 파일이 너무 큽니다. 조금 짧게 다시 촬영해 주세요.');
-      const res = await fetch('/get-upload-url');
+      const params = new URLSearchParams({ contentType: uploadType });
+      const res = await fetch(`/get-upload-url?${params.toString()}`);
       if (!res.ok) throw new Error();
-      const { uploadUrl, publicUrl } = await res.json();
-      const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'video/webm' } });
+      const { uploadUrl, publicUrl, contentType } = await res.json();
+      const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': contentType || uploadType } });
       if (!put.ok) throw new Error();
       setVideoUrl(publicUrl);
       setStage('done');

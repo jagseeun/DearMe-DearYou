@@ -48,6 +48,10 @@ const IMAGE_CONTENT_TYPES = {
   png: "image/png",
   webp: "image/webp",
 };
+const VIDEO_CONTENT_TYPES = {
+  mp4: "video/mp4",
+  webm: "video/webm",
+};
 const DEFAULT_TEACHER_LETTER_TITLE = "3214 장세은 개발자가 보낸 편지 💗";
 const DEFAULT_TEACHER_LETTER_TITLE_ALIASES = ["000님의 앞길을 응원합니다", DEFAULT_TEACHER_LETTER_TITLE];
 const DEFAULT_TEACHER_LETTER_TEACHER_NAME = "3214 장세은";
@@ -176,6 +180,13 @@ function normalizeAdminIdList(ids) {
   return [...new Set(values
     .map(value => Number(value))
     .filter(value => Number.isInteger(value) && value > 0))];
+}
+
+function normalizeVideoUploadType(value) {
+  const contentType = String(value || "").trim().toLowerCase().split(";")[0];
+  if (contentType === VIDEO_CONTENT_TYPES.mp4) return { extension: "mp4", contentType: VIDEO_CONTENT_TYPES.mp4 };
+  if (contentType === VIDEO_CONTENT_TYPES.webm) return { extension: "webm", contentType: VIDEO_CONTENT_TYPES.webm };
+  return null;
 }
 
 function normalizeEmailTheme(value) {
@@ -936,7 +947,11 @@ function buildVideoEmail(recipientName, senderName, videoUrl, openDate, isToOthe
     <div style="padding:36px 40px 44px;text-align:center">
       ${buildRecipientIntroHtml(safeRecipientName, headerMsg, themeStyles)}
       <div style="text-align:left">${buildLetterMetaHtml(meta, themeStyles)}</div>
-      ${safeVideoUrl ? `<a href="${escapeHtml(safeVideoUrl)}" style="display:inline-block;padding:16px 40px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 보기</a>` : `<p style="color:${themeStyles.muted}">영상 URL을 확인할 수 없습니다.</p>`}
+      ${safeVideoUrl ? `
+        <a href="${escapeHtml(safeVideoUrl)}" target="_blank" rel="noopener" style="display:inline-block;padding:16px 40px;background:${themeStyles.buttonBg};color:${themeStyles.buttonText};border-radius:50px;text-decoration:none;font-size:18px;font-weight:600">영상 열기</a>
+        <div style="margin-top:16px;color:${themeStyles.muted};font-size:12px;line-height:1.7">메일 앱에서 바로 재생되지 않으면 아래 링크를 복사해 브라우저에서 열어 주세요.</div>
+        <div style="margin-top:8px;font-size:11px;line-height:1.6;word-break:break-all"><a href="${escapeHtml(safeVideoUrl)}" target="_blank" rel="noopener" style="color:${themeStyles.brandSecond};text-decoration:underline">${escapeHtml(safeVideoUrl)}</a></div>
+      ` : `<p style="color:${themeStyles.muted}">영상 URL을 확인할 수 없습니다.</p>`}
       <div style="margin-top:20px;text-align:right;font-size:12.5px;color:${themeStyles.signature};line-height:1.75">${formatMailDateOnly(meta.createdAt)}의 ${safeSenderName}으로부터</div>
     </div>`,
   });
@@ -1480,9 +1495,23 @@ app.post("/check-username", authLimiter, async (req, res) => {
   if (!USERID_REGEX.test(userid)) return res.status(400).json({ available: false, message: "아이디는 영어와 숫자만 사용할 수 있습니다." });
   try {
     const existing = await prisma.member.findUnique({ where: { userid } });
-    if (existing) return res.status(400).json({ available: false, message: "이미 사용 중인 아이디입니다." });
+    if (existing) return res.status(400).json({ available: false, message: "이미 가입된 아이디입니다." });
     res.status(200).json({ available: true, message: "사용하실 수 있는 아이디입니다." });
   } catch { res.status(500).json({ message: "서버에서 요청을 처리하지 못했습니다." }); }
+});
+
+app.post("/check-email", authLimiter, async (req, res) => {
+  const email = String(req.body.email || "").trim().toLowerCase();
+  if (!email) return res.status(400).json({ available: false, message: "이메일을 입력해 주세요." });
+  if (!isValidEmail(email) || !isAllowedUserEmail(email)) return res.status(400).json({ available: false, message: ALLOWED_USER_EMAIL_MESSAGE });
+
+  try {
+    const existing = await prisma.member.findUnique({ where: { email } });
+    if (existing) return res.status(400).json({ available: false, message: "이미 가입된 이메일입니다." });
+    res.status(200).json({ available: true, message: "사용하실 수 있는 이메일입니다." });
+  } catch {
+    res.status(500).json({ available: false, message: "서버에서 요청을 처리하지 못했습니다." });
+  }
 });
 
 // 2. 회원가입
@@ -1524,7 +1553,7 @@ app.post("/register", authLimiter, async (req, res) => {
       });
     });
   } catch (err) {
-    if (err.code === "P2002") return res.status(400).json({ message: "이미 사용 중인 아이디 또는 이메일입니다." });
+    if (err.code === "P2002") return res.status(400).json({ message: "이미 가입된 아이디 또는 이메일입니다." });
     console.error("register error:", err);
     res.status(400).json({ message: "가입하지 못했습니다. 입력하신 내용을 다시 확인해 주세요." });
   }
@@ -1730,11 +1759,12 @@ app.get("/get-upload-url", uploadLimiter, async (req, res) => {
   if (!r2BucketName || !r2PublicBaseUrl || !r2Endpoint || !r2AccessKeyId || !r2SecretAccessKey) {
     return res.status(500).json({ message: "업로드 설정이 완료되지 않았습니다." });
   }
-  const fileName = makeObjectKey("videos", req.session.user.id, "webm");
-  const command = new PutObjectCommand({ Bucket: r2BucketName, Key: fileName, ContentType: "video/webm" });
+  const videoType = normalizeVideoUploadType(req.query.contentType) || normalizeVideoUploadType("video/webm");
+  const fileName = makeObjectKey("videos", req.session.user.id, videoType.extension);
+  const command = new PutObjectCommand({ Bucket: r2BucketName, Key: fileName, ContentType: videoType.contentType });
   try {
     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
-    res.json({ uploadUrl, publicUrl: publicAssetUrl(fileName) });
+    res.json({ uploadUrl, publicUrl: publicAssetUrl(fileName), contentType: videoType.contentType });
   } catch (err) { console.error(err); res.status(500).json({ message: "업로드 준비를 하지 못했습니다." }); }
 });
 

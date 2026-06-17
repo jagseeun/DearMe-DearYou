@@ -65,6 +65,15 @@ export default function SignupPage() {
     }
   }
 
+  async function checkEmailAvailability(nextEmail) {
+    const res = await fetch('/check-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: nextEmail }),
+    });
+    return res.json().catch(() => ({ available: false, message: '이메일을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.' }));
+  }
+
   async function handleRegister() {
     if (submitting) return;
     const nextName = name.trim();
@@ -73,7 +82,20 @@ export default function SignupPage() {
     const missingMessage = getMissingSignupMessage();
     if (missingMessage) return setNotice({ title: '아직 적지 않은 칸이 있습니다', message: missingMessage });
     if (!isAllowedEmail(nextEmail)) return setNotice({ title: '이메일 확인', message: ALLOWED_EMAIL_MESSAGE });
-    if (!idChecked) return setNotice({ title: '아이디 확인', message: '아이디 중복 확인을 진행해 주세요.' });
+    if (!idChecked) return setNotice({ title: '아이디 확인', message: idMsg.text && !idMsg.ok ? idMsg.text : '아이디 중복 확인을 진행해 주세요.' });
+    setSubmitting(true);
+    try {
+      const emailResult = await checkEmailAvailability(nextEmail);
+      if (!emailResult.available) {
+        setNotice({ title: '이메일 확인', message: emailResult.message || '이미 가입된 이메일입니다.' });
+        return;
+      }
+    } catch {
+      setNotice({ title: '이메일 확인', message: '이메일을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
+      return;
+    } finally {
+      setSubmitting(false);
+    }
     if (password.length < 6) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: '비밀번호는 6자 이상으로 입력해 주세요.' });
     if (password.length > PASSWORD_MAX_LENGTH) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: `비밀번호는 ${PASSWORD_MAX_LENGTH}자를 넘을 수 없습니다.` });
     if (password !== passwordConfirm) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: '비밀번호가 서로 일치하지 않습니다. 다시 확인해 주세요.' });
