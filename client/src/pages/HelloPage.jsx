@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import NoticeModal from '../components/NoticeModal.jsx';
@@ -36,6 +36,7 @@ export default function HelloPage() {
   const [qIdx, setQIdx] = useState(0);
   const [deliveryNotice, setDeliveryNotice] = useState(location.state?.deliveryNotice || null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const logoutRef = useRef(false);
   const displayName = name || user?.name || '';
 
   useEffect(() => {
@@ -75,6 +76,8 @@ export default function HelloPage() {
   }, [deliveryNotice]);
 
   function confirmLogout() {
+    if (logoutRef.current) return;
+    logoutRef.current = true;
     window.location.href = '/logout';
   }
 

@@ -477,6 +477,12 @@ export default function WritePage() {
   const chunksRef = useRef([]);
   const emailPreviewFrameRef = useRef(null);
   const emailPreviewDocumentRef = useRef(null);
+  const emailPreviewRequestRef = useRef(0);
+  const videoPreparingRef = useRef(false);
+  const photoOpeningRef = useRef(false);
+  const photoUploadingRef = useRef(false);
+  const draftSavingRef = useRef(false);
+  const savingRef = useRef(false);
 
   function showNotice(message, title = '확인해 주세요') {
     setShowModal(false);
@@ -530,6 +536,12 @@ export default function WritePage() {
     }, 360);
     return () => clearTimeout(timer);
   }, [showModal, mode, text, videoUrl, imageUrl, drawHasDrawn, openDate, sendNow, emailSubject, emailTheme, toOther, recipientEmail, recipientName]);
+
+  useEffect(() => {
+    if (showModal) return;
+    emailPreviewRequestRef.current += 1;
+    setEmailPreviewLoading(false);
+  }, [showModal]);
 
   useEffect(() => {
     if (!showModal || emailPreviewLoading || !emailPreview.html) return undefined;
@@ -602,6 +614,8 @@ export default function WritePage() {
   }, [stage, timeLeft]);
 
   async function prepareCamera() {
+    if (videoPreparingRef.current || stage !== 'idle') return;
+    videoPreparingRef.current = true;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       streamRef.current = stream;
@@ -610,6 +624,7 @@ export default function WritePage() {
       setCountdown(3);
       setVideoUrl('');
     } catch { showNotice('카메라 권한을 허용해 주시면 촬영을 이어갈 수 있습니다.', '카메라를 확인해 주세요'); }
+    finally { videoPreparingRef.current = false; }
   }
 
   function startRecording() {
@@ -690,6 +705,8 @@ export default function WritePage() {
   }
 
   async function openPhotoCamera() {
+    if (photoOpeningRef.current || photoUploadingRef.current || imageUploading || showCamera) return;
+    photoOpeningRef.current = true;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
       photoStreamRef.current = stream;
@@ -701,6 +718,7 @@ export default function WritePage() {
         }
       });
     } catch { showNotice('카메라 권한을 허용해 주시면 촬영을 이어갈 수 있습니다.', '카메라를 확인해 주세요'); }
+    finally { photoOpeningRef.current = false; }
   }
 
   function closePhotoCamera() {
@@ -711,8 +729,10 @@ export default function WritePage() {
   }
 
   async function capturePhoto() {
+    if (photoUploadingRef.current) return;
     const video = photoVideoRef.current;
     if (!video) return;
+    photoUploadingRef.current = true;
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -729,7 +749,10 @@ export default function WritePage() {
       if (!put.ok) throw new Error();
       setImageUrl(publicUrl);
     } catch { showNotice('사진 파일을 올리지 못했습니다. 잠시 후 다시 시도해 주세요.', '업로드하지 못했습니다'); }
-    finally { setImageUploading(false); }
+    finally {
+      photoUploadingRef.current = false;
+      setImageUploading(false);
+    }
   }
 
   async function uploadSignature(dataUrl) {
@@ -787,9 +810,11 @@ export default function WritePage() {
   }
 
   async function saveDraft() {
+    if (draftSavingRef.current) return;
     const dateError = validateScheduledOpenDate(openDate);
     if (dateError) return showNotice(dateError);
 
+    draftSavingRef.current = true;
     setDraftSaving(true);
     try {
       let draftImageUrl = mode === 'draw' ? (drawPreviewImageUrl || drawDraftImageUrl || undefined) : (imageUrl || undefined);
@@ -829,11 +854,14 @@ export default function WritePage() {
     } catch (err) {
       showNotice(err.message || '초안을 저장하지 못했습니다.', '초안을 저장하지 못했습니다');
     } finally {
+      draftSavingRef.current = false;
       setDraftSaving(false);
     }
   }
 
   async function deleteDraft() {
+    if (draftSavingRef.current) return;
+    draftSavingRef.current = true;
     setDraftSaving(true);
     try {
       const res = await fetch('/letter-draft', { method: 'DELETE' });
@@ -844,11 +872,16 @@ export default function WritePage() {
     } catch (err) {
       showNotice(err.message || '초안을 삭제하지 못했습니다.', '초안을 삭제하지 못했습니다');
     } finally {
+      draftSavingRef.current = false;
       setDraftSaving(false);
     }
   }
 
   async function loadEmailPreview() {
+    const requestId = emailPreviewRequestRef.current + 1;
+    emailPreviewRequestRef.current = requestId;
+    const isCurrentPreviewRequest = () => emailPreviewRequestRef.current === requestId;
+
     if (!sendNow) {
       const dateError = validateScheduledOpenDate(openDate);
       if (dateError) {
@@ -870,12 +903,12 @@ export default function WritePage() {
 
       if (mode === 'draw' && drawHasDrawn && drawCanvasEl && !drawPreviewImageUrl) {
         previewImageUrl = await uploadCanvas();
-        setDrawPreviewImageUrl(previewImageUrl);
+        if (isCurrentPreviewRequest()) setDrawPreviewImageUrl(previewImageUrl);
       }
 
       if (mode === 'text' && signatureData?.startsWith('data:')) {
         previewSignatureData = await uploadSignature(signatureData);
-        setSignatureData(previewSignatureData);
+        if (isCurrentPreviewRequest()) setSignatureData(previewSignatureData);
       }
 
       const effectiveOpenDate = sendNow ? new Date().toISOString() : openDate;
@@ -899,11 +932,11 @@ export default function WritePage() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || '이메일 미리보기를 만들지 못했습니다.');
-      setEmailPreview({ subject: data.subject || '', html: data.html || '' });
+      if (isCurrentPreviewRequest()) setEmailPreview({ subject: data.subject || '', html: data.html || '' });
     } catch (err) {
-      setEmailPreviewError(err.message || '이메일 미리보기를 만들지 못했습니다.');
+      if (isCurrentPreviewRequest()) setEmailPreviewError(err.message || '이메일 미리보기를 만들지 못했습니다.');
     } finally {
-      setEmailPreviewLoading(false);
+      if (isCurrentPreviewRequest()) setEmailPreviewLoading(false);
     }
   }
 
@@ -918,6 +951,7 @@ export default function WritePage() {
   }
 
   async function handleSave() {
+    if (savingRef.current) return;
     const limitedText = clampLetterText(text);
     if (!openDate) return showNotice('편지를 열어 볼 날짜를 선택해 주세요.');
     const cleanEmail = (accountEmail || email).trim().toLowerCase();
@@ -940,6 +974,7 @@ export default function WritePage() {
       if (!isAllowedEmail(cleanRecipientEmail)) return showNotice(ALLOWED_EMAIL_MESSAGE);
       if (cleanRecipientName.length > RECIPIENT_NAME_MAX_LENGTH) return showNotice(`받을 분의 이름은 ${RECIPIENT_NAME_MAX_LENGTH}자를 넘을 수 없습니다.`);
     }
+    savingRef.current = true;
     setSaving(true);
     try {
       // 서명이 base64라면 R2에 업로드 후 URL로 교체
@@ -990,7 +1025,10 @@ export default function WritePage() {
         if (res.status === 401) navigate('/login');
       }
     } catch (err) { showNotice(err.message || '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.', '저장하지 못했습니다'); }
-    finally { setSaving(false); }
+    finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
   }
 
   // ── 카메라 UI ──
@@ -1536,6 +1574,7 @@ export default function WritePage() {
               <div className="write-modal-actions">
                 <motion.button whileHover={{ background: 'rgba(255,255,255,0.14)' }}
                   onClick={() => setShowModal(false)}
+                  disabled={saving}
                   style={{ width: 170, height: 54, borderRadius: 50, fontSize: 20, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,.2)', background: 'rgba(255,255,255,.07)', color: '#f2efe8', backdropFilter: 'blur(6px)', transition: 'all 0.3s' }}>
                   취소
                 </motion.button>

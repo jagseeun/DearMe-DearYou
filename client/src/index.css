@@ -18743,22 +18743,7 @@ input:disabled,
   rotate: 0deg !important;
 }
 
-/* Email preview: use a readable preview window and scroll the email itself when needed. */
-.write-modal-panel.has-email-preview {
-  width: min(760px, calc(100vw - 32px)) !important;
-  max-width: min(760px, calc(100vw - 32px)) !important;
-  max-height: calc(100dvh - 32px) !important;
-  align-items: stretch !important;
-}
-
-.write-modal-panel.has-email-preview > div,
-.write-modal-panel.has-email-preview .write-email-preview {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-}
-
+/* Email preview internals: scroll the email body without fighting the modal layout. */
 .write-modal-panel.has-email-preview .write-email-preview-frame {
   overflow-x: hidden !important;
   overflow-y: auto !important;
@@ -18792,15 +18777,6 @@ input:disabled,
   background-clip: padding-box;
 }
 
-@media (max-width: 760px) {
-  .write-modal-panel.has-email-preview {
-    width: calc(100vw - 24px) !important;
-    max-width: calc(100vw - 24px) !important;
-    max-height: calc(100dvh - 20px) !important;
-    padding: 22px 16px calc(20px + env(safe-area-inset-bottom)) !important;
-  }
-}
-
 /* Floating mailbox shortcut: one fixed position everywhere it appears. */
 :root {
   --open-mailbox-floating-right: 22px;
@@ -18830,11 +18806,13 @@ input:disabled,
 
 /* Send letter modal: compact split preview layout and themed date input. */
 .write-modal-backdrop {
-  background: rgba(5, 6, 10, 0.58) !important;
+  background: rgba(5, 6, 10, 0.68) !important;
   backdrop-filter: blur(14px) saturate(0.9) !important;
   -webkit-backdrop-filter: blur(14px) saturate(0.9) !important;
   padding: 18px !important;
   box-sizing: border-box !important;
+  z-index: 900 !important;
+  isolation: isolate !important;
 }
 
 .write-modal-panel {
@@ -18847,8 +18825,10 @@ input:disabled,
   overflow-y: auto !important;
   box-sizing: border-box !important;
   background:
-    linear-gradient(180deg, rgba(32, 39, 54, 0.96), rgba(24, 27, 35, 0.96)),
-    rgba(30, 40, 55, 0.96) !important;
+    linear-gradient(180deg, rgba(32, 39, 54, 0.985), rgba(24, 27, 35, 0.99)),
+    rgba(30, 40, 55, 0.99) !important;
+  position: relative !important;
+  z-index: 1 !important;
   scrollbar-width: thin;
   scrollbar-color: rgba(232, 194, 138, 0.55) rgba(255, 255, 255, 0.06);
 }
@@ -19227,6 +19207,22 @@ input:disabled,
 .write-stage.write-stage-text .write-char-count.is-limit {
   border-color: rgba(255, 178, 170, 0.32) !important;
   color: rgba(255, 216, 206, 0.9) !important;
+}
+
+.submit-btn:disabled,
+.support-submit:disabled,
+.write-modal-actions button:disabled,
+.open-compose-close:disabled,
+.open-compose-footer button:disabled,
+.open-photo-button:disabled,
+.open-shutter-button:disabled,
+.open-letter-actions button:disabled,
+.open-letter-pin-actions button:disabled,
+.open-delete-confirm button:disabled {
+  opacity: 0.62 !important;
+  pointer-events: none !important;
+  filter: saturate(0.82) !important;
+  box-shadow: none !important;
 }
 
 .open-mailbox-floating-button {

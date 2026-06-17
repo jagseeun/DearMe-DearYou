@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
@@ -26,6 +26,7 @@ export default function SignupPage() {
   const [notice, setNotice] = useState(null);
   const [confirmingPasswordNote, setConfirmingPasswordNote] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   useEffect(() => {
     if (status === 'authenticated') navigate('/hello', { replace: true });
@@ -77,7 +78,7 @@ export default function SignupPage() {
   }
 
   async function handleRegister() {
-    if (submitting) return;
+    if (submittingRef.current || submitting) return;
     const nextName = name.trim();
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
@@ -85,6 +86,7 @@ export default function SignupPage() {
     if (missingMessage) return setNotice({ title: '아직 적지 않은 칸이 있습니다', message: missingMessage });
     if (!isAllowedEmail(nextEmail)) return setNotice({ title: '이메일 확인', message: ALLOWED_EMAIL_MESSAGE });
     if (!idChecked) return setNotice({ title: '아이디 확인', message: idMsg.text && !idMsg.ok ? idMsg.text : '아이디 중복 확인을 진행해 주세요.' });
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       const emailResult = await checkEmailAvailability(nextEmail);
@@ -96,6 +98,7 @@ export default function SignupPage() {
       setNotice({ title: '이메일 확인', message: '이메일을 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
       return;
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
     if (password.length < 6) return setNotice({ title: '비밀번호를 한 번 더 입력해 주세요', message: '비밀번호는 6자 이상으로 입력해 주세요.' });
@@ -105,11 +108,12 @@ export default function SignupPage() {
   }
 
   async function submitRegister() {
-    if (submitting) return;
+    if (submittingRef.current || submitting) return;
     setConfirmingPasswordNote(false);
     const nextName = name.trim();
     const nextUserid = userid.trim();
     const nextEmail = email.trim();
+    submittingRef.current = true;
     setSubmitting(true);
     try {
       const res = await fetch('/register', {
@@ -127,6 +131,7 @@ export default function SignupPage() {
     } catch {
       setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     } finally {
+      submittingRef.current = false;
       setSubmitting(false);
     }
   }

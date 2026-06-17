@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { formatDate, daysUntil } from '../utils/dates.js';
@@ -43,6 +43,7 @@ export default function PinkLetterViewPage() {
   const [sending, setSending] = useState(false);
   const [sendMsg, setSendMsg] = useState('');
   const [logoutConfirm, setLogoutConfirm] = useState(false);
+  const logoutRef = useRef(false);
 
   async function triggerSend() {
     setSending(true);
@@ -90,6 +91,8 @@ export default function PinkLetterViewPage() {
   }
 
   function confirmLogoutLetters() {
+    if (logoutRef.current) return;
+    logoutRef.current = true;
     clearLetterAuth();
     window.location.assign('/logout');
   }

@@ -107,6 +107,7 @@ export default function LetterViewPage() {
   const { letter, name, returnTo } = useLocation().state || {};
   const [phase, setPhase] = useState('envelope');
   const [logoutConfirm, setLogoutConfirm] = useState(false);
+  const logoutRef = useRef(false);
 
   useEffect(() => {
     if (!letter) {
@@ -198,6 +199,8 @@ export default function LetterViewPage() {
   }
 
   function confirmFinishAndLogout() {
+    if (logoutRef.current) return;
+    logoutRef.current = true;
     clearLetterAuth();
     window.location.assign('/logout');
   }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -88,6 +88,7 @@ export default function LettersPage() {
   const [activeBox, setActiveBox] = useState('mine');
   const [notice, setNotice] = useState(null);
   const [logoutConfirm, setLogoutConfirm] = useState(false);
+  const logoutRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -174,6 +175,8 @@ export default function LettersPage() {
   }
 
   function confirmLogoutLetters() {
+    if (logoutRef.current) return;
+    logoutRef.current = true;
     clearLetterAuth();
     window.location.assign('/logout');
   }

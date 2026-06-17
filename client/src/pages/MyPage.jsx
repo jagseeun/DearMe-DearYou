@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
@@ -24,6 +24,7 @@ export default function MyPage() {
   const [nextPasswordConfirm, setNextPasswordConfirm] = useState('');
   const [notice, setNotice] = useState(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const logoutRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -141,6 +142,8 @@ export default function MyPage() {
   }
 
   function confirmLogout() {
+    if (logoutRef.current) return;
+    logoutRef.current = true;
     window.location.href = '/logout';
   }
 

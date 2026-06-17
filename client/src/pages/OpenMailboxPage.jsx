@@ -237,11 +237,17 @@ export default function OpenMailboxPage() {
   const editCanvasRef = useRef(null);
   const photoVideoRef = useRef(null);
   const photoStreamRef = useRef(null);
+  const pageChangingRef = useRef(false);
+  const savingRef = useRef(false);
+  const editSavingRef = useRef(false);
+  const photoOpeningRef = useRef(false);
+  const photoUploadingRef = useRef(false);
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const emptySlots = Math.max(0, pageSize - letters.length);
 
   async function loadLetters(nextPage = page) {
+    pageChangingRef.current = true;
     setLoading(true);
     try {
       const data = await fetchJson(`/public-letters?page=${nextPage}`);
@@ -252,6 +258,7 @@ export default function OpenMailboxPage() {
     } catch (err) {
       setMessage(err.message || '열린 편지함을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
+      pageChangingRef.current = false;
       setLoading(false);
     }
   }
@@ -298,6 +305,8 @@ export default function OpenMailboxPage() {
   }
 
   async function openPhotoCamera() {
+    if (photoOpeningRef.current || photoUploadingRef.current || photoUploading || showCamera) return;
+    photoOpeningRef.current = true;
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
       photoStreamRef.current = stream;
@@ -310,6 +319,8 @@ export default function OpenMailboxPage() {
       });
     } catch {
       setMessage('카메라 권한을 허용해 주시면 사진을 남길 수 있습니다.');
+    } finally {
+      photoOpeningRef.current = false;
     }
   }
 
@@ -321,8 +332,10 @@ export default function OpenMailboxPage() {
   }
 
   async function capturePhoto() {
+    if (photoUploadingRef.current) return;
     const video = photoVideoRef.current;
     if (!video) return;
+    photoUploadingRef.current = true;
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth || 960;
     canvas.height = video.videoHeight || 720;
@@ -337,6 +350,7 @@ export default function OpenMailboxPage() {
     } catch (err) {
       setMessage(err.message || '사진을 올리지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
+      photoUploadingRef.current = false;
       setPhotoUploading(false);
     }
   }
@@ -389,6 +403,7 @@ export default function OpenMailboxPage() {
 
   async function submitLetter(event) {
     event.preventDefault();
+    if (savingRef.current) return;
     const cleanNickname = nickname.trim();
     const cleanContent = content.trim();
 
@@ -399,6 +414,7 @@ export default function OpenMailboxPage() {
     if (mode === 'photo' && !photoUrl) return setMessage('먼저 사진을 촬영해 주세요.');
     if (mode === 'draw' && !drawn) return setMessage('그림 편지에 남길 그림을 그려 주세요.');
 
+    savingRef.current = true;
     setSaving(true);
     setMessage('');
     try {
@@ -422,12 +438,13 @@ export default function OpenMailboxPage() {
     } catch (err) {
       setMessage(err.message || '열린 편지를 남기지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
 
   function changePage(nextPage) {
-    if (nextPage < 0 || nextPage >= totalPages || loading) return;
+    if (nextPage < 0 || nextPage >= totalPages || loading || pageChangingRef.current) return;
     loadLetters(nextPage);
   }
 
@@ -454,6 +471,7 @@ export default function OpenMailboxPage() {
   async function updateSelectedLetter(event) {
     event.preventDefault();
     if (!selected) return;
+    if (editSavingRef.current) return;
     const cleanNickname = editNickname.trim();
     const cleanContent = editContent.trim();
     if (!cleanNickname) return setMessage('편지에 표시할 닉네임을 입력해 주세요.');
@@ -464,6 +482,7 @@ export default function OpenMailboxPage() {
     }
     if (selected.type === 'draw' && !editDrawn) return setMessage('수정할 그림을 다시 확인해 주세요.');
 
+    editSavingRef.current = true;
     setEditSaving(true);
     setMessage('');
     try {
@@ -490,6 +509,7 @@ export default function OpenMailboxPage() {
     } catch (err) {
       setMessage(err.message || '열린 편지를 수정하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
+      editSavingRef.current = false;
       setEditSaving(false);
     }
   }
@@ -502,7 +522,9 @@ export default function OpenMailboxPage() {
 
   async function deleteSelectedLetter() {
     if (!selected) return;
+    if (editSavingRef.current) return;
     if (!/^\d{4}$/.test(editPin)) return setMessage('삭제하시려면 4자리 PIN을 입력해 주세요.');
+    editSavingRef.current = true;
     setEditSaving(true);
     setMessage('');
     try {
@@ -516,6 +538,7 @@ export default function OpenMailboxPage() {
     } catch (err) {
       setMessage(err.message || '열린 편지를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } finally {
+      editSavingRef.current = false;
       setEditSaving(false);
     }
   }
@@ -601,14 +624,16 @@ export default function OpenMailboxPage() {
           <motion.div
             className="open-compose-modal-backdrop"
             {...modalBackdropMotion}
-            onClick={closeComposer}
+            transition={{ duration: 0.24, ease }}
+            onClick={saving || photoUploading ? undefined : closeComposer}
           >
             <motion.section
               className="open-compose-panel open-compose-modal"
               {...modalPanelMotion}
+              transition={{ duration: 0.3, ease }}
               onClick={event => event.stopPropagation()}
             >
-              <button type="button" className="open-compose-close" onClick={closeComposer}>닫기</button>
+              <button type="button" className="open-compose-close" onClick={closeComposer} disabled={saving || photoUploading}>닫기</button>
               <div className="open-compose-heading">
                 <h2>모두에게 남기는 편지</h2>
                 <span>남겨 주신 글은 모두에게 공개됩니다.</span>
@@ -722,14 +747,16 @@ export default function OpenMailboxPage() {
           <motion.div
             className="open-letter-modal-backdrop"
             {...modalBackdropMotion}
-            onClick={closeSelectedLetter}
+            transition={{ duration: 0.24, ease }}
+            onClick={editSaving ? undefined : closeSelectedLetter}
           >
             <motion.article
               className="open-letter-modal"
               {...modalPanelMotion}
+              transition={{ duration: 0.3, ease }}
               onClick={event => event.stopPropagation()}
             >
-              <button type="button" onClick={closeSelectedLetter}>닫기</button>
+              <button type="button" onClick={closeSelectedLetter} disabled={editSaving}>닫기</button>
               <span>
                 {formatDate(selected.createdAt)}
                 {wasEdited(selected) && <em className="open-edited-label">수정됨</em>}
@@ -847,7 +874,7 @@ export default function OpenMailboxPage() {
             </div>
             <div className="photo-capture-actions" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
               <button type="button" onClick={closePhotoCamera} style={{ padding: '10px 26px', borderRadius: 50, fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.72)' }}>돌아가기</button>
-              <button type="button" onClick={capturePhoto} className="open-shutter-button" aria-label="촬영" />
+              <button type="button" onClick={capturePhoto} className="open-shutter-button" aria-label="촬영" disabled={photoUploading} />
             </div>
           </motion.div>
         )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { fetchJson } from '../utils/api.js';
@@ -15,6 +15,7 @@ export default function SupportPage() {
   const [message, setMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState(null);
+  const savingRef = useRef(false);
   const returnTo = location.state?.from || '/';
 
   function closeNotice() {
@@ -25,6 +26,7 @@ export default function SupportPage() {
 
   async function submitSupport(event) {
     event.preventDefault();
+    if (savingRef.current) return;
     const cleanContent = content.trim();
 
     if (!cleanContent) {
@@ -36,6 +38,7 @@ export default function SupportPage() {
       return;
     }
 
+    savingRef.current = true;
     setSaving(true);
     setMessage('');
     try {
@@ -53,6 +56,7 @@ export default function SupportPage() {
     } catch (err) {
       setNotice({ title: '전하지 못했습니다', message: err.message || '잠시 후 다시 남겨 주세요.' });
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
