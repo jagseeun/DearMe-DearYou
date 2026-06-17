@@ -110,8 +110,8 @@ export default function DonePage() {
               </div>
 
               <div className="done-message">
-                <strong>편지를 봉인했습니다</strong>
-                <span>약속한 날에 다시 열람하실 수 있습니다.</span>
+                <strong>편지를 잘 맡겨두었어요</strong>
+                <span>약속한 날에 다시 열어볼 수 있어요.</span>
               </div>
             </motion.div>
 
