@@ -162,7 +162,7 @@ function RouteClickGuard() {
   const lastActionRef = useRef({ element: null, at: 0 });
   const lastSubmitAtRef = useRef(0);
 
-  function isDuplicateAction(element, interval = 520) {
+  function isDuplicateAction(element, interval = 1400) {
     const now = performance.now();
     const last = lastActionRef.current;
     if (last.element === element && now - last.at < interval) return true;
@@ -185,7 +185,7 @@ function RouteClickGuard() {
 
     const handleSubmit = event => {
       const now = performance.now();
-      if (now - lastSubmitAtRef.current < 1200) {
+      if (now - lastSubmitAtRef.current < 2200) {
         stopInteraction(event);
         return;
       }

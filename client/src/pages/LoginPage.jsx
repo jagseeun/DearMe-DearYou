@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
@@ -18,6 +18,8 @@ export default function LoginPage({ letterMode = false }) {
   const [password, setPassword] = useState('');
   const [notice, setNotice] = useState(null);
   const [preparingForcedLogin, setPreparingForcedLogin] = useState(false);
+  const [loginSubmitting, setLoginSubmitting] = useState(false);
+  const loginSubmittingRef = useRef(false);
   const isLetterMode = letterMode || location.pathname === '/letter-login';
   const forceLogin = Boolean(location.state?.forceLogin);
   const returnTo = typeof location.state?.from === 'string'
@@ -35,21 +37,17 @@ export default function LoginPage({ letterMode = false }) {
 
   useEffect(() => {
     if (!isLetterMode || !forceLogin) return;
-    let cancelled = false;
-    setPreparingForcedLogin(true);
     clearLetterAuth();
-    fetch('/logout', { cache: 'no-store' })
-      .catch(() => {})
-      .finally(async () => {
-        if (cancelled) return;
-        await refresh();
-        if (!cancelled) setPreparingForcedLogin(false);
-      });
-    return () => { cancelled = true; };
-  }, [isLetterMode, forceLogin, refresh]);
+    setPreparingForcedLogin(false);
+  }, [isLetterMode, forceLogin]);
+
+  useEffect(() => {
+    loginSubmittingRef.current = false;
+    setLoginSubmitting(false);
+  }, [location.pathname, location.search]);
 
   async function handleLogin() {
-    if (preparingForcedLogin) return;
+    if (preparingForcedLogin || loginSubmittingRef.current) return;
     const nextUserid = userid.trim();
     if (!nextUserid || !password) {
       setNotice({
@@ -58,6 +56,8 @@ export default function LoginPage({ letterMode = false }) {
       });
       return;
     }
+    loginSubmittingRef.current = true;
+    setLoginSubmitting(true);
     try {
       const res = await fetch('/login', {
         method: 'POST',
@@ -76,6 +76,9 @@ export default function LoginPage({ letterMode = false }) {
       });
     } catch {
       setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
+    } finally {
+      loginSubmittingRef.current = false;
+      setLoginSubmitting(false);
     }
   }
 
@@ -120,8 +123,8 @@ export default function LoginPage({ letterMode = false }) {
           value={password}
           onChange={e => setPassword(e.target.value)}
         />
-        <motion.button variants={item} className="submit-btn" type="submit" disabled={preparingForcedLogin}>
-          {preparingForcedLogin ? '준비 중...' : isLetterMode ? '편지함 로그인' : '로그인'}
+        <motion.button variants={item} className="submit-btn" type="submit" disabled={preparingForcedLogin || loginSubmitting}>
+          {preparingForcedLogin || loginSubmitting ? '준비 중...' : isLetterMode ? '편지함 로그인' : '로그인'}
         </motion.button>
       </motion.form>
 

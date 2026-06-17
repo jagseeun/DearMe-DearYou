@@ -17,6 +17,7 @@ export default function NoticeModal({
   replaceOnOpen = true,
 }) {
   const modalId = useRef(`notice-${Math.random().toString(36).slice(2)}`);
+  const confirmingRef = useRef(false);
   const [isActive, setIsActive] = useState(false);
   const modalKey = useMemo(
     () => [title, message, confirmLabel, cancelLabel, variant].join('|'),
@@ -24,6 +25,7 @@ export default function NoticeModal({
   );
 
   useEffect(() => {
+    confirmingRef.current = false;
     if (!open) {
       setIsActive(false);
       return undefined;
@@ -54,6 +56,8 @@ export default function NoticeModal({
   }
 
   function confirm() {
+    if (confirmingRef.current) return;
+    confirmingRef.current = true;
     if (onConfirm) onConfirm();
     else close();
   }

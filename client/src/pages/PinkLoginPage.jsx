@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PasswordField from '../components/PasswordField.jsx';
@@ -15,13 +15,18 @@ export default function PinkLoginPage() {
   const [userid, setUserid] = useState('');
   const [password, setPassword] = useState('');
   const [notice, setNotice] = useState(null);
+  const [loginSubmitting, setLoginSubmitting] = useState(false);
+  const loginSubmittingRef = useRef(false);
 
   async function handleLogin() {
+    if (loginSubmittingRef.current) return;
     const nextUserid = userid.trim();
     if (!nextUserid || !password) {
       setNotice({ title: '로그인이 필요합니다', message: '편지함에 들어가시려면 아이디와 비밀번호를 입력해 주세요.' });
       return;
     }
+    loginSubmittingRef.current = true;
+    setLoginSubmitting(true);
     try {
       const res = await fetch('/login', {
         method: 'POST',
@@ -33,6 +38,9 @@ export default function PinkLoginPage() {
       else setNotice({ title: '로그인하지 못했습니다', message: data.message || '아이디와 비밀번호를 다시 확인해 주세요.' });
     } catch {
       setNotice({ title: '연결을 확인해 주세요', message: '서버와 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' });
+    } finally {
+      loginSubmittingRef.current = false;
+      setLoginSubmitting(false);
     }
   }
 
@@ -86,10 +94,9 @@ export default function PinkLoginPage() {
             maxLength={PASSWORD_MAX_LENGTH}
             value={password}
             onChange={e => setPassword(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleLogin()}
             inputStyle={{ ...inputStyle, paddingRight: 58 }}
           />
-          <motion.button variants={item} type="submit" style={btnStyle}>
+          <motion.button variants={item} type="submit" style={btnStyle} disabled={loginSubmitting}>
             편지 읽기
           </motion.button>
         </motion.form>
