@@ -80,7 +80,7 @@ export default function PinkLoginPage() {
           <motion.input
             variants={item}
             type="text"
-            placeholder="아이디를 입력해 주세요"
+            placeholder="아이디"
             maxLength={20}
             value={userid}
             onChange={e => setUserid(e.target.value)}
@@ -90,7 +90,7 @@ export default function PinkLoginPage() {
             variants={item}
             wrapperClassName="password-field password-field-pink"
             className="pink-password-input"
-            placeholder="비밀번호를 입력해 주세요"
+            placeholder="비밀번호"
             maxLength={PASSWORD_MAX_LENGTH}
             value={password}
             onChange={e => setPassword(e.target.value)}

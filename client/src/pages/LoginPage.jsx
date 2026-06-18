@@ -109,7 +109,7 @@ export default function LoginPage({ letterMode = false }) {
           variants={item}
           className="input-field"
           type="text"
-          placeholder="아이디를 입력해 주세요"
+          placeholder="아이디"
           maxLength={20}
           value={userid}
           onChange={e => setUserid(e.target.value)}
@@ -118,7 +118,7 @@ export default function LoginPage({ letterMode = false }) {
           variants={item}
           wrapperClassName={isLetterMode ? 'password-field password-field-pink' : 'password-field'}
           className={isLetterMode ? 'input-field pink-password-input' : 'input-field'}
-          placeholder="비밀번호를 입력해 주세요"
+          placeholder="비밀번호"
           maxLength={PASSWORD_MAX_LENGTH}
           value={password}
           onChange={e => setPassword(e.target.value)}

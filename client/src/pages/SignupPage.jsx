@@ -162,7 +162,7 @@ export default function SignupPage() {
           <input
             className="input-field"
             type="text"
-            placeholder="이름을 입력해 주세요 (최대 10자)"
+            placeholder="이름"
             maxLength={NAME_MAX_LENGTH}
             value={name}
             onChange={e => setName(e.target.value)}
@@ -177,7 +177,7 @@ export default function SignupPage() {
             <input
               className="input-field"
               type="text"
-              placeholder="아이디를 입력해 주세요 (영어, 숫자 / 최대 20자)"
+              placeholder="아이디"
               maxLength={USERID_MAX_LENGTH}
               value={userid}
               onChange={e => {
@@ -210,7 +210,7 @@ export default function SignupPage() {
 
         <PasswordField
           variants={item}
-          placeholder="비밀번호를 입력해 주세요 (6자 이상)"
+          placeholder="비밀번호"
           maxLength={PASSWORD_MAX_LENGTH}
           value={password}
           onChange={e => setPassword(e.target.value)}
@@ -218,7 +218,7 @@ export default function SignupPage() {
 
         <PasswordField
           variants={item}
-          placeholder="비밀번호를 한 번 더 입력해 주세요"
+          placeholder="비밀번호 확인"
           maxLength={PASSWORD_MAX_LENGTH}
           value={passwordConfirm}
           onChange={e => setPasswordConfirm(e.target.value)}
@@ -228,7 +228,7 @@ export default function SignupPage() {
           variants={item}
           className="input-field"
           type="email"
-          placeholder="편지를 받을 이메일"
+          placeholder="이메일"
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
