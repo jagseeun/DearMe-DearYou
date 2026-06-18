@@ -19612,3 +19612,15 @@ input:disabled,
 .letter-delete-modal-message {
   color: rgba(98, 55, 65, 0.74) !important;
 }
+
+/* View letter envelope: keep sender/recipient names quieter than the dates. */
+.letter-view-root.letter-view-phase-envelope .letter-envelope-person {
+  opacity: 0.46 !important;
+  color: currentColor !important;
+  -webkit-text-fill-color: currentColor !important;
+  text-shadow: none !important;
+}
+
+.letter-view-root.pink-letter-view.letter-view-phase-envelope .letter-envelope-person {
+  opacity: 0.38 !important;
+}
