@@ -19579,20 +19579,21 @@ input:disabled,
 
 .pink-letter-list-page .letter-favorite-button.active,
 .letters-main-page .letter-favorite-button.active {
-  border-color: rgba(236, 202, 216, 0.52) !important;
+  border-color: rgba(246, 217, 229, 0.58) !important;
   background:
-    linear-gradient(135deg, rgba(248, 224, 234, 0.24), rgba(191, 126, 157, 0.18)),
-    rgba(72, 34, 64, 0.28) !important;
-  color: rgba(224, 157, 188, 0.96) !important;
-  -webkit-text-fill-color: rgba(224, 157, 188, 0.96) !important;
+    linear-gradient(135deg, rgba(255, 235, 244, 0.28), rgba(193, 126, 156, 0.16)),
+    rgba(58, 29, 56, 0.34) !important;
+  color: rgba(242, 196, 216, 0.98) !important;
+  -webkit-text-fill-color: rgba(242, 196, 216, 0.98) !important;
   font-size: 18px !important;
   text-shadow:
-    0 0 8px rgba(246, 216, 229, 0.46),
-    0 0 16px rgba(218, 162, 188, 0.24) !important;
+    0 1px 1px rgba(48, 20, 44, 0.34),
+    0 0 7px rgba(255, 240, 247, 0.5),
+    0 0 18px rgba(222, 166, 193, 0.3) !important;
   box-shadow:
-    0 10px 24px rgba(83, 36, 74, 0.14),
-    0 0 18px rgba(236, 190, 211, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+    0 10px 24px rgba(83, 36, 74, 0.16),
+    0 0 20px rgba(241, 199, 219, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
 }
 
 /* Pink-route mailbox shortcut: keep it distinct from the dark home shortcut. */
