@@ -19651,6 +19651,50 @@ input:disabled,
   color: rgba(98, 55, 65, 0.74) !important;
 }
 
+/* Support note: slightly deeper contrast without changing the calm paper mood. */
+.support-heading span {
+  color: rgba(255, 232, 196, 0.66) !important;
+}
+
+.support-heading strong {
+  color: rgba(255, 246, 229, 0.94) !important;
+}
+
+.support-paper {
+  border-color: rgba(198, 138, 86, 0.42) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 245, 225, 0.97), rgba(241, 220, 190, 0.94)),
+    linear-gradient(135deg, rgba(185, 112, 88, 0.16), rgba(116, 153, 127, 0.13)) !important;
+  box-shadow:
+    0 0 30px rgba(198, 138, 86, 0.18),
+    0 18px 44px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.52) !important;
+}
+
+.support-paper textarea {
+  color: rgba(54, 37, 27, 0.92) !important;
+  caret-color: rgba(80, 49, 30, 0.98) !important;
+}
+
+.support-paper textarea::placeholder {
+  color: rgba(83, 58, 39, 0.58) !important;
+}
+
+.support-bottom-row {
+  color: rgba(255, 239, 207, 0.6) !important;
+}
+
+.support-submit {
+  border-color: rgba(218, 166, 105, 0.46) !important;
+  background:
+    linear-gradient(135deg, rgba(236, 188, 122, 0.22), rgba(139, 166, 137, 0.13)),
+    rgba(82, 55, 33, 0.86) !important;
+  color: rgba(255, 238, 207, 0.96) !important;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+}
+
 /* View letter envelope: keep sender/recipient names quieter than the dates. */
 .letter-view-root.letter-view-phase-envelope .letter-envelope-person {
   opacity: 0.46 !important;
