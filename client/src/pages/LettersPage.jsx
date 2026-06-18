@@ -49,10 +49,11 @@ function LetterTypeIcon({ type, locked }) {
   if (type === 'draw') {
     return (
       <svg className="letter-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="5" y="5.5" width="14" height="13" rx="2.4" />
-        <path d="M8 14.8 10.5 12l2.1 2.2 1.6-1.7 2.3 2.9" />
-        <circle cx="14.8" cy="9.4" r="1.2" />
-        <path d="M8.2 18.5h7.6" />
+        <path d="M12.2 4.4c-4.3 0-7.8 2.9-7.8 6.8 0 4.1 3.3 7.2 7.4 7.2h1.1c.8 0 1.3.4 1.3 1.1 0 .8.7 1.1 1.5.8 2.4-.9 3.9-3.6 3.9-6.9 0-5.1-3.2-9-7.4-9Z" />
+        <circle cx="8.5" cy="10.4" r="0.9" />
+        <circle cx="11.7" cy="8.7" r="0.9" />
+        <circle cx="15.1" cy="10.3" r="0.9" />
+        <path d="M9.4 14.9c1.1.7 2.5.7 3.6 0" />
       </svg>
     );
   }

@@ -17,7 +17,7 @@ import OpenMailboxPage from './pages/OpenMailboxPage.jsx';
 import SupportPage from './pages/SupportPage.jsx';
 import DevelopPage from './pages/DevelopPage.jsx';
 
-const LOGO_HOME_SELECTOR = '.top-title, .main-title';
+const LOGO_HOME_SELECTOR = '.top-title, .main-title, .letter-list-logo';
 const LOGO_HOME_HIT_SELECTOR = '.logo-home-hit';
 const ACTION_CLICK_SELECTOR = [
   'button',
@@ -66,6 +66,8 @@ function LogoHomeNavigator() {
 
   useEffect(() => {
     const isHome = location.pathname === '/';
+    const isPinkRoute = PINK_ROUTES.some(route => location.pathname.startsWith(route));
+    const logoLabel = isPinkRoute ? '편지함으로 이동' : '홈으로 이동';
     const markLogos = () => {
       document.querySelectorAll(LOGO_HOME_SELECTOR).forEach(logo => {
         logo.classList.toggle('logo-home-link', !isHome);
@@ -83,7 +85,7 @@ function LogoHomeNavigator() {
           part.classList.add('logo-home-hit');
           part.setAttribute('role', 'button');
           part.setAttribute('tabindex', '0');
-          part.setAttribute('aria-label', '홈으로 이동');
+          part.setAttribute('aria-label', logoLabel);
         });
       });
     };
@@ -99,20 +101,21 @@ function LogoHomeNavigator() {
       const hit = target.closest(LOGO_HOME_HIT_SELECTOR);
       return hit?.closest(LOGO_HOME_SELECTOR) || null;
     };
+    const destination = PINK_ROUTES.some(route => location.pathname.startsWith(route)) ? '/letters' : '/';
 
     const handleClick = event => {
       if (!findLogo(event.target)) return;
-      if (location.pathname === '/') return;
+      if (location.pathname === destination) return;
       event.preventDefault();
-      navigate('/');
+      navigate(destination);
     };
 
     const handleKeyDown = event => {
       if (event.key !== 'Enter' && event.key !== ' ') return;
       if (!findLogo(event.target)) return;
-      if (location.pathname === '/') return;
+      if (location.pathname === destination) return;
       event.preventDefault();
-      navigate('/');
+      navigate(destination);
     };
 
     document.addEventListener('click', handleClick);

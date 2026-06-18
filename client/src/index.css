@@ -19563,33 +19563,67 @@ input:disabled,
 /* Letter box affordances: make selected favorites and pre-open delete clearer. */
 .pink-letter-list-page .letter-favorite-button,
 .letters-main-page .letter-favorite-button {
-  border-color: rgba(238, 178, 204, 0.24) !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
   background:
-    linear-gradient(135deg, rgba(255, 242, 248, 0.13), rgba(226, 152, 184, 0.1)),
-    rgba(46, 25, 48, 0.2) !important;
-  color: rgba(255, 218, 234, 0.72) !important;
-  -webkit-text-fill-color: rgba(255, 218, 234, 0.72) !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 235, 244, 0.06)),
+    rgba(46, 25, 48, 0.16) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.88) !important;
   font-size: 17px !important;
   line-height: 1 !important;
+  text-shadow: 0 1px 8px rgba(255, 255, 255, 0.08) !important;
   box-shadow:
-    0 8px 18px rgba(55, 27, 55, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+    0 8px 18px rgba(55, 27, 55, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 .pink-letter-list-page .letter-favorite-button.active,
 .letters-main-page .letter-favorite-button.active {
-  border-color: rgba(255, 205, 226, 0.5) !important;
+  border-color: rgba(255, 205, 228, 0.56) !important;
   background:
-    linear-gradient(135deg, rgba(255, 222, 236, 0.26), rgba(210, 112, 157, 0.2)),
-    rgba(68, 32, 64, 0.32) !important;
-  color: rgba(255, 239, 247, 0.97) !important;
-  -webkit-text-fill-color: rgba(255, 239, 247, 0.97) !important;
+    linear-gradient(135deg, rgba(255, 224, 239, 0.28), rgba(222, 126, 171, 0.2)),
+    rgba(74, 31, 67, 0.3) !important;
+  color: rgba(255, 183, 216, 0.98) !important;
+  -webkit-text-fill-color: rgba(255, 183, 216, 0.98) !important;
   font-size: 18px !important;
-  text-shadow: 0 1px 10px rgba(226, 122, 166, 0.3) !important;
+  text-shadow:
+    0 0 8px rgba(255, 213, 232, 0.54),
+    0 0 16px rgba(255, 173, 211, 0.34) !important;
   box-shadow:
-    0 10px 24px rgba(83, 36, 74, 0.16),
-    0 0 16px rgba(232, 142, 180, 0.16),
+    0 10px 24px rgba(83, 36, 74, 0.14),
+    0 0 20px rgba(255, 190, 220, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+}
+
+/* Pink-route mailbox shortcut: keep it distinct from the dark home shortcut. */
+.letter-login-page .open-mailbox-floating-button,
+.pink-letter-list-page .open-mailbox-floating-button,
+.pink-letter-view .open-mailbox-floating-button {
+  border-color: rgba(255, 214, 230, 0.38) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 235, 244, 0.22), rgba(214, 127, 169, 0.13)),
+    rgba(47, 24, 49, 0.46) !important;
+  color: rgba(255, 246, 251, 0.96) !important;
+  box-shadow:
+    0 12px 28px rgba(38, 18, 45, 0.22),
+    0 0 18px rgba(255, 194, 222, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+}
+
+.letter-login-page .open-mailbox-floating-button:hover,
+.pink-letter-list-page .open-mailbox-floating-button:hover,
+.pink-letter-view .open-mailbox-floating-button:hover {
+  border-color: rgba(255, 226, 238, 0.58) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 240, 247, 0.28), rgba(225, 142, 181, 0.18)),
+    rgba(57, 28, 58, 0.52) !important;
+  color: rgba(255, 252, 254, 0.99) !important;
+}
+
+.letter-login-page .open-mailbox-floating-icon,
+.pink-letter-list-page .open-mailbox-floating-icon,
+.pink-letter-view .open-mailbox-floating-icon {
+  filter: drop-shadow(0 0 10px rgba(255, 198, 224, 0.24)) !important;
 }
 
 .pink-letter-list-page .letter-delete-button,
