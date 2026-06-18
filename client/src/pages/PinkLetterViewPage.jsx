@@ -122,7 +122,7 @@ export default function PinkLetterViewPage() {
         ) : letters.length === 0 ? (
           <div className="letter-empty">
             <strong>아직 열람할 편지가 없습니다.</strong>
-            <span>약속한 날짜가 지나면 이곳에서 천천히 읽으실 수 있습니다.</span>
+            <span>약속한 날짜가 지나면 이곳에서 읽을 수 있습니다.</span>
           </div>
         ) : (
           <>

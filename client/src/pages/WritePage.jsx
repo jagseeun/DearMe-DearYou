@@ -1304,7 +1304,7 @@ export default function WritePage() {
                 <LetterTextarea
                   value={text}
                   onChange={handleTextChange}
-                  placeholder="지금 전하고 싶은 마음을 천천히 기록해 주세요"
+                  placeholder="지금 전하고 싶은 마음을 적어 주세요"
                 />
 
                 {/* 사진 담기 */}

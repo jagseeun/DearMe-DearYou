@@ -582,10 +582,10 @@ export default function OpenMailboxPage() {
             <div className="open-empty-letter">불러오는 중...</div>
           ) : letters.length === 0 ? (
             <div className="open-empty-letter">
-              <strong>첫 마음을 기다리는 중입니다</strong>
-              <span>첫 마음이 도착하면 이곳에 조용히 쌓입니다.</span>
+              <strong>첫 편지를 기다리는 중입니다</strong>
+              <span>누군가 남긴 편지가 이곳에 표시됩니다.</span>
               <button type="button" className="open-compose-open-button" onClick={openComposer}>
-                첫 마음 남기기
+                첫 편지 남기기
               </button>
             </div>
           ) : (

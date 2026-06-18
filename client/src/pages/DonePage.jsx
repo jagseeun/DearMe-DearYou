@@ -32,8 +32,8 @@ export default function DonePage() {
     }
     return {
       kind: 'success',
-      title: '편지를 소중히 보관했습니다',
-      message: '남겨 주신 마음을 조용히 보관했습니다.',
+      title: '편지를 보관했습니다',
+      message: '약속한 날짜에 다시 확인할 수 있습니다.',
     };
   }, [delivery?.message, deliveryAccepted, deliveryFailed, sentNow]);
 

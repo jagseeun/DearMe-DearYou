@@ -289,7 +289,7 @@ export default function LettersPage() {
             ) : (
               <>
                 <strong>아직 남겨 둔 편지가 없습니다.</strong>
-                <span>미래의 나에게 첫 마음을 조용히 남겨 보세요.</span>
+                <span>미래의 나에게 첫 편지를 남겨 보세요.</span>
                 <button type="button" className="soft-button" onClick={() => navigate('/write', { state: { emailTheme: 'pink' } })}>첫 편지 남기기</button>
               </>
             )}
