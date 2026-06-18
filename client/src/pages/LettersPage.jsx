@@ -141,13 +141,13 @@ export default function LettersPage() {
   const activeLetters = isReceivedBox ? receivedLetters : letters;
   const unlockedCount = activeLetters.filter(l => new Date(l.openDate) <= now).length;
   const lockedCount = activeLetters.length - unlockedCount;
-  const favoriteCount = letters.filter(l => l.favorite).length;
-  const visibleLetters = !isReceivedBox && favoriteOnly ? letters.filter(l => l.favorite) : activeLetters;
+  const favoriteCount = activeLetters.filter(l => l.favorite).length;
+  const visibleLetters = favoriteOnly ? activeLetters.filter(l => l.favorite) : activeLetters;
 
   function switchMailbox(nextBox) {
     if (nextBox === activeBox) return;
     setActiveBox(nextBox);
-    if (nextBox === 'received') setFavoriteOnly(false);
+    setFavoriteOnly(false);
   }
 
   function openLetter(letter) {
@@ -183,10 +183,13 @@ export default function LettersPage() {
 
   async function toggleFavorite(letter, event) {
     event.stopPropagation();
+    const isReceivedFavorite = letter.mailbox === 'received' || isReceivedBox;
+    if (isReceivedFavorite && new Date(letter.openDate) > new Date()) return;
+    const setFavoriteList = isReceivedFavorite ? setReceivedLetters : setLetters;
     const nextFavorite = !letter.favorite;
-    setLetters(prev => prev.map(item => item.id === letter.id ? { ...item, favorite: nextFavorite } : item));
+    setFavoriteList(prev => prev.map(item => item.id === letter.id ? { ...item, favorite: nextFavorite } : item));
     try {
-      const res = await fetch(`/letters/${letter.id}/favorite`, {
+      const res = await fetch(isReceivedFavorite ? `/received-letters/${letter.id}/favorite` : `/letters/${letter.id}/favorite`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ favorite: nextFavorite }),
@@ -194,7 +197,7 @@ export default function LettersPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || '다시 보고 싶은 편지 표시를 바꾸지 못했습니다. 잠시 후 다시 시도해 주세요.');
     } catch (err) {
-      setLetters(prev => prev.map(item => item.id === letter.id ? { ...item, favorite: letter.favorite } : item));
+      setFavoriteList(prev => prev.map(item => item.id === letter.id ? { ...item, favorite: letter.favorite } : item));
       setNotice({ title: '변경하지 못했습니다', message: err.message || '다시 보고 싶은 편지 표시를 바꾸지 못했습니다. 잠시 후 다시 시도해 주세요.' });
     }
   }
@@ -265,7 +268,7 @@ export default function LettersPage() {
           </motion.div>
         )}
 
-        {!loading && !isReceivedBox && letters.length > 0 && (
+        {!loading && activeLetters.length > 0 && (
           <motion.div className="letter-list-controls" {...panelMotion}>
             <div className="letter-list-filters" aria-label="편지 보기 방식">
               <button type="button" className={!favoriteOnly ? 'active' : ''} onClick={() => setFavoriteOnly(false)}>모든 편지</button>
@@ -294,13 +297,13 @@ export default function LettersPage() {
               </>
             )}
           </motion.div>
-        ) : !isReceivedBox && visibleLetters.length === 0 ? (
+        ) : favoriteOnly && visibleLetters.length === 0 ? (
           <motion.div
             className="letter-empty"
             {...panelMotion}
           >
             <strong>다시 보고 싶은 편지가 아직 없습니다</strong>
-            <span>별을 눌러 오래 간직하고 싶은 편지를 모아 두실 수 있습니다.</span>
+            <span>하트를 눌러 다시 보고 싶은 편지를 모아 볼 수 있습니다.</span>
             <button type="button" className="soft-button" onClick={() => setFavoriteOnly(false)}>모든 편지 보기</button>
           </motion.div>
         ) : (
@@ -355,14 +358,24 @@ export default function LettersPage() {
                     <div className="letter-card-actions">
                       {isReceivedBox ? (
                         unlocked ? (
-                          <button
-                            type="button"
-                            className="letter-open-arrow"
-                            onClick={event => { event.stopPropagation(); openLetter(letter); }}
-                            aria-label="편지 열람하기"
-                          >
-                            ▶
-                          </button>
+                          <>
+                            <button
+                              type="button"
+                              className={`letter-favorite-button ${letter.favorite ? 'active' : ''}`}
+                              onClick={event => toggleFavorite(letter, event)}
+                              aria-label={letter.favorite ? '다시 보고 싶은 마음 해제하기' : '다시 보고 싶은 마음 담기'}
+                            >
+                              {letter.favorite ? '♥' : '♡'}
+                            </button>
+                            <button
+                              type="button"
+                              className="letter-open-arrow"
+                              onClick={event => { event.stopPropagation(); openLetter(letter); }}
+                              aria-label="편지 열람하기"
+                            >
+                              ▶
+                            </button>
+                          </>
                         ) : (
                           <span className="letter-lock-pill">D-{days}</span>
                         )

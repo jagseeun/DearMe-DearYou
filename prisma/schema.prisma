@@ -17,6 +17,7 @@ model Member {
 
   letters                 Letter[]
   letterDraft             LetterDraft?
+  receivedLetterFavorites ReceivedLetterFavorite[]
   teacherLetters          TeacherLetter[]
   teacherLetterDeliveries TeacherLetterDelivery[]
 }
@@ -45,6 +46,20 @@ model Letter {
 
   author   Member @relation(fields: [authorId], references: [id])
   authorId Int
+  receivedFavorites ReceivedLetterFavorite[]
+}
+
+model ReceivedLetterFavorite {
+  id        Int      @id @default(autoincrement())
+  memberId  Int
+  letterId  Int
+  createdAt DateTime @default(now())
+
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  letter Letter @relation(fields: [letterId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, letterId])
+  @@index([letterId])
 }
 
 model LetterDraft {

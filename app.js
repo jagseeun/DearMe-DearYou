@@ -2376,6 +2376,10 @@ app.get("/received-letters", async (req, res) => {
         emailTheme: true,
         openDate: true, createdAt: true, sentAt: true,
         author: { select: { name: true } },
+        receivedFavorites: {
+          where: { memberId: req.session.user.id },
+          select: { id: true },
+        },
       },
     });
 
@@ -2398,7 +2402,7 @@ app.get("/received-letters", async (req, res) => {
         arrivedAt: letter.sentAt || letter.openDate,
         senderName,
         mailbox: "received",
-        favorite: false,
+        favorite: letter.receivedFavorites.length > 0,
       };
 
       if (unlocked) return { ...payload, locked: false };
@@ -2414,6 +2418,55 @@ app.get("/received-letters", async (req, res) => {
   } catch (err) {
     console.error("received letters error:", err);
     res.status(500).json({ message: "도착한 편지를 불러오지 못했습니다." });
+  }
+});
+
+app.patch("/received-letters/:id/favorite", writeLimiter, async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
+  const id = Number(req.params.id);
+  const favorite = Boolean(req.body.favorite);
+  if (!Number.isInteger(id) || id <= 0) return res.status(400).json({ message: "편지 정보를 확인해 주세요." });
+
+  try {
+    const member = await prisma.member.findUnique({
+      where: { id: req.session.user.id },
+      select: { email: true },
+    });
+    const recipientEmail = String(member?.email || req.session.user.email || "").trim().toLowerCase();
+    if (recipientEmail && req.session.user.email !== recipientEmail) req.session.user.email = recipientEmail;
+    if (!recipientEmail) return res.status(400).json({ message: "받은 편지를 확인할 이메일이 없습니다." });
+
+    const letter = await prisma.letter.findFirst({
+      where: {
+        id,
+        authorId: { not: req.session.user.id },
+        type: { not: "call" },
+        openDate: { lte: new Date() },
+        OR: [
+          { recipientEmail },
+          { deliveryEmail: recipientEmail },
+        ],
+      },
+      select: { id: true },
+    });
+    if (!letter) return res.status(404).json({ message: "열람 가능한 받은 편지를 찾을 수 없습니다." });
+
+    if (favorite) {
+      await prisma.receivedLetterFavorite.upsert({
+        where: { memberId_letterId: { memberId: req.session.user.id, letterId: id } },
+        update: {},
+        create: { memberId: req.session.user.id, letterId: id },
+      });
+    } else {
+      await prisma.receivedLetterFavorite.deleteMany({
+        where: { memberId: req.session.user.id, letterId: id },
+      });
+    }
+
+    res.json({ id, favorite });
+  } catch (err) {
+    console.error("received letter favorite error:", err);
+    res.status(500).json({ message: "다시 보고 싶은 편지 표시를 바꾸지 못했습니다." });
   }
 });
 
