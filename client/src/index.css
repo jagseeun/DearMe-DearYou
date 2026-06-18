@@ -14459,7 +14459,7 @@ canvas {
   margin-top: 6px;
   padding: 9px 0;
   border: 0;
-  border-bottom: 1px solid rgba(255, 215, 160, 0.72);
+  border-bottom: 1px solid rgba(255, 241, 215, 0.72);
   background: transparent;
   color: rgba(255, 241, 215, 0.96);
   font-family: inherit;
@@ -14471,7 +14471,7 @@ canvas {
 }
 
 .mypage-support-link:hover {
-  border-bottom-color: rgba(255, 229, 190, 0.92);
+  border-bottom-color: rgba(255, 250, 238, 0.92);
   background: transparent;
   color: rgba(255, 250, 238, 0.99);
 }
