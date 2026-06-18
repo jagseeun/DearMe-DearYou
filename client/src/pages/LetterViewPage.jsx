@@ -446,7 +446,7 @@ export default function LetterViewPage() {
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.9, ease }}
                 style={{ fontSize: 28, fontWeight: 300, color: textMain }}>
-                이 마음을 다 읽으셨습니다
+                편지를 읽었어요
               </motion.div>
 
               <motion.div

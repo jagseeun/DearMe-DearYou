@@ -8841,7 +8841,7 @@ canvas {
   border: 1px solid transparent !important;
   border-radius: 999px !important;
   background: transparent !important;
-  color: rgba(255, 232, 226, 0.62) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
   font-family: inherit !important;
   font-size: 13px !important;
   cursor: pointer !important;
@@ -8852,20 +8852,20 @@ canvas {
 }
 
 .letters-main-page .letter-mailbox-tabs button span {
-  color: rgba(255, 232, 226, 0.44) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
   font-size: 11px !important;
 }
 
 .letters-main-page .letter-mailbox-tabs button.active {
-  border-color: rgba(244, 211, 218, 0.28) !important;
+  border-color: rgba(255, 255, 255, 0.34) !important;
   background:
-    linear-gradient(135deg, rgba(255, 241, 232, 0.14), rgba(218, 157, 176, 0.12)),
-    rgba(71, 39, 66, 0.48) !important;
-  color: #fff5ef !important;
+    linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 244, 248, 0.1)),
+    rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 0.96) !important;
 }
 
 .letters-main-page .letter-mailbox-tabs button.active span {
-  color: rgba(255, 232, 226, 0.72) !important;
+  color: rgba(255, 255, 255, 0.72) !important;
 }
 
 .letters-main-page .letter-card.is-received {
@@ -19185,28 +19185,28 @@ input:disabled,
   display: inline-flex !important;
   align-items: center !important;
   gap: 7px !important;
-  padding: 7px 10px !important;
-  border: 1px solid rgba(255, 238, 205, 0.14) !important;
+  padding: 6px 9px !important;
+  border: 1px solid rgba(255, 238, 205, 0.08) !important;
   border-radius: 999px !important;
-  background: rgba(255, 255, 255, 0.055) !important;
+  background: rgba(255, 255, 255, 0.025) !important;
   box-shadow: none !important;
-  color: rgba(255, 242, 224, 0.64) !important;
+  color: rgba(255, 242, 224, 0.48) !important;
   font-size: 12px !important;
   line-height: 1 !important;
   pointer-events: none !important;
   text-shadow: none !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
 }
 
 .write-stage.write-stage-text .write-char-count.is-near-limit {
-  border-color: rgba(255, 218, 172, 0.24) !important;
-  color: rgba(255, 226, 188, 0.82) !important;
+  border-color: rgba(255, 218, 172, 0.16) !important;
+  color: rgba(255, 226, 188, 0.7) !important;
 }
 
 .write-stage.write-stage-text .write-char-count.is-limit {
-  border-color: rgba(255, 178, 170, 0.32) !important;
-  color: rgba(255, 216, 206, 0.9) !important;
+  border-color: rgba(255, 178, 170, 0.22) !important;
+  color: rgba(255, 216, 206, 0.82) !important;
 }
 
 .submit-btn:disabled,
@@ -19319,9 +19319,9 @@ input:disabled,
     margin-left: auto !important;
     margin-right: 0 !important;
     padding: 6px 9px !important;
-    border-color: rgba(141, 96, 58, 0.14) !important;
-    background: rgba(255, 250, 245, 0.58) !important;
-    color: rgba(92, 63, 67, 0.7) !important;
+    border-color: rgba(141, 96, 58, 0.07) !important;
+    background: rgba(255, 250, 245, 0.24) !important;
+    color: rgba(92, 63, 67, 0.46) !important;
     font-size: 11px !important;
   }
 
