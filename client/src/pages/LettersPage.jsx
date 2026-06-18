@@ -372,9 +372,9 @@ export default function LettersPage() {
                             type="button"
                             className={`letter-favorite-button ${letter.favorite ? 'active' : ''}`}
                             onClick={event => toggleFavorite(letter, event)}
-                            aria-label={letter.favorite ? '다시 보기 목록에서 빼기' : '다시 보기 목록에 담기'}
+                            aria-label={letter.favorite ? '다시 보고 싶은 마음 해제하기' : '다시 보고 싶은 마음 담기'}
                           >
-                            ★
+                            {letter.favorite ? '♥' : '♡'}
                           </button>
                           {unlocked ? (
                             <button

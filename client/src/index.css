@@ -19569,6 +19569,8 @@ input:disabled,
     rgba(46, 25, 48, 0.2) !important;
   color: rgba(255, 218, 234, 0.72) !important;
   -webkit-text-fill-color: rgba(255, 218, 234, 0.72) !important;
+  font-size: 17px !important;
+  line-height: 1 !important;
   box-shadow:
     0 8px 18px rgba(55, 27, 55, 0.09),
     inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
@@ -19582,6 +19584,7 @@ input:disabled,
     rgba(68, 32, 64, 0.32) !important;
   color: rgba(255, 239, 247, 0.97) !important;
   -webkit-text-fill-color: rgba(255, 239, 247, 0.97) !important;
+  font-size: 18px !important;
   text-shadow: 0 1px 10px rgba(226, 122, 166, 0.3) !important;
   box-shadow:
     0 10px 24px rgba(83, 36, 74, 0.16),
