@@ -431,6 +431,7 @@ export default function WritePage() {
   const [imageUrl, setImageUrl] = useState('');
   const [imageUploading, setImageUploading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [photoReviewUrl, setPhotoReviewUrl] = useState('');
   const photoVideoRef = useRef(null);
   const photoStreamRef = useRef(null);
 
@@ -481,6 +482,8 @@ export default function WritePage() {
   const videoPreparingRef = useRef(false);
   const photoOpeningRef = useRef(false);
   const photoUploadingRef = useRef(false);
+  const photoReviewBlobRef = useRef(null);
+  const photoReviewUrlRef = useRef('');
   const draftSavingRef = useRef(false);
   const savingRef = useRef(false);
 
@@ -597,7 +600,13 @@ export default function WritePage() {
     };
   }, [showModal, emailPreviewLoading, emailPreview.html]);
 
-  useEffect(() => { return () => { streamRef.current?.getTracks().forEach(t => t.stop()); }; }, []);
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach(t => t.stop());
+      photoStreamRef.current?.getTracks().forEach(t => t.stop());
+      if (photoReviewUrlRef.current) URL.revokeObjectURL(photoReviewUrlRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (stage !== 'counting') return;
@@ -690,6 +699,7 @@ export default function WritePage() {
     setMode(m);
     setDrawPreviewImageUrl('');
     if (m !== 'draw') setDrawDraftImageUrl('');
+    if (m !== 'text') closePhotoCamera();
     if (m === 'text' && streamRef.current) {
       streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
@@ -704,9 +714,35 @@ export default function WritePage() {
     }
   }
 
+  function clearPhotoReview() {
+    if (photoReviewUrlRef.current) URL.revokeObjectURL(photoReviewUrlRef.current);
+    photoReviewUrlRef.current = '';
+    photoReviewBlobRef.current = null;
+    setPhotoReviewUrl('');
+  }
+
+  function setPhotoReview(blob) {
+    clearPhotoReview();
+    const nextUrl = URL.createObjectURL(blob);
+    photoReviewUrlRef.current = nextUrl;
+    photoReviewBlobRef.current = blob;
+    setPhotoReviewUrl(nextUrl);
+  }
+
+  async function uploadPhotoBlob(blob) {
+    if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error();
+    const res = await fetch('/get-image-upload-url?ext=jpg');
+    if (!res.ok) throw new Error();
+    const { uploadUrl, publicUrl } = await res.json();
+    const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/jpeg' } });
+    if (!put.ok) throw new Error();
+    return publicUrl;
+  }
+
   async function openPhotoCamera() {
     if (photoOpeningRef.current || photoUploadingRef.current || imageUploading || showCamera) return;
     photoOpeningRef.current = true;
+    clearPhotoReview();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
       photoStreamRef.current = stream;
@@ -721,11 +757,12 @@ export default function WritePage() {
     finally { photoOpeningRef.current = false; }
   }
 
-  function closePhotoCamera() {
+  function closePhotoCamera({ clearReview = true } = {}) {
     if (photoVideoRef.current) photoVideoRef.current.srcObject = null;
     photoStreamRef.current?.getTracks().forEach(t => t.stop());
     photoStreamRef.current = null;
     setShowCamera(false);
+    if (clearReview) clearPhotoReview();
   }
 
   async function capturePhoto() {
@@ -733,26 +770,47 @@ export default function WritePage() {
     const video = photoVideoRef.current;
     if (!video) return;
     photoUploadingRef.current = true;
-    const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    closePhotoCamera();
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 960;
+      canvas.height = video.videoHeight || 720;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
+      if (!blob) throw new Error();
+      closePhotoCamera({ clearReview: false });
+      setPhotoReview(blob);
+    } catch { showNotice('사진을 다시 촬영해 주세요.', '사진을 확인하지 못했습니다'); }
+    finally {
+      photoUploadingRef.current = false;
+    }
+  }
+
+  async function confirmPhoto() {
+    if (photoUploadingRef.current || imageUploading) return;
+    const blob = photoReviewBlobRef.current;
+    if (!blob) return showNotice('사진을 다시 촬영해 주세요.', '사진을 확인하지 못했습니다');
+    photoUploadingRef.current = true;
     setImageUploading(true);
     try {
-      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.9));
-      if (!blob || blob.size > MAX_IMAGE_BYTES) throw new Error();
-      const res = await fetch('/get-image-upload-url?ext=jpg');
-      if (!res.ok) throw new Error();
-      const { uploadUrl, publicUrl } = await res.json();
-      const put = await fetch(uploadUrl, { method: 'PUT', body: blob, headers: { 'Content-Type': 'image/jpeg' } });
-      if (!put.ok) throw new Error();
+      const publicUrl = await uploadPhotoBlob(blob);
       setImageUrl(publicUrl);
+      clearPhotoReview();
     } catch { showNotice('사진 파일을 올리지 못했습니다. 잠시 후 다시 시도해 주세요.', '업로드하지 못했습니다'); }
     finally {
       photoUploadingRef.current = false;
       setImageUploading(false);
     }
+  }
+
+  function retakePhoto() {
+    if (imageUploading) return;
+    clearPhotoReview();
+    openPhotoCamera();
+  }
+
+  function cancelPhotoCapture() {
+    if (imageUploading) return;
+    closePhotoCamera();
   }
 
   async function uploadSignature(dataUrl) {
@@ -1350,39 +1408,66 @@ export default function WritePage() {
 
       {/* ── 카메라 촬영 모달 ── */}
       <AnimatePresence>
-        {showCamera && (
+        {(showCamera || photoReviewUrl) && (
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
             className="photo-capture-overlay"
             style={{ position: 'fixed', inset: 0, background: 'rgba(3,3,3,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', zIndex: 110, gap: 24, transform: 'translateZ(0)', backfaceVisibility: 'hidden', willChange: 'opacity', isolation: 'isolate' }}
           >
-            <div className="photo-capture-frame" style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', width: 480, aspectRatio: '4/3', background: '#000', transform: 'translateZ(0)', backfaceVisibility: 'hidden', contain: 'paint' }}>
-              <video ref={photoVideoRef} autoPlay playsInline muted
-                onLoadedMetadata={(event) => event.currentTarget.play?.().catch(() => {})}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }} />
-              {/* 뷰파인더 코너 */}
-              {['tl','tr','bl','br'].map(pos => (
-                <div key={pos} style={{
-                  position: 'absolute', width: 22, height: 22,
-                  top: pos.startsWith('t') ? 18 : 'auto', bottom: pos.startsWith('b') ? 18 : 'auto',
-                  left: pos.endsWith('l') ? 18 : 'auto', right: pos.endsWith('r') ? 18 : 'auto',
-                  borderTop: pos.startsWith('t') ? '2px solid rgba(255,255,255,0.6)' : 'none',
-                  borderBottom: pos.startsWith('b') ? '2px solid rgba(255,255,255,0.6)' : 'none',
-                  borderLeft: pos.endsWith('l') ? '2px solid rgba(255,255,255,0.6)' : 'none',
-                  borderRight: pos.endsWith('r') ? '2px solid rgba(255,255,255,0.6)' : 'none',
-                }} />
-              ))}
+            <div className={`photo-capture-frame ${photoReviewUrl ? 'is-reviewing' : ''}`} style={{ position: 'relative', borderRadius: 24, overflow: 'hidden', width: 480, aspectRatio: '4/3', background: '#000', transform: 'translateZ(0)', backfaceVisibility: 'hidden', contain: 'paint' }}>
+              {photoReviewUrl ? (
+                <img className="photo-capture-preview-image" src={photoReviewUrl} alt="촬영한 사진 미리보기" />
+              ) : (
+                <>
+                  <video ref={photoVideoRef} autoPlay playsInline muted
+                    onLoadedMetadata={(event) => event.currentTarget.play?.().catch(() => {})}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'translateZ(0)', backfaceVisibility: 'hidden' }} />
+                  {/* 뷰파인더 코너 */}
+                  {['tl','tr','bl','br'].map(pos => (
+                    <div key={pos} style={{
+                      position: 'absolute', width: 22, height: 22,
+                      top: pos.startsWith('t') ? 18 : 'auto', bottom: pos.startsWith('b') ? 18 : 'auto',
+                      left: pos.endsWith('l') ? 18 : 'auto', right: pos.endsWith('r') ? 18 : 'auto',
+                      borderTop: pos.startsWith('t') ? '2px solid rgba(255,255,255,0.6)' : 'none',
+                      borderBottom: pos.startsWith('b') ? '2px solid rgba(255,255,255,0.6)' : 'none',
+                      borderLeft: pos.endsWith('l') ? '2px solid rgba(255,255,255,0.6)' : 'none',
+                      borderRight: pos.endsWith('r') ? '2px solid rgba(255,255,255,0.6)' : 'none',
+                    }} />
+                  ))}
+                </>
+              )}
             </div>
             <div className="photo-capture-actions" style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <button onClick={closePhotoCamera}
-                style={{ padding: '10px 26px', borderRadius: 50, fontSize: 14, fontFamily: 'inherit', cursor: 'pointer', border: '1px solid rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,252,223,0.6)' }}>
-                취소
-              </button>
-              <motion.div whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.92 }} onClick={capturePhoto}
-                style={{ width: 72, height: 72, borderRadius: '50%', border: '3px solid rgba(255,255,255,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(255,255,255,0.9)' }} />
-              </motion.div>
+              {photoReviewUrl ? (
+                <>
+                  <button type="button" className="photo-capture-button" onClick={cancelPhotoCapture} disabled={imageUploading}>
+                    취소
+                  </button>
+                  <button type="button" className="photo-capture-button" onClick={retakePhoto} disabled={imageUploading}>
+                    다시 찍기
+                  </button>
+                  <button type="button" className="photo-capture-button primary" onClick={confirmPhoto} disabled={imageUploading}>
+                    {imageUploading ? '업로드 중...' : '사진 담기'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button type="button" className="photo-capture-button" onClick={cancelPhotoCapture}>
+                    취소
+                  </button>
+                  <motion.button
+                    type="button"
+                    className="photo-capture-shutter"
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.92 }}
+                    onClick={capturePhoto}
+                    aria-label="촬영"
+                  >
+                    <span className="photo-capture-shutter-core" />
+                  </motion.button>
+                </>
+              )}
             </div>
           </motion.div>
         )}

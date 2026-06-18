@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import OpenMailboxFloatingButton from '../components/OpenMailboxFloatingButton.jsx';
 import { formatDate, daysUntil } from '../utils/dates.js';
 import { motionEase, pageMotion } from '../utils/motion.js';
 
@@ -180,6 +181,8 @@ export default function DonePage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <OpenMailboxFloatingButton delay={0.7} />
     </motion.div>
   );
 }

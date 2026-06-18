@@ -33,7 +33,10 @@ export default function OpenMailboxFloatingButton({ delay = 0.55 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
     >
-      {String.fromCodePoint(0x1f48c)}
+      <span className="open-mailbox-floating-icon" aria-hidden="true">
+        {String.fromCodePoint(0x1f48c)}
+      </span>
+      <span className="open-mailbox-floating-label">열린 편지함</span>
     </motion.button>
   );
 }
