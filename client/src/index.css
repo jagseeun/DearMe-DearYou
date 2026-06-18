@@ -19579,19 +19579,19 @@ input:disabled,
 
 .pink-letter-list-page .letter-favorite-button.active,
 .letters-main-page .letter-favorite-button.active {
-  border-color: rgba(255, 205, 228, 0.56) !important;
+  border-color: rgba(236, 202, 216, 0.52) !important;
   background:
-    linear-gradient(135deg, rgba(255, 224, 239, 0.28), rgba(222, 126, 171, 0.2)),
-    rgba(74, 31, 67, 0.3) !important;
-  color: rgba(255, 183, 216, 0.98) !important;
-  -webkit-text-fill-color: rgba(255, 183, 216, 0.98) !important;
+    linear-gradient(135deg, rgba(248, 224, 234, 0.24), rgba(191, 126, 157, 0.18)),
+    rgba(72, 34, 64, 0.28) !important;
+  color: rgba(224, 157, 188, 0.96) !important;
+  -webkit-text-fill-color: rgba(224, 157, 188, 0.96) !important;
   font-size: 18px !important;
   text-shadow:
-    0 0 8px rgba(255, 213, 232, 0.54),
-    0 0 16px rgba(255, 173, 211, 0.34) !important;
+    0 0 8px rgba(246, 216, 229, 0.46),
+    0 0 16px rgba(218, 162, 188, 0.24) !important;
   box-shadow:
     0 10px 24px rgba(83, 36, 74, 0.14),
-    0 0 20px rgba(255, 190, 220, 0.24),
+    0 0 18px rgba(236, 190, 211, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
 }
 
