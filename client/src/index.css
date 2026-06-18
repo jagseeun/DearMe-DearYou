@@ -19494,10 +19494,12 @@ input:disabled,
   min-height: 42px !important;
   min-width: 108px !important;
   padding: 0 22px !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border: 1px solid rgba(255, 239, 220, 0.18) !important;
   border-radius: 999px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: rgba(255, 252, 223, 0.74) !important;
+  background:
+    linear-gradient(135deg, rgba(255, 252, 246, 0.1), rgba(208, 184, 164, 0.06)),
+    rgba(18, 20, 25, 0.42) !important;
+  color: rgba(255, 246, 232, 0.72) !important;
   font-family: inherit !important;
   font-size: 14px !important;
   line-height: 1 !important;
@@ -19508,12 +19510,14 @@ input:disabled,
 }
 
 .photo-capture-button.primary {
-  border-color: rgba(255, 226, 184, 0.48) !important;
+  border-color: rgba(232, 194, 138, 0.38) !important;
   background:
-    linear-gradient(135deg, rgba(255, 238, 202, 0.94), rgba(207, 168, 116, 0.9)),
-    rgba(255, 255, 255, 0.12) !important;
-  color: #2a1b10 !important;
-  box-shadow: 0 12px 30px rgba(207, 168, 116, 0.18) !important;
+    linear-gradient(135deg, rgba(232, 194, 138, 0.22), rgba(168, 200, 181, 0.13)),
+    rgba(28, 30, 34, 0.56) !important;
+  color: rgba(255, 239, 214, 0.92) !important;
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
 }
 
 .photo-capture-button:disabled {
@@ -19559,46 +19563,46 @@ input:disabled,
 /* Letter box affordances: make selected favorites and pre-open delete clearer. */
 .pink-letter-list-page .letter-favorite-button,
 .letters-main-page .letter-favorite-button {
-  border-color: rgba(174, 86, 122, 0.28) !important;
+  border-color: rgba(198, 118, 152, 0.2) !important;
   background:
-    linear-gradient(135deg, rgba(255, 247, 251, 0.54), rgba(255, 221, 233, 0.34)),
-    rgba(94, 45, 70, 0.1) !important;
-  color: rgba(125, 48, 86, 0.86) !important;
-  -webkit-text-fill-color: rgba(125, 48, 86, 0.86) !important;
+    linear-gradient(135deg, rgba(255, 250, 252, 0.34), rgba(255, 221, 233, 0.16)),
+    rgba(94, 45, 70, 0.07) !important;
+  color: rgba(124, 58, 93, 0.72) !important;
+  -webkit-text-fill-color: rgba(124, 58, 93, 0.72) !important;
 }
 
 .pink-letter-list-page .letter-favorite-button.active,
 .letters-main-page .letter-favorite-button.active {
-  border-color: rgba(255, 225, 238, 0.78) !important;
+  border-color: rgba(226, 163, 192, 0.46) !important;
   background:
-    linear-gradient(135deg, rgba(232, 122, 160, 0.96), rgba(178, 72, 126, 0.94)),
-    rgba(196, 88, 136, 0.84) !important;
-  color: #fff9fc !important;
-  -webkit-text-fill-color: #fff9fc !important;
-  text-shadow: 0 1px 8px rgba(105, 30, 68, 0.28) !important;
+    linear-gradient(135deg, rgba(255, 230, 240, 0.24), rgba(188, 86, 132, 0.26)),
+    rgba(96, 42, 78, 0.34) !important;
+  color: rgba(255, 248, 252, 0.94) !important;
+  -webkit-text-fill-color: rgba(255, 248, 252, 0.94) !important;
+  text-shadow: 0 1px 8px rgba(105, 30, 68, 0.2) !important;
   box-shadow:
-    0 10px 24px rgba(152, 55, 101, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+    0 10px 24px rgba(96, 42, 78, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
 }
 
 .pink-letter-list-page .letter-delete-button,
 .letters-main-page .letter-delete-button {
-  border-color: rgba(171, 66, 82, 0.34) !important;
+  border-color: rgba(166, 78, 92, 0.24) !important;
   background:
-    linear-gradient(135deg, rgba(255, 248, 250, 0.56), rgba(255, 215, 224, 0.34)),
-    rgba(132, 46, 62, 0.12) !important;
-  color: rgba(138, 45, 62, 0.9) !important;
-  -webkit-text-fill-color: rgba(138, 45, 62, 0.9) !important;
+    linear-gradient(135deg, rgba(255, 248, 250, 0.36), rgba(255, 216, 224, 0.18)),
+    rgba(132, 46, 62, 0.08) !important;
+  color: rgba(126, 49, 64, 0.76) !important;
+  -webkit-text-fill-color: rgba(126, 49, 64, 0.76) !important;
 }
 
 .pink-letter-list-page .letter-delete-button:hover,
 .letters-main-page .letter-delete-button:hover {
-  border-color: rgba(188, 70, 88, 0.52) !important;
+  border-color: rgba(175, 80, 97, 0.36) !important;
   background:
-    linear-gradient(135deg, rgba(255, 243, 247, 0.74), rgba(255, 203, 215, 0.48)),
-    rgba(146, 45, 66, 0.18) !important;
-  color: rgba(120, 32, 51, 0.98) !important;
-  -webkit-text-fill-color: rgba(120, 32, 51, 0.98) !important;
+    linear-gradient(135deg, rgba(255, 246, 249, 0.44), rgba(255, 207, 217, 0.24)),
+    rgba(146, 45, 66, 0.12) !important;
+  color: rgba(118, 38, 55, 0.86) !important;
+  -webkit-text-fill-color: rgba(118, 38, 55, 0.86) !important;
 }
 
 .letter-delete-modal-message {
