@@ -18,7 +18,13 @@ const isProduction = process.env.NODE_ENV === "production";
 const SESSION_COOKIE_NAME = "dearme.sid";
 const USERID_REGEX = /^[a-zA-Z0-9]+$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ACCOUNT_EMAIL_DOMAIN = "e-mirim.hs.kr";
 const ALLOWED_USER_EMAIL_MESSAGE = "이메일 형식을 확인해 주세요.";
+const COMMON_USER_EMAIL_DOMAINS = [
+  { domain: "gmail.com", label: "gmail", suffix: ".com", first: "g" },
+  { domain: "naver.com", label: "naver", suffix: ".com", first: "n" },
+  { domain: ACCOUNT_EMAIL_DOMAIN, label: "e-mirim", suffix: ".hs.kr", first: "e" },
+];
 const KNOWN_USER_EMAIL_DOMAIN_TYPOS = new Set([
   "gamil.com",
   "gmial.com",
@@ -158,20 +164,66 @@ function isValidEmail(value) {
   return typeof value === "string" && value.length <= 254 && EMAIL_REGEX.test(value);
 }
 
-function isDisallowedSchoolEmailDomain(domain) {
-  return domain === "hs.kr" || (domain.endsWith(".hs.kr") && domain !== "e-mirim.hs.kr");
-}
-
-function isAllowedUserEmail(value) {
+function getEmailDomain(value) {
   if (!isValidEmail(value)) return false;
   const email = String(value).trim().toLowerCase();
   const atIndex = email.lastIndexOf("@");
-  const local = email.slice(0, atIndex);
-  const domain = email.slice(atIndex + 1);
-  if (KNOWN_USER_EMAIL_DOMAIN_TYPOS.has(domain)) return false;
-  if (isDisallowedSchoolEmailDomain(domain)) return false;
-  if (domain === "e-mirim.hs.kr") return /^[sd](24|25|26)/.test(local);
-  return true;
+  return email.slice(atIndex + 1);
+}
+
+function damerauLevenshteinDistance(a, b) {
+  const rows = Array.from({ length: a.length + 1 }, () => Array(b.length + 1).fill(0));
+  for (let i = 0; i <= a.length; i += 1) rows[i][0] = i;
+  for (let j = 0; j <= b.length; j += 1) rows[0][j] = j;
+
+  for (let i = 1; i <= a.length; i += 1) {
+    for (let j = 1; j <= b.length; j += 1) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      rows[i][j] = Math.min(
+        rows[i - 1][j] + 1,
+        rows[i][j - 1] + 1,
+        rows[i - 1][j - 1] + cost,
+      );
+
+      if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+        rows[i][j] = Math.min(rows[i][j], rows[i - 2][j - 2] + 1);
+      }
+    }
+  }
+
+  return rows[a.length][b.length];
+}
+
+function isLikelyCommonEmailDomainTypo(domain) {
+  if (KNOWN_USER_EMAIL_DOMAIN_TYPOS.has(domain)) return true;
+
+  return COMMON_USER_EMAIL_DOMAINS.some(target => {
+    if (domain === target.domain || domain[0] !== target.first) return false;
+    if (damerauLevenshteinDistance(domain, target.domain) <= 1) return true;
+    if (!domain.endsWith(target.suffix)) return false;
+    const label = domain.slice(0, -target.suffix.length);
+    return label !== target.label && damerauLevenshteinDistance(label, target.label) <= 1;
+  });
+}
+
+function isLikelyMirimSchoolEmailDomainTypo(domain) {
+  if (domain === ACCOUNT_EMAIL_DOMAIN) return false;
+  if (KNOWN_USER_EMAIL_DOMAIN_TYPOS.has(domain)) return true;
+  if (!domain.endsWith(".hs.kr")) return false;
+
+  const schoolLabel = domain.slice(0, -".hs.kr".length);
+  if (schoolLabel === "mirim") return true;
+  return (
+    damerauLevenshteinDistance(schoolLabel, "e-mirim") <= 2 ||
+    damerauLevenshteinDistance(schoolLabel, "mirim") <= 1
+  );
+}
+
+function isAllowedUserEmail(value) {
+  const domain = getEmailDomain(value);
+  if (!domain) return false;
+  if (isLikelyMirimSchoolEmailDomainTypo(domain)) return false;
+  return !isLikelyCommonEmailDomainTypo(domain);
 }
 
 function normalizePublicText(value = "") {
@@ -1287,9 +1339,69 @@ if (scheduledEmailsEnabled) {
 const app = express();
 const PORT = process.env.PORT || 4000;
 const PgSession = connectPgSimple(session);
+const sessionDatabaseUrl = process.env.SESSION_DATABASE_URL || process.env.DATABASE_EXTERNAL_URL || process.env.DATABASE_URL;
+
+function databaseHost(value) {
+  try {
+    return new URL(value).host;
+  } catch {
+    return "(invalid database url)";
+  }
+}
+
+function isDatabaseConnectionError(err) {
+  return ["ENOTFOUND", "EAI_AGAIN", "ECONNREFUSED", "ETIMEDOUT"].includes(err?.code);
+}
+
+function clearSessionCookie(res) {
+  res.clearCookie(SESSION_COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: "lax",
+  });
+}
+
+function sendSessionStoreError(res, err, fallbackMessage) {
+  if (isDatabaseConnectionError(err)) {
+    console.error("session write database error:", {
+      code: err.code,
+      hostname: err.hostname,
+      message: err.message,
+    });
+    clearSessionCookie(res);
+    return res.status(503).json({
+      message: "로그인 세션 DB에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    });
+  }
+
+  return res.status(500).json({ message: fallbackMessage });
+}
+
+if (!sessionDatabaseUrl) {
+  console.error("SESSION_DATABASE_URL/DATABASE_URL is not configured for session storage.");
+} else if (process.env.SESSION_DATABASE_URL || process.env.DATABASE_EXTERNAL_URL) {
+  console.log(`session database host: ${databaseHost(sessionDatabaseUrl)}`);
+}
+
 const sessionPool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: sessionDatabaseUrl,
   ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+  connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS || 10000),
+});
+
+sessionPool.on("error", err => {
+  console.error("session database pool error:", {
+    code: err.code,
+    hostname: err.hostname,
+    message: err.message,
+  });
+});
+
+const sessionStore = new PgSession({
+  pool: sessionPool,
+  tableName: "user_sessions",
+  createTableIfMissing: true,
+  errorLog: (...args) => console.error("session store error:", ...args),
 });
 
 const r2EndpointOrigin = originFromUrl(r2Endpoint);
@@ -1435,6 +1547,12 @@ function setNoStoreHeaders(res) {
 }
 
 app.use(express.json({ limit: "1mb" }));
+app.use((err, _req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({ message: "요청 JSON 형식이 올바르지 않습니다." });
+  }
+  next(err);
+});
 app.use((req, res, next) => {
   if (req.path === "/" || req.path.endsWith(".html")) {
     setNoStoreHeaders(res);
@@ -1450,11 +1568,7 @@ app.use(express.static(path.resolve("client/dist"), {
 }));
 
 app.use(session({
-  store: new PgSession({
-    pool: sessionPool,
-    tableName: "user_sessions",
-    createTableIfMissing: true,
-  }),
+  store: sessionStore,
   secret: process.env.SESSION_SECRET || "development-only-session-secret",
   resave: false,
   saveUninitialized: false,
@@ -1466,6 +1580,21 @@ app.use(session({
     sameSite: "lax",
   }
 }));
+
+app.use((err, _req, res, next) => {
+  if (isDatabaseConnectionError(err)) {
+    console.error("session middleware database error:", {
+      code: err.code,
+      hostname: err.hostname,
+      message: err.message,
+    });
+    clearSessionCookie(res);
+    return res.status(503).json({
+      message: "로그인 세션 DB에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.",
+    });
+  }
+  next(err);
+});
 
 const privilegedUserids = new Set(["leejeahee", "jagseeun1"]);
 const adminUserids = new Set(privilegedUserids);
@@ -1555,7 +1684,7 @@ app.post("/check-username", authLimiter, async (req, res) => {
 app.post("/check-email", authLimiter, async (req, res) => {
   const email = String(req.body.email || "").trim().toLowerCase();
   if (!email) return res.status(400).json({ available: false, message: "이메일을 입력해 주세요." });
-  if (!isValidEmail(email) || !isAllowedUserEmail(email)) return res.status(400).json({ available: false, message: ALLOWED_USER_EMAIL_MESSAGE });
+  if (!isAllowedUserEmail(email)) return res.status(400).json({ available: false, message: ALLOWED_USER_EMAIL_MESSAGE });
 
   try {
     const existing = await prisma.member.findUnique({ where: { email } });
@@ -1578,7 +1707,6 @@ app.post("/register", authLimiter, async (req, res) => {
   if (!USERID_REGEX.test(userid)) return res.status(400).json({ message: "아이디는 영어와 숫자만 사용할 수 있습니다." });
   const passwordError = validatePassword(password);
   if (passwordError) return res.status(400).json({ message: passwordError });
-  if (!isValidEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
@@ -1592,14 +1720,14 @@ app.post("/register", authLimiter, async (req, res) => {
     req.session.regenerate(err => {
       if (err) {
         console.error("register session regenerate error:", err);
-        return res.status(500).json({ message: "가입은 완료됐지만 로그인 처리 중 문제가 생겼습니다. 로그인 화면에서 다시 시도해 주세요." });
+        return sendSessionStoreError(res, err, "가입은 완료됐지만 로그인 처리 중 문제가 생겼습니다. 로그인 화면에서 다시 시도해 주세요.");
       }
 
       req.session.user = { id: member.id, userid: member.userid, name: member.name, email: member.email || "" };
       req.session.save(saveErr => {
         if (saveErr) {
           console.error("register session save error:", saveErr);
-          return res.status(500).json({ message: "가입은 완료됐지만 로그인 처리 중 문제가 생겼습니다. 로그인 화면에서 다시 시도해 주세요." });
+          return sendSessionStoreError(res, saveErr, "가입은 완료됐지만 로그인 처리 중 문제가 생겼습니다. 로그인 화면에서 다시 시도해 주세요.");
         }
         res.status(201).json({ message: "가입이 완료되었습니다.", name: member.name });
       });
@@ -1629,14 +1757,14 @@ app.post("/login", authLimiter, async (req, res) => {
     req.session.regenerate(err => {
       if (err) {
         console.error("session regenerate error:", err);
-        return res.status(500).json({ message: "로그인 처리 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요." });
+        return sendSessionStoreError(res, err, "로그인 처리 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.");
       }
 
       req.session.user = { id: member.id, userid: member.userid, name: member.name, email: member.email || "" };
       req.session.save(saveErr => {
         if (saveErr) {
           console.error("session save error:", saveErr);
-          return res.status(500).json({ message: "로그인 처리 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요." });
+          return sendSessionStoreError(res, saveErr, "로그인 처리 중 문제가 생겼습니다. 잠시 후 다시 시도해 주세요.");
         }
         res.status(200).json({ message: "로그인되었습니다.", name: member.name });
       });
@@ -1734,7 +1862,6 @@ app.put("/update-email", async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const email = String(req.body.email || "").trim().toLowerCase();
   if (!email) return res.status(400).json({ message: "이메일을 입력해 주세요." });
-  if (!isValidEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
   try {
     const existingEmail = await prisma.member.findUnique({ where: { email } });
@@ -1757,9 +1884,6 @@ app.put("/update-profile", async (req, res) => {
   if (!name) return res.status(400).json({ message: "이름을 입력해 주세요." });
   if (name.length > NAME_MAX_LENGTH) return res.status(400).json({ message: `이름은 ${NAME_MAX_LENGTH}자를 넘을 수 없습니다.` });
   if (!email) return res.status(400).json({ message: "이메일을 입력해 주세요." });
-  if (!isValidEmail(email)) {
-    return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
-  }
   if (!isAllowedUserEmail(email)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
 
   try {
@@ -2893,18 +3017,46 @@ app.patch("/admin/letters/:id/delivery-email", adminLimiter, requireAdmin, async
   if (deliveryEmail && !isAllowedUserEmail(deliveryEmail)) return res.status(400).json({ message: ALLOWED_USER_EMAIL_MESSAGE });
 
   try {
-    const letter = await prisma.letter.update({
+    const existing = await prisma.letter.findUnique({
       where: { id },
-      data: { deliveryEmail: deliveryEmail || null },
       select: {
         id: true,
         recipientEmail: true,
         deliveryEmail: true,
         sentToEmail: true,
+        sentAt: true,
         author: { select: { email: true } },
       },
     });
-    res.json({ message: deliveryEmail ? "발송 이메일을 저장했습니다." : "발송 이메일 지정을 해제했습니다.", letter });
+    if (!existing) return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
+
+    const nextDeliveryEmail = deliveryEmail || null;
+    const currentTargetEmail = existing.deliveryEmail || existing.recipientEmail || existing.author?.email || "";
+    const nextTargetEmail = nextDeliveryEmail || existing.recipientEmail || existing.author?.email || "";
+    const targetChanged = currentTargetEmail !== nextTargetEmail;
+    const shouldResetDelivery = Boolean(existing.sentAt && nextTargetEmail && (targetChanged || existing.sentToEmail !== nextTargetEmail));
+
+    const letter = await prisma.letter.update({
+      where: { id },
+      data: {
+        deliveryEmail: nextDeliveryEmail,
+        ...(shouldResetDelivery ? { sentAt: null, sentToEmail: null } : {}),
+      },
+      select: {
+        id: true,
+        recipientEmail: true,
+        deliveryEmail: true,
+        sentToEmail: true,
+        sentAt: true,
+        author: { select: { email: true } },
+      },
+    });
+    res.json({
+      message: shouldResetDelivery
+        ? "발송 이메일을 저장했고 다시 발송할 수 있게 상태를 초기화했습니다."
+        : (deliveryEmail ? "발송 이메일을 저장했습니다." : "발송 이메일 지정을 해제했습니다."),
+      letter,
+    });
   } catch (err) {
     console.error("admin letter delivery email update error:", err);
     if (err.code === "P2025") return res.status(404).json({ message: "편지를 찾을 수 없습니다." });
