@@ -35,6 +35,8 @@ services:
         sync: false
       - key: ENABLE_SCHEDULED_EMAILS
         value: true
+      - key: EXHIBITION_CLOSED
+        value: true
       - key: R2_BUCKET_NAME
         sync: false
       - key: R2_PUBLIC_URL

@@ -106,6 +106,7 @@ const r2Endpoint = envValue("R2_ENDPOINT", "VITE_R2_ENDPOINT");
 const r2AccessKeyId = envValue("R2_ACCESS_KEY_ID", "VITE_R2_ACCESS_KEY_ID");
 const r2SecretAccessKey = envValue("R2_SECRET_ACCESS_KEY", "VITE_R2_SECRET_ACCESS_KEY");
 const scheduledEmailsEnabled = process.env.ENABLE_SCHEDULED_EMAILS !== "false";
+const exhibitionClosed = process.env.EXHIBITION_CLOSED !== "false";
 
 if (isProduction && !process.env.SESSION_SECRET) {
   throw new Error("SESSION_SECRET is required in production.");
@@ -1621,6 +1622,11 @@ function requireDeveloper(req, res, next) {
   next();
 }
 
+function blockWhenExhibitionClosed(_req, res, next) {
+  if (!exhibitionClosed) return next();
+  return res.status(403).json({ message: "전시가 종료되어 새 작성/수정이 막혀 있어요." });
+}
+
 async function ensureDefaultTeacherLetter() {
   const adminUseridList = [...adminUserids];
   if (adminUseridList.length === 0) return;
@@ -1696,7 +1702,7 @@ app.post("/check-email", authLimiter, async (req, res) => {
 });
 
 // 2. 회원가입
-app.post("/register", authLimiter, async (req, res) => {
+app.post("/register", blockWhenExhibitionClosed, authLimiter, async (req, res) => {
   const name = String(req.body.name || "").trim();
   const userid = String(req.body.userid || "").trim();
   const password = String(req.body.password || "");
@@ -1792,7 +1798,7 @@ app.get("/support-info", (_req, res) => {
   res.json({ developerEmail });
 });
 
-app.post("/support-messages", writeLimiter, async (req, res) => {
+app.post("/support-messages", blockWhenExhibitionClosed, writeLimiter, async (req, res) => {
   const sessionUser = req.session.user || {};
   const content = normalizePublicText(req.body.content || "");
 
@@ -1858,7 +1864,7 @@ app.get("/logout", (req, res) => {
 });
 
 // 6. 이메일 변경
-app.put("/update-email", async (req, res) => {
+app.put("/update-email", blockWhenExhibitionClosed, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const email = String(req.body.email || "").trim().toLowerCase();
   if (!email) return res.status(400).json({ message: "이메일을 입력해 주세요." });
@@ -1876,7 +1882,7 @@ app.put("/update-email", async (req, res) => {
 });
 
 // 6-1. 이름/이메일 변경
-app.put("/update-profile", async (req, res) => {
+app.put("/update-profile", blockWhenExhibitionClosed, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const name = String(req.body.name || "").trim();
   const email = String(req.body.email || "").trim().toLowerCase();
@@ -1930,7 +1936,7 @@ app.put("/change-password", authLimiter, async (req, res) => {
 });
 
 // 7. 영상 업로드 presigned URL
-app.get("/get-upload-url", uploadLimiter, async (req, res) => {
+app.get("/get-upload-url", blockWhenExhibitionClosed, uploadLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   if (!r2BucketName || !r2PublicBaseUrl || !r2Endpoint || !r2AccessKeyId || !r2SecretAccessKey) {
     return res.status(500).json({ message: "업로드 설정이 완료되지 않았습니다." });
@@ -1945,7 +1951,7 @@ app.get("/get-upload-url", uploadLimiter, async (req, res) => {
 });
 
 // 8. 이미지 업로드 presigned URL
-app.get("/get-image-upload-url", uploadLimiter, async (req, res) => {
+app.get("/get-image-upload-url", blockWhenExhibitionClosed, uploadLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   if (!r2BucketName || !r2PublicBaseUrl || !r2Endpoint || !r2AccessKeyId || !r2SecretAccessKey) {
     return res.status(500).json({ message: "업로드 설정이 완료되지 않았습니다." });
@@ -1961,7 +1967,7 @@ app.get("/get-image-upload-url", uploadLimiter, async (req, res) => {
   } catch (err) { console.error(err); res.status(500).json({ message: "업로드 준비를 하지 못했습니다." }); }
 });
 
-app.post("/public-image-upload-url", publicUploadLimiter, async (req, res) => {
+app.post("/public-image-upload-url", blockWhenExhibitionClosed, publicUploadLimiter, async (req, res) => {
   if (!r2BucketName || !r2PublicBaseUrl || !r2Endpoint || !r2AccessKeyId || !r2SecretAccessKey) {
     return res.status(500).json({ message: "업로드 설정이 완료되지 않았습니다." });
   }
@@ -2008,7 +2014,7 @@ app.get("/public-letters", async (req, res) => {
   }
 });
 
-app.post("/public-letters", publicLetterLimiter, async (req, res) => {
+app.post("/public-letters", blockWhenExhibitionClosed, publicLetterLimiter, async (req, res) => {
   const nickname = normalizePublicText(req.body.nickname || "");
   const type = String(req.body.type || "text").trim().toLowerCase();
   const content = normalizePublicText(req.body.content || "");
@@ -2065,7 +2071,7 @@ app.post("/public-letters", publicLetterLimiter, async (req, res) => {
   }
 });
 
-app.put("/public-letters/:id", publicLetterLimiter, async (req, res) => {
+app.put("/public-letters/:id", blockWhenExhibitionClosed, publicLetterLimiter, async (req, res) => {
   const id = Number(req.params.id);
   const nickname = normalizePublicText(req.body.nickname || "");
   const content = normalizePublicText(req.body.content || "");
@@ -2127,7 +2133,7 @@ app.put("/public-letters/:id", publicLetterLimiter, async (req, res) => {
   }
 });
 
-app.delete("/public-letters/:id", publicLetterLimiter, async (req, res) => {
+app.delete("/public-letters/:id", blockWhenExhibitionClosed, publicLetterLimiter, async (req, res) => {
   const id = Number(req.params.id);
   const pin = String(req.body.pin || "");
 
@@ -2183,7 +2189,7 @@ app.get("/letter-draft", async (req, res) => {
   }
 });
 
-app.put("/letter-draft", writeLimiter, async (req, res) => {
+app.put("/letter-draft", blockWhenExhibitionClosed, writeLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
 
   const type = String(req.body.type || "text").trim().toLowerCase();
@@ -2286,7 +2292,7 @@ app.put("/letter-draft", writeLimiter, async (req, res) => {
   }
 });
 
-app.delete("/letter-draft", writeLimiter, async (req, res) => {
+app.delete("/letter-draft", blockWhenExhibitionClosed, writeLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
 
   try {
@@ -2348,7 +2354,7 @@ app.post("/letter-email-preview", writeLimiter, async (req, res) => {
 });
 
 // 9. 편지 저장
-app.post("/write-letter", writeLimiter, async (req, res) => {
+app.post("/write-letter", blockWhenExhibitionClosed, writeLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const type = String(req.body.type || "text");
   const content = typeof req.body.content === "string" ? req.body.content : "";
@@ -2545,7 +2551,7 @@ app.get("/received-letters", async (req, res) => {
   }
 });
 
-app.patch("/received-letters/:id/favorite", writeLimiter, async (req, res) => {
+app.patch("/received-letters/:id/favorite", blockWhenExhibitionClosed, writeLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const id = Number(req.params.id);
   const favorite = Boolean(req.body.favorite);
@@ -2594,7 +2600,7 @@ app.patch("/received-letters/:id/favorite", writeLimiter, async (req, res) => {
   }
 });
 
-app.patch("/letters/:id/favorite", writeLimiter, async (req, res) => {
+app.patch("/letters/:id/favorite", blockWhenExhibitionClosed, writeLimiter, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const id = Number(req.params.id);
   const favorite = Boolean(req.body.favorite);
@@ -2618,7 +2624,7 @@ app.patch("/letters/:id/favorite", writeLimiter, async (req, res) => {
 });
 
 // 11. 편지 삭제 (개봉 전 편지만)
-app.delete("/delete-letter/:id", async (req, res) => {
+app.delete("/delete-letter/:id", blockWhenExhibitionClosed, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const id = parseInt(req.params.id);
   if (isNaN(id)) return res.status(400).json({ message: "요청 내용을 확인해 주세요." });
@@ -2633,7 +2639,7 @@ app.delete("/delete-letter/:id", async (req, res) => {
 });
 
 // 개봉일 편지 즉시 발송 (테스트용)
-app.post("/trigger-send", async (req, res) => {
+app.post("/trigger-send", blockWhenExhibitionClosed, async (req, res) => {
   if (!req.session.user) return res.status(401).json({ message: "로그인이 필요합니다." });
   const result = await sendDueLetters({ authorId: req.session.user.id });
   res.json({ message: deliveryResultMessage(result) || "발송 요청을 접수했습니다.", ...result });
