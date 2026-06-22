@@ -3,13 +3,15 @@
 > 지금의 마음을 미래의 나 또는 누군가에게 보내는 디지털 타임캡슐 편지 서비스
 
 **Dear Me; Dear You**는 사용자가 텍스트, 사진, 그림, 영상으로 편지를 작성하고 원하는 날짜에 이메일로 받아볼 수 있도록 만든 웹 서비스입니다.
-개인 편지함과 익명 열린 편지함을 분리해, 사적인 기록과 모두가 함께 보는 공개 메시지를 각각 다른 경험으로 설계했습니다.
+개인 편지함과 익명 열린 편지함을 분리해, 사적인 기록과 모두가 함께 보는 공개 메시지를 각각 다른 경험으로 설계했습니다.<br>
+
+
+**기획 및 전체 구현, UI/UX 디자인, 배포** : 장세은 [jagseeun](https://github.com/jagseeun)<br>
+**아이디어 논의, QA** : 이제희 [jeahee2](https://github.com/jeahee2)
 
 서비스 URL: https://dearme-dearyou.onrender.com <br>
 - 프론트엔드와 백엔드 모두 배포 및 연동을 완료했으며, 백엔드 서버는 운영 비용을 고려해 현재 상시 운영을 중단한 상태입니다.<br>
 
-**기획 및 전체 구현, UI/UX 디자인, 배포** : 장세은 [jagseeun](https://github.com/jagseeun)<br>
-**아이디어 논의, QA** : 이제희 [jeahee2](https://github.com/jeahee2)
 
 ## Project Overview
 
