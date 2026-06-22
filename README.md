@@ -6,9 +6,10 @@
 개인 편지함과 익명 열린 편지함을 분리해, 사적인 기록과 모두가 함께 보는 공개 메시지를 각각 다른 경험으로 설계했습니다.
 
 서비스 URL: https://dearme-dearyou.onrender.com
+현재 편지 쓰기 기능이 백엔드 배포 문제로 막힌 상태입니다.
 
-**기획 및 전체 구현/UI UX 디자인/배포** : 장세은 [jagseeun](https://github.com/jagseeun)<br>
-**아이디어 논의/QA** : 이제희 [jeahee2](https://github.com/jeahee2)
+**기획 및 전체 구현, UI/UX 디자인, 배포** : 장세은 [jagseeun](https://github.com/jagseeun)<br>
+**아이디어 논의, QA** : 이제희 [jeahee2](https://github.com/jeahee2)
 
 ## Project Overview
 
