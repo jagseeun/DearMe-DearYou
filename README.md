@@ -7,8 +7,8 @@
 
 서비스 URL: https://dearme-dearyou.onrender.com
 
-**개발/디자인/배포** : 장세은 [jagseeun](https://github.com/jagseeun)<br>
-**기획/테스트** : 이제희 [jeahee2](https://github.com/jeahee2)
+**기획 및 전체 구현/UI UX 디자인/배포** : 장세은 [jagseeun](https://github.com/jagseeun)<br>
+**아이디어 논의/QA** : 이제희 [jeahee2](https://github.com/jeahee2)
 
 ## Project Overview
 
